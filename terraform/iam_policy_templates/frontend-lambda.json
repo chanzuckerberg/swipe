@@ -1,0 +1,84 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:List*",
+        "s3:GetObject*",
+        "s3:PutObject*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "batch:DescribeComputeEnvironments",
+        "batch:DescribeJobDefinitions",
+        "batch:DescribeJobQueues",
+        "batch:DescribeJobs",
+        "batch:ListJobs",
+        "batch:TerminateJob",
+        "batch:UpdateComputeEnvironment",
+        "batch:SubmitJob"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "states:ListStateMachines",
+      "Resource": "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sts:GetCallerIdentity",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "states:DescribeStateMachine",
+        "states:ListExecutions",
+        "states:DescribeExecution",
+        "states:DescribeStateMachineForExecution",
+        "states:GetExecutionHistory"
+      ],
+      "Resource": [
+        "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:mccloud-${DEPLOYMENT_ENVIRONMENT}-*",
+        "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:execution:mccloud-${DEPLOYMENT_ENVIRONMENT}-*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "cloudwatch:PutMetricData",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:GetLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:Get*"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:secret:mccloud-${DEPLOYMENT_ENVIRONMENT}/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:*"
+      ],
+      "Resource": "arn:aws:dynamodb:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:table/mccloud-${DEPLOYMENT_ENVIRONMENT}-*"
+    }
+  ]
+}
