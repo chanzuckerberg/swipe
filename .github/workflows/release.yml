@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: Reason for the release (scheduled, hotfix, issue ID, etc.)
+      force:
+        description: Force release (set to `true` to release even if checks fail)
+        default: 'false'
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  # GITHUB_TOKEN is provided by Actions and can create deployment objects, but these objects won't trigger workflows.
+  # A separate token, bound to a specific developer with access to the repo, is required to create GitHub deployment
+  # objects that can trigger a deployment workflow. The secret for this token (with repo_deployment scope) is created in
+  # https://github.com/settings/tokens and can be managed in https://github.com/chanzuckerberg/idseq/settings/secrets.
+  GH_DEPLOY_TOKEN: ${{secrets.GH_DEPLOY_TOKEN}}
+  SLACK_TOKEN: ${{secrets.SLACK_TOKEN}}
+  DEBIAN_FRONTEND: noninteractive
+  GH_CLI_VERSION: 1.9.2
+  LC_ALL: C.UTF-8
+  LANG: C.UTF-8
+
+jobs:
+  run_release:
+    name: Release from ${{github.ref}}
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install release script dependencies
+        run: |
+          source /etc/profile
+          sudo apt-get -qq update
+          sudo apt-get -qq install -o=Dpkg::Use-Pty=0 --yes jq moreutils gettext httpie git curl
+          curl -OLs https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_linux_amd64.deb
+          sudo dpkg -i gh_${GH_CLI_VERSION}_linux_amd64.deb
+      - name: Release main to staging
+        if: github.ref == 'refs/heads/main' && github.event.inputs.force == 'false'
+        run: scripts/release.sh main staging && scripts/create_deployment.sh staging
+      - name: Force release main to staging
+        if: github.ref == 'refs/heads/main' && github.event.inputs.force == 'true'
+        run: scripts/release.sh main staging --force && scripts/create_deployment.sh staging
+      - name: Release staging to prod
+        if: github.ref == 'refs/heads/staging' && github.event.inputs.force == 'false'
+        run: scripts/release.sh staging prod && scripts/create_deployment.sh prod
+      - name: Force release staging to prod
+        if: github.ref == 'refs/heads/staging' && github.event.inputs.force == 'true'
+        run: scripts/release.sh staging prod --force && scripts/create_deployment.sh prod

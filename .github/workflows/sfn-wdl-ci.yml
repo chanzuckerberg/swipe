@@ -1,0 +1,62 @@
+name: SFN-WDL Integration Tests
+
+on:
+  push
+
+env:
+  DEPLOYMENT_ENVIRONMENT: test
+  LC_ALL: C.UTF-8
+  LANG: C.UTF-8
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  # These are commonly used example mock credentials for local testing with moto.
+  AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+  AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+jobs:
+  linters:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Run linters
+        run: source scripts/init_ci_runner.sh && make lint
+
+  unit_tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Run tests
+        run: |
+          # This is required so tests can add entries
+          #   Tests need to add entries because we are mocking the s3 api and
+          #   we need to use s3's bucket DNS. When we make a test bucket
+          #   we must add an entry for it so we can use DNS locally.
+          sudo chmod 666 /etc/hosts
+          source scripts/init_ci_runner.sh
+          scripts/build_docker_images.sh
+          scripts/run_mock_server.sh &
+          for i in {1..30}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 30 ]]; then exit 1; else sleep 1; fi; done
+          make deploy-mock test
+
+  terraform_format:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Check Terraform Format
+        run: |
+          terraform fmt --recursive ./
+          git diff --exit-code
