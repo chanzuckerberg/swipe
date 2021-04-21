@@ -1,19 +1,23 @@
+locals {
+  app_slug = "${var.app_name}-${var.deployment_environment}"
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
 resource "aws_vpc" "swipe" {
-  cidr_block           = "10.20.0.0/16"
+  cidr_block           = var.cidr_block
   enable_dns_hostnames = true
-  tags = merge(local.common_tags, {
-    Name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}"
+  tags = merge(var.common_tags, {
+    Name = local.app_slug
   })
 }
 
 resource "aws_internet_gateway" "swipe" {
   vpc_id = aws_vpc.swipe.id
-  tags = merge(local.common_tags, {
-    Name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}"
+  tags = merge(var.common_tags, {
+    Name = local.app_slug
   })
 }
 
@@ -29,13 +33,13 @@ resource "aws_subnet" "swipe" {
   availability_zone       = each.key
   cidr_block              = cidrsubnet(aws_vpc.swipe.cidr_block, 8, index(data.aws_availability_zones.available.names, each.key))
   map_public_ip_on_launch = true
-  tags = merge(local.common_tags, {
-    Name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}"
+  tags = merge(var.common_tags, {
+    Name = local.app_slug
   })
 }
 
 resource "aws_security_group" "swipe" {
-  name   = "swipe-${var.DEPLOYMENT_ENVIRONMENT}"
+  name   = local.app_slug
   vpc_id = aws_vpc.swipe.id
   egress {
     from_port   = 0

@@ -54,3 +54,9 @@ npm-debug.log
 .vscode/
 .venv/
 venv/
+
+/terraform/modules/swipe-sfn-batch-job/batch_job_container_properties.json
+/terraform/modules/swipe-sfn/sfn-templates/*.json
+/*-lambda/.chalice/policy-*.json
+/.terraform*
+/terraform/modules/swipe-*-lambda

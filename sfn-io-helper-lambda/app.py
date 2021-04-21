@@ -93,18 +93,14 @@ def handle_failure(sfn_data, context):
     }
 }, name=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}-process-batch-event")
 def process_batch_event(event):
-    queue_arn = event.detail["jobQueue"]
+    # queue_arn = event.detail["jobQueue"]
     # assert queue_arn in batch_queue_arns
-    batch_events.resize_compute_environment(queue_arn)
-
     reporting.emit_batch_metric_values(event)
 
 
 @app.on_cw_event({"source": ["aws.states"]}, name=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}-process-sfn-event")
 def process_sfn_event(event):
     execution_arn = event.detail["executionArn"]
-    if event.detail["status"] in {"ABORTED", "TIMED_OUT"}:
-        batch_events.terminate_jobs_for_stopped_sfn(execution_arn)
     if f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}" in execution_arn:
         batch_events.archive_sfn_history(execution_arn)
 

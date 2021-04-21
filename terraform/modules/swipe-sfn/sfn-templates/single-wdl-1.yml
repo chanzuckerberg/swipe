@@ -41,7 +41,6 @@ States:
       - ErrorEquals: ["Batch.AWSBatchException"]
         IntervalSeconds: 15
         MaxAttempts: 3
-        BackoffRate: 2.0
     Catch:
       - ErrorEquals: ["States.ALL"]
         ResultPath: $.BatchJobError.RunSPOT

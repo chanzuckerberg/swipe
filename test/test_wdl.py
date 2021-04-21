@@ -62,11 +62,12 @@ class TestConsensusGenomes(TestCase):
             for filename in output:
                 self.assertGreater(os.path.getsize(filename), 0)
 
-    # test the depths associated with SNAP ivar trim -x 5 
+    # test the depths associated with SNAP ivar trim -x 5
     def test_sars_cov2_illumina_cg_snap(self):
         fastqs_0 = os.path.join(os.path.dirname(__file__), "snap_top10k_R1_001.fastq.gz")
         fastqs_1 = os.path.join(os.path.dirname(__file__), "snap_top10k_R1_001.fastq.gz")
-        args = ["sample=test_snap", f"fastqs_0={fastqs_0}", f"fastqs_1={fastqs_1}", "technology=Illumina", "primer_bed=s3://idseq-public-references/consensus-genome/snap_primers.bed"]
+        args = ["sample=test_snap", f"fastqs_0={fastqs_0}", f"fastqs_1={fastqs_1}", "technology=Illumina",
+                "primer_bed=s3://idseq-public-references/consensus-genome/snap_primers.bed"]
         res = self.run_miniwdl(args)
         outputs = res["outputs"]
         with open(outputs["consensus_genome.compute_stats_out_output_stats"]) as fh:

@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
-ARG MINIWDL_VERSION=1.1.3
+ARG MINIWDL_VERSION=1.1.4
 
 LABEL maintainer="IDseq Team idseq-tech@chanzuckerberg.com"
 
@@ -40,9 +40,7 @@ RUN apt-get -q install -y \
         python3-boto3 \
         awscli
 
-RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
-# TODO: (tmorse) switch back to PyPI
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/ead0aa99572e044184ec5e9aa999a665f590d269.zip#subdirectory=s3upload
+RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5 miniwdl-s3upload==0.0.8
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.1-alpha/s3parcp_1.0.1-alpha_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 

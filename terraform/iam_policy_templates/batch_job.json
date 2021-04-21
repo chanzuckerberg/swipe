@@ -5,25 +5,23 @@
       "Effect": "Allow",
       "Action": [
         "s3:List*",
-        "s3:GetObject*"
-      ],
-      "Resource": [
-        "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}",
-        "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:List*",
         "s3:GetObject*",
         "s3:PutObject*",
         "s3:CreateMultipartUpload"
       ],
       "Resource": [
-        "arn:aws:s3:::mccloud*",
-        "arn:aws:s3:::mccloud*/*"
+        "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}",
+        "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}/*",
+        "arn:aws:s3:::sfn-wdl-dev",
+        "arn:aws:s3:::sfn-wdl-dev/*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricData"
+      ],
+      "Resource": "*"
     }
   ]
 }

@@ -2,7 +2,6 @@ import os
 import re
 import json
 import logging
-import collections
 import signal
 
 from botocore import xform_name
@@ -10,6 +9,7 @@ from botocore import xform_name
 from . import s3_object
 
 logger = logging.getLogger()
+
 
 def get_input_uri_key(stage):
     return f"{xform_name(stage).upper()}_INPUT_URI"
@@ -47,7 +47,7 @@ def read_state_from_s3(sfn_state, current_state):
         batch_cause = json.loads(cur_batch_job_error.get("Cause", "{}"))
         if batch_cause.get("Container", {}).get("ExitCode") == 128 + signal.SIGKILL:
             if batch_cause.get("StatusReason") == 'Job attempt duration exceeded timeout':
-                error_type, cause = "BatchJobTimeout", batch_cause["StatusReason"]
+                error_type, cause = "BatchJobTimeout", batch_cause["StatusReason"]  # type: ignore
         raise error_type(cause)
 
     return sfn_state

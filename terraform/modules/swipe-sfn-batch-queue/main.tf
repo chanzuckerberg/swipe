@@ -1,4 +1,5 @@
 locals {
+  app_slug                       = "${var.app_name}-${var.deployment_environment}"
   launch_template_user_data_file = "${path.module}/container_instance_user_data"
   launch_template_user_data_hash = filemd5(local.launch_template_user_data_file)
 }
@@ -8,11 +9,11 @@ data "aws_ssm_parameter" "swipe_batch_ami" {
 }
 
 resource "aws_iam_role" "swipe_batch_service_role" {
-  name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-batch-service"
-  assume_role_policy = templatefile("${path.module}/iam_policy_templates/trust_policy.json", {
+  name = "${local.app_slug}-batch-service"
+  assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["batch"]
   })
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_service_role" {
@@ -21,11 +22,11 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_service_role" {
 }
 
 resource "aws_iam_role" "swipe_batch_spot_fleet_service_role" {
-  name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-batch-spot-fleet-service"
-  assume_role_policy = templatefile("${path.module}/iam_policy_templates/trust_policy.json", {
+  name = "${local.app_slug}-batch-spot-fleet-service"
+  assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["spotfleet"]
   })
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_spot_fleet_service_role" {
@@ -34,11 +35,11 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_spot_fleet_service_role" 
 }
 
 resource "aws_iam_role" "swipe_batch_main_instance_role" {
-  name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-batch-main-instance"
-  assume_role_policy = templatefile("${path.module}/iam_policy_templates/trust_policy.json", {
+  name = "${local.app_slug}-batch-main-instance"
+  assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["ec2"]
   })
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_instance_role_put_metric" {
@@ -57,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_instance_role_ssm" {
 }
 
 resource "aws_iam_instance_profile" "swipe_batch_main" {
-  name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-batch-main"
+  name = "${local.app_slug}-batch-main"
   role = aws_iam_role.swipe_batch_main_instance_role.name
 }
 
@@ -67,38 +68,46 @@ resource "aws_launch_template" "swipe_batch_main" {
   # The launch template resource increments its version when contents change, but the compute environment resource does
   # not recognize this change. We bind the launch template name to user data contents here, so any changes to user data
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
-  name      = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-batch-main-${local.launch_template_user_data_hash}"
+  name      = "${local.app_slug}-batch-main-${local.launch_template_user_data_hash}"
   user_data = filebase64(local.launch_template_user_data_file)
-  tags      = local.common_tags
-}
-
-resource "aws_key_pair" "swipe_batch" {
-  key_name   = "swipe-${var.DEPLOYMENT_ENVIRONMENT}"
-  public_key = var.SSH_PUBLIC_KEY
+  tags      = var.common_tags
 }
 
 # See https://github.com/hashicorp/terraform-provider-aws/pull/16819 for Batch Fargate CE support
-resource "aws_batch_compute_environment" "swipe_ec2_spot" {
-  compute_environment_name_prefix = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-ec2-spot-"
+resource "aws_batch_compute_environment" "swipe_main" {
+  for_each = {
+    SPOT = {
+      "cr_type" : "SPOT",
+      "min_vcpus" : 16,
+      "max_vcpus" : { "default" : 256, "staging" : 4096, "prod" : 4096 }
+    }
+    EC2 = {
+      "cr_type" : "EC2",
+      "min_vcpus" : 0,
+      "max_vcpus" : { "default" : 64, "staging" : 128, "prod" : 4096 }
+    }
+  }
+
+  compute_environment_name_prefix = "${local.app_slug}-${each.key}-"
 
   compute_resources {
-    instance_role = aws_iam_instance_profile.swipe_batch_main.arn
-    instance_type = ["r5d"]
-    image_id      = data.aws_ssm_parameter.swipe_batch_ami.value
-    ec2_key_pair  = aws_key_pair.swipe_batch.id
-    min_vcpus     = 1
+    instance_role      = aws_iam_instance_profile.swipe_batch_main.arn
+    instance_type      = var.batch_ec2_instance_types
+    image_id           = data.aws_ssm_parameter.swipe_batch_ami.value
+    ec2_key_pair       = var.batch_ssh_key_pair_id
+    security_group_ids = var.batch_security_group_ids
+    subnets            = var.batch_subnet_ids
+
+    min_vcpus     = each.value["min_vcpus"]
     desired_vcpus = 16
-    max_vcpus     = 256
-    security_group_ids = [
-      aws_security_group.swipe.id,
-    ]
-    subnets             = [for subnet in aws_subnet.swipe : subnet.id]
-    type                = "SPOT"
+    max_vcpus     = lookup(each.value["max_vcpus"], var.deployment_environment, each.value["max_vcpus"]["default"])
+
+    type                = each.value["cr_type"]
     allocation_strategy = "BEST_FIT"
     bid_percentage      = 100
     spot_iam_fleet_role = aws_iam_role.swipe_batch_spot_fleet_service_role.arn
-    tags = merge(local.common_tags, {
-      Name = "swipe-${var.DEPLOYMENT_ENVIRONMENT}-batch-ec2-spot"
+    tags = merge(var.common_tags, {
+      Name = "${var.app_name}-batch-${var.deployment_environment}-${each.key}"
     })
 
     launch_template {
@@ -121,10 +130,14 @@ resource "aws_batch_compute_environment" "swipe_ec2_spot" {
 }
 
 resource "aws_batch_job_queue" "swipe_main" {
-  name     = "swipe-${var.DEPLOYMENT_ENVIRONMENT}"
+  for_each = {
+    "SPOT" : {},
+    "EC2" : {}
+  }
+  name     = "${local.app_slug}-main-${each.key}"
   state    = "ENABLED"
   priority = 10
   compute_environments = [
-    aws_batch_compute_environment.swipe_ec2_spot.arn,
+    aws_batch_compute_environment.swipe_main[each.key].arn,
   ]
 }
