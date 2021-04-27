@@ -13,7 +13,7 @@ resource "aws_iam_role" "swipe_batch_service_role" {
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["batch"]
   })
-  tags = var.common_tags
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_service_role" {
@@ -26,7 +26,7 @@ resource "aws_iam_role" "swipe_batch_spot_fleet_service_role" {
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["spotfleet"]
   })
-  tags = var.common_tags
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_spot_fleet_service_role" {
@@ -39,7 +39,7 @@ resource "aws_iam_role" "swipe_batch_main_instance_role" {
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["ec2"]
   })
-  tags = var.common_tags
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_instance_role_put_metric" {
@@ -70,7 +70,7 @@ resource "aws_launch_template" "swipe_batch_main" {
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
   name      = "${local.app_slug}-batch-main-${local.launch_template_user_data_hash}"
   user_data = filebase64(local.launch_template_user_data_file)
-  tags      = var.common_tags
+  tags      = var.tags
 }
 
 # See https://github.com/hashicorp/terraform-provider-aws/pull/16819 for Batch Fargate CE support
@@ -106,7 +106,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     allocation_strategy = "BEST_FIT"
     bid_percentage      = 100
     spot_iam_fleet_role = aws_iam_role.swipe_batch_spot_fleet_service_role.arn
-    tags = merge(var.common_tags, {
+    tags = merge(var.tags, {
       Name = "${var.app_name}-batch-${var.deployment_environment}-${each.key}"
     })
 

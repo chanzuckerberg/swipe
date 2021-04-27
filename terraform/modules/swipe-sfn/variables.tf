@@ -37,7 +37,7 @@ variable "deployment_environment" {
   default     = "dev"
 }
 
-variable "common_tags" {
+variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
   default     = {}
