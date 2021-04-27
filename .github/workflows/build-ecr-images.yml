@@ -1,0 +1,38 @@
+name: Build Docker images for ECR
+
+on:
+  push
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  build_dev_docker_images:
+    runs-on: [self-hosted, idseq-dev]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Build and push Docker images
+        run: |
+          source scripts/init_ci_runner.sh
+          scripts/build_docker_images.sh
+
+  build_prod_docker_images:
+    runs-on: [self-hosted, idseq-prod]
+    env:
+      EXPECT_AWS_ACCOUNT_ALIAS: idseq-prod
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Build and push Docker images
+        run: |
+          source scripts/init_ci_runner.sh
+          scripts/build_docker_images.sh

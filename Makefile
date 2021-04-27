@@ -19,6 +19,9 @@ deploy: sfn-io-helper-lambda templates init-tf
 	@if [[ $(DEPLOYMENT_ENVIRONMENT) == prod && $$(git symbolic-ref --short HEAD) != prod ]]; then echo Please deploy prod from the prod branch; exit 1; fi
 	TF_VAR_APP_NAME=$(APP_NAME) TF_VAR_DEPLOYMENT_ENVIRONMENT=$(DEPLOYMENT_ENVIRONMENT) TF_VAR_OWNER=$(OWNER) TF_VAR_BATCH_SSH_PUBLIC_KEY='$(BATCH_SSH_PUBLIC_KEY)' terraform apply
 
+deploy-mock: sfn-io-helper-lambda templates
+	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; terraform apply --auto-approve
+
 $(TFSTATE_FILE):
 	terraform state pull > $(TFSTATE_FILE)
 
