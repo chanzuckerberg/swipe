@@ -5,26 +5,12 @@ on:
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
 
 jobs:
-  build_dev_docker_images:
-    runs-on: [self-hosted, idseq-dev]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache
-          key: ${{runner.os}}-cache
-      - name: Build and push Docker images
-        run: |
-          source scripts/init_ci_runner.sh
-          scripts/build_docker_images.sh
-
-  build_prod_docker_images:
-    runs-on: [self-hosted, idseq-prod]
-    env:
-      EXPECT_AWS_ACCOUNT_ALIAS: idseq-prod
+  build_docker_images:
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
