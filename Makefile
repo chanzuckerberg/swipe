@@ -31,7 +31,7 @@ sfn-io-helper-lambda:
 	cd $@; export PYTHONPATH=vendor; chalice package --pkg-format terraform --stage $(DEPLOYMENT_ENVIRONMENT) ../terraform/modules/swipe-$@
 	$(eval TF_JSON=terraform/modules/swipe-$@/chalice.tf.json)
 	jq 'del(.environment_variables.DEPLOYMENT_ENVIRONMENT)' $@/.chalice/config.json | sponge $@/.chalice/config.json
-	jq 'del(.provider.aws) |  del(.terraform.required_version)' $(TF_JSON) | sponge $(TF_JSON)
+	jq 'del(.provider.aws) | del(.terraform.required_version)' $(TF_JSON) | sponge $(TF_JSON)
 
 lint: templates
 	flake8 .
