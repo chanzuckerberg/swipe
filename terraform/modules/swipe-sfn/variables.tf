@@ -4,6 +4,12 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "sfn_template_file" {
+  description = "JSON file with SFN contents (default: terraform/modules/swipe-sfn/sfn-templates/single-wdl-1.yml, transcoded to JSON)"
+  type        = string
+  default     = ""
+}
+
 variable "batch_job_docker_image_name" {
   description = "Docker image (name or name:tag) that will be used for Batch jobs (expected to be in the private registry for the host AWS account)"
   type        = string

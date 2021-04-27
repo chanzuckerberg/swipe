@@ -1,5 +1,6 @@
 locals {
   app_slug = "${var.app_name}-${var.deployment_environment}"
+  sfn_template_file = var.sfn_template_file == "" ? "${path.module}/sfn-templates/single-wdl-1.json" : var.sfn_template_file
 }
 
 data "aws_region" "current" {}
@@ -57,7 +58,7 @@ locals {
 resource "aws_sfn_state_machine" "swipe_single_wdl_1" {
   name     = "${local.app_slug}-single-wdl-1"
   role_arn = aws_iam_role.swipe_sfn_service.arn
-  definition = templatefile("${path.module}/sfn-templates/single-wdl-1.json", merge(local.sfn_common_params, {
+  definition = templatefile(local.sfn_template_file, merge(local.sfn_common_params, {
     batch_job_name_prefix = "${local.app_slug}-single-wdl",
   }))
   tags = local.sfn_common_tags

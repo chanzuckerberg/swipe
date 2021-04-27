@@ -50,6 +50,8 @@ def read_state_from_s3(sfn_state, current_state):
                 error_type, cause = "BatchJobTimeout", batch_cause["StatusReason"]  # type: ignore
         raise error_type(cause)
 
+    sfn_state["Result"].update(stage_output)
+
     return sfn_state
 
 
