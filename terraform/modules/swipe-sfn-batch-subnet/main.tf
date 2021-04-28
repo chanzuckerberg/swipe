@@ -9,14 +9,14 @@ data "aws_availability_zones" "available" {
 resource "aws_vpc" "swipe" {
   cidr_block           = var.cidr_block
   enable_dns_hostnames = true
-  tags = merge(var.common_tags, {
+  tags = merge(var.tags, {
     Name = local.app_slug
   })
 }
 
 resource "aws_internet_gateway" "swipe" {
   vpc_id = aws_vpc.swipe.id
-  tags = merge(var.common_tags, {
+  tags = merge(var.tags, {
     Name = local.app_slug
   })
 }
@@ -33,7 +33,7 @@ resource "aws_subnet" "swipe" {
   availability_zone       = each.key
   cidr_block              = cidrsubnet(aws_vpc.swipe.cidr_block, 8, index(data.aws_availability_zones.available.names, each.key))
   map_public_ip_on_launch = true
-  tags = merge(var.common_tags, {
+  tags = merge(var.tags, {
     Name = local.app_slug
   })
 }

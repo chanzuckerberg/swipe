@@ -22,7 +22,7 @@ resource "aws_iam_role" "swipe_batch_main_job" {
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["ecs-tasks"]
   })
-  tags = var.common_tags
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_job" {
@@ -38,7 +38,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_job_ecr_readonly" {
 resource "aws_batch_job_definition" "swipe_main" {
   name = "${local.app_slug}-main"
   type = "container"
-  tags = var.common_tags
+  tags = var.tags
   retry_strategy {
     attempts = var.batch_job_retry_attempts
   }

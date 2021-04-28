@@ -23,7 +23,7 @@ resource "aws_iam_role" "swipe_sfn_service" {
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["states"]
   })
-  tags = var.common_tags
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_sfn_service" {
@@ -37,7 +37,7 @@ module "batch_job" {
   batch_job_docker_image_name = var.batch_job_docker_image_name
   batch_job_timeout_seconds   = var.batch_job_timeout_seconds
   deployment_environment      = var.deployment_environment
-  common_tags                 = var.common_tags
+  tags                        = var.tags
 }
 
 module "sfn-io-helper" {
@@ -51,7 +51,7 @@ locals {
     batch_ec2_job_queue_name  = var.batch_ec2_job_queue_name,
     batch_job_definition_name = module.batch_job.batch_job_definition_name,
   }
-  sfn_common_tags = merge(var.common_tags, {
+  sfn_tags = merge(var.tags, {
   })
 }
 
@@ -61,5 +61,5 @@ resource "aws_sfn_state_machine" "swipe_single_wdl_1" {
   definition = templatefile(local.sfn_template_file, merge(local.sfn_common_params, {
     batch_job_name_prefix = "${local.app_slug}-single-wdl",
   }))
-  tags = local.sfn_common_tags
+  tags = local.sfn_tags
 }
