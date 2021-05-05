@@ -69,10 +69,7 @@ def trim_batch_job_details(sfn_state):
 def get_workflow_name(sfn_state):
     for k, v in sfn_state.items():
         if k.endswith("_WDL_URI"):
-            if s3_object(v).bucket_name == "swipe-workflows":
-                return os.path.dirname(s3_object(v).key)
-            else:
-                return os.path.splitext(os.path.basename(s3_object(v).key))[0]
+            return os.path.splitext(os.path.basename(s3_object(v).key))[0]
 
 
 def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_name):
@@ -89,9 +86,9 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
             sfn_state.setdefault(memory_key, int(os.environ[memory_key + "Default"]))
         stage_input = sfn_state["Input"].get(stage, {})
         ecr_repo = f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
-        workflow_name, workflow_version = get_workflow_name(sfn_state).rsplit("-v", 1)
-        default_docker_image_id = f"{ecr_repo}/swipe-{workflow_name}:v{workflow_version}"
-        stage_input.setdefault("docker_image_id", default_docker_image_id)
-        stage_input.setdefault("s3_wd_uri", output_path)
+        if "docker_image_id" not in stage_input:
+            workflow_name, workflow_version = get_workflow_name(sfn_state).rsplit("-v", 1)
+            default_docker_image_id = f"{ecr_repo}/swipe-{workflow_name}:v{workflow_version}"
+            stage_input["docker_image_id"] = default_docker_image_id
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
     return sfn_state
