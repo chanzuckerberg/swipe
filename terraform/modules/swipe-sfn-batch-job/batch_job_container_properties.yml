@@ -68,6 +68,7 @@ command:
     }
   - "trap handle_error EXIT"
   - 'miniwdl run --dir /mnt $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --log-json -o wdl_output.json'
+  - 'aws s3 cp wdl_output.json "$WDL_OUTPUT_URI"'
   - "clean_wd"
 environment:
   - name: "WDL_INPUT_URI"
