@@ -1,5 +1,5 @@
 locals {
-  app_slug = "${var.app_name}-${var.deployment_environment}"
+  app_slug          = "${var.app_name}-${var.deployment_environment}"
   sfn_template_file = var.sfn_template_file == "" ? "${path.module}/sfn-templates/single-wdl-1.json" : var.sfn_template_file
 }
 
