@@ -35,7 +35,7 @@ def get_stage_output(sfn_state, stage):
 
 
 def read_state_from_s3(sfn_state, current_state):
-    stage = current_state.replace("SPOTReadOutput", "").replace("EC2ReadOutput", "")
+    stage = current_state.replace("ReadOutput", "")
     sfn_state.setdefault("Result", {})
     stage_output = get_stage_output(sfn_state, stage)
 
