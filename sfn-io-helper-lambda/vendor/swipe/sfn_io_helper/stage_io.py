@@ -41,7 +41,11 @@ def read_state_from_s3(sfn_state, current_state):
 
     # Extract Batch job error, if any, and drop error metadata to avoid overrunning the Step Functions state size limit
     batch_job_error = sfn_state.pop("BatchJobError", {})
-    cur_batch_job_error = batch_job_error.get(current_state[:-len("ReadOutput")])
+    batch_job_name = current_state[:-len("ReadOutput")] + "SPOT"
+    if batch_job_name not in batch_job_error:
+        batch_job_name = current_state[:-len("ReadOutput")] + "EC2"
+    cur_batch_job_error = batch_job_error.get(batch_job_name)
+
     if cur_batch_job_error:
         error_type, cause = type(stage_output["error"], (Exception,), dict()), stage_output["cause"]
         batch_cause = json.loads(cur_batch_job_error.get("Cause", "{}"))
