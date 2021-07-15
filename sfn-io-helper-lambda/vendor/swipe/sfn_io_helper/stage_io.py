@@ -2,7 +2,6 @@ import os
 import re
 import json
 import logging
-import signal
 
 from botocore import xform_name
 
@@ -19,55 +18,9 @@ def get_output_uri_key(stage):
     return f"{xform_name(stage).upper()}_OUTPUT_URI"
 
 
-def get_stage_input(sfn_state, stage):
-    input_uri = sfn_state[get_input_uri_key(stage)]
-    return json.loads(s3_object(input_uri).get()["Body"].read().decode())
-
-
 def put_stage_input(sfn_state, stage, stage_input):
     input_uri = sfn_state[get_input_uri_key(stage)]
     s3_object(input_uri).put(Body=json.dumps(stage_input).encode())
-
-
-def get_stage_output(sfn_state, stage):
-    output_uri = sfn_state[get_output_uri_key(stage)]
-    return json.loads(s3_object(output_uri).get()["Body"].read().decode())
-
-
-def read_state_from_s3(sfn_state, current_state):
-    stage = current_state.replace("ReadOutput", "")
-    sfn_state.setdefault("Result", {})
-    stage_output = get_stage_output(sfn_state, stage)
-
-    # Extract Batch job error, if any, and drop error metadata to avoid overrunning the Step Functions state size limit
-    batch_job_error = sfn_state.pop("BatchJobError", {})
-    batch_job_name = current_state[:-len("ReadOutput")] + "SPOT"
-    if batch_job_name not in batch_job_error:
-        batch_job_name = current_state[:-len("ReadOutput")] + "EC2"
-    cur_batch_job_error = batch_job_error.get(batch_job_name)
-
-    if cur_batch_job_error:
-        error_type, cause = type(stage_output["error"], (Exception,), dict()), stage_output["cause"]
-        batch_cause = json.loads(cur_batch_job_error.get("Cause", "{}"))
-        if batch_cause.get("Container", {}).get("ExitCode") == 128 + signal.SIGKILL:
-            if batch_cause.get("StatusReason") == 'Job attempt duration exceeded timeout':
-                error_type, cause = "BatchJobTimeout", batch_cause["StatusReason"]  # type: ignore
-        raise error_type(cause)
-
-    sfn_state["Result"].update(stage_output)
-
-    return sfn_state
-
-
-def trim_batch_job_details(sfn_state):
-    """
-    Remove large redundant batch job description items from Step Function state to avoid overrunning the Step Functions
-    state size limit.
-    """
-    for job_details in sfn_state["BatchJobDetails"].values():
-        job_details["Attempts"] = []
-        job_details["Container"] = {}
-    return sfn_state
 
 
 def get_workflow_name(sfn_state):
