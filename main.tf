@@ -23,8 +23,7 @@ module "batch_subnet" {
 
 module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
-  app_name                 = var.APP_NAME
-  deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
+  namespace                = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
   batch_ssh_key_pair_id    = aws_key_pair.swipe_batch.id
   batch_subnet_ids         = module.batch_subnet.batch_subnet_ids
   batch_security_group_ids = [module.batch_subnet.batch_security_group_id]

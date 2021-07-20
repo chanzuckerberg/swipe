@@ -1,5 +1,5 @@
-variable "app_name" {
-  description = "App name (will appear in managed asset names)"
+variable "namespace" {
+  description = "Namespace prefix for swipe resources"
   type        = string
   default     = "swipe"
 }
@@ -25,14 +25,32 @@ variable "batch_ssh_key_pair_id" {
   type        = string
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
-}
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
   default     = {}
+}
+
+variable "spot_desired_vcpus" {
+  description = "Desired vcpus for spot fleet"
+  type        = number
+  default     = 16
+}
+
+variable "ec2_desired_vcpus" {
+  description = "Desired vcpus for on-demand fleet"
+  type        = number
+  default     = 16
+}
+
+variable "min_vcpus" {
+  description = "Min vcpus for batch fleet"
+  type        = number
+  default     = 0
+}
+
+variable "max_vcpus" {
+  description = "Max vcpus for batch fleet"
+  type        = number
+  default     = 4096
 }
