@@ -1,0 +1,35 @@
+name: Push Docker image to GH packages
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build_docker_images:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build . --file Dockerfile --tag ${{ github.repository }} --label "runnumber=${GITHUB_RUN_ID}"
+
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository }}
+          VERSION=latest # We're only building the main branch
+          SHA_TAG=sha-${GITHUB_SHA:0:8}
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag ${{ github.repository }} $IMAGE_ID:latest
+          docker tag ${{ github.repository }} $IMAGE_ID:$SHA_TAG
+          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$SHA_TAG
+      - name: Checkout
+        uses: actions/checkout@v2
