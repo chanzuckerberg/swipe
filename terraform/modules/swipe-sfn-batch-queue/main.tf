@@ -132,8 +132,8 @@ resource "aws_batch_compute_environment" "swipe_main" {
 
 resource "aws_batch_job_queue" "swipe_main" {
   for_each = {
-    "SPOT": {},
-    "EC2": {}
+    "SPOT" : {},
+    "EC2" : {}
   }
   name     = "${var.namespace}-main-${each.key}"
   state    = "ENABLED"
