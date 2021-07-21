@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+import signal
 
 from botocore import xform_name
 
@@ -18,9 +19,48 @@ def get_output_uri_key(stage):
     return f"{xform_name(stage).upper()}_OUTPUT_URI"
 
 
+def get_stage_input(sfn_state, stage):
+    input_uri = sfn_state[get_input_uri_key(stage)]
+    return json.loads(s3_object(input_uri).get()["Body"].read().decode())
+
+
 def put_stage_input(sfn_state, stage, stage_input):
     input_uri = sfn_state[get_input_uri_key(stage)]
     s3_object(input_uri).put(Body=json.dumps(stage_input).encode())
+
+
+def get_stage_output(sfn_state, stage):
+    output_uri = sfn_state[get_output_uri_key(stage)]
+    return json.loads(s3_object(output_uri).get()["Body"].read().decode())
+
+
+def read_state_from_s3(sfn_state, current_state):
+    stage = current_state.replace("ReadOutput", "")
+    sfn_state.setdefault("Result", {})
+    stage_output = get_stage_output(sfn_state, stage)
+
+    # Extract Batch job error, if any, and drop error metadata to avoid overrunning the Step Functions state size limit
+    batch_job_error = sfn_state.pop("BatchJobError", {})
+    # If the stage succeeded, don't throw an error
+    if not sfn_state.get("BatchJobDetails", {}).get(stage):
+        if batch_job_error and next(iter(batch_job_error)).startswith(stage):
+            error_type = type(stage_output["error"], (Exception,), dict())
+            raise error_type(stage_output["cause"])
+
+    sfn_state["Result"].update(stage_output)
+
+    return sfn_state
+
+
+def trim_batch_job_details(sfn_state):
+    """
+    Remove large redundant batch job description items from Step Function state to avoid overrunning the Step Functions
+    state size limit.
+    """
+    for job_details in sfn_state["BatchJobDetails"].values():
+        job_details["Attempts"] = []
+        job_details["Container"] = {}
+    return sfn_state
 
 
 def get_workflow_name(sfn_state):

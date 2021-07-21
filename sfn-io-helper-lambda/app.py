@@ -55,6 +55,14 @@ def preprocess_input(sfn_data, context):
                                          state_machine_name=state_machine_name)
 
 
+@app.lambda_function("process-stage-output")
+def process_stage_output(sfn_data, context):
+    assert sfn_data["CurrentState"].endswith("ReadOutput")
+    sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
+    sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)
+    return sfn_state
+
+
 @app.lambda_function("handle-success")
 def handle_success(sfn_data, context):
     sfn_state = sfn_data["Input"]
