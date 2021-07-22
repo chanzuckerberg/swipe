@@ -1,7 +1,12 @@
-variable "app_name" {
-  description = "App name (will appear in managed asset names)"
+variable "namespace" {
+  description = "namespace (will appear in managed asset names)"
   type        = string
   default     = "swipe"
+}
+
+variable "s3_bucket_arns" {
+  description = "S3 buckets that swipe batch jobs may read/write"
+  type        = list(string)
 }
 
 variable "batch_job_docker_image_name" {
@@ -27,14 +32,13 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
-}
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
   default     = {}
+}
+
+variable "batch_role_arn" {
+  description = "ARN of the role assumed by Batch jobs"
+  type        = string
 }

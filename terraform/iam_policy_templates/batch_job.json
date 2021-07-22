@@ -10,8 +10,11 @@
         "s3:CreateMultipartUpload"
       ],
       "Resource": [
+%{ for bucket_arn in s3_arns ~}
+        "${bucket_arn}/*",
+%{ endfor ~}
         "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}",
-        "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}/*",
+        "arn:aws:s3:::aegea-batch-jobs-${AWS_ACDocker image (name or name:tag) that will be used for Batch jobs"COUNT_ID}/*",
         "arn:aws:s3:::sfn-wdl-dev",
         "arn:aws:s3:::sfn-wdl-dev/*"
       ]
