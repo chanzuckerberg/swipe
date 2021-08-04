@@ -48,6 +48,14 @@ df -h / /mnt
 export MINIWDL__S3_PROGRESSIVE_UPLOAD__URI_PREFIX=$(dirname "$WDL_OUTPUT_URI")
 if [ -f /etc/profile ]; then source /etc/profile; fi
 miniwdl --version
+
+# Env vars that need to be forwarded to miniwdl's tasks in AWS Batch.
+BATCH_SWIPE_ENVVARS="AWS_DEFAULT_REGION DEPLOYMENT_ENVIRONMENT AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"
+# set $WDL_PASSTHRU_ENVVARS to a list of space-separated env var names
+# to pass the values of those vars to miniwdl's task containers.
+PASSTHRU_VARS=( $BATCH_SWIPE_ENVVARS $WDL_PASSTHRU_ENVVARS )
+PASSTHRU_ARGS=${PASSTHRU_VARS[@]/#/--env }
+
 set -euo pipefail
 export CURRENT_STATE=$(echo "$SFN_CURRENT_STATE" | sed -e s/SPOT// -e s/EC2//)
 aws s3 cp "$WDL_WORKFLOW_URI" .
@@ -65,6 +73,7 @@ handle_error() {
     aws s3 cp $OF "$WDL_OUTPUT_URI";
   fi
 }
+
 trap handle_error EXIT
-miniwdl run --dir /mnt $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json
+miniwdl run $PASSTHRU_ARGS --dir /mnt $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json
 clean_wd
