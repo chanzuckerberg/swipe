@@ -16,10 +16,23 @@ ephemeral_bd=(/dev/disk/by-id/nvme-Amazon_EC2_NVMe_Instance_Storage_AWS?????????
 if [ ! -e /dev/md0 ]
 then
     mdadm --create /dev/md0 --force --auto=yes --level=0 --chunk=256 --raid-devices=${#ephemeral_bd[@]} ${ephemeral_bd[@]}
-    mkfs.xfs /dev/md0
+    mkdir -p /mnt/docker
+    mkdir -p /mnt/download_cache
+
+    # Create an LVM physical volume
+    pvcreate /dev/md0
+    # Create an LVM logical volume
+    vgcreate nvmestorage /dev/md0
+
+    # Create cache & docker volumes
+    lvcreate -L +100G -n download_cache nvmestorage
+    lvcreate -l +100%FREE -n docker nvmestorage
+    mkfs.xfs /dev/nvmestorage/docker
+    mkfs.xfs /dev/nvmestorage/download_cache
 fi
 
-mount /dev/md0 /mnt
+mount /dev/nvmestorage/docker /mnt/docker
+mount /dev/nvmestorage/download_cache /mnt/download_cache
 
 ##############################################
 # Configure Docker to use NVME for scratch space
