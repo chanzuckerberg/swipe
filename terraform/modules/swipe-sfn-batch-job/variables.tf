@@ -4,6 +4,12 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "extra_env_vars" {
+  description = "Additional env vars to set on batch task definitions"
+  type        = map(string)
+  default     = {}
+}
+
 variable "batch_job_docker_image_name" {
   description = "Docker image (name or name:tag) that will be used for Batch jobs"
   type        = string
