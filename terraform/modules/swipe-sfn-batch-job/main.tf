@@ -24,7 +24,10 @@ locals {
     "MINIWDL__DOWNLOAD_CACHE__DIR" = "/mnt/download_cache"
     "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = '["s3://swipe-samples-*/*"]'
     "DOWNLOAD_CACHE_MAX_GB" = "500"
+    "WDL_PASSTHRU_ENVVARS" = join(" ", [for k, v in var.extra_env_vars: k])
   })
+  container_env_vars = {"environment": [for k, v in local.batch_env_vars: {"name": k, "value": v}]}
+  final_container_config = merge(local.container_config, local.container_env_vars)
 }
 
 resource "aws_iam_policy" "swipe_batch_main_job" {
