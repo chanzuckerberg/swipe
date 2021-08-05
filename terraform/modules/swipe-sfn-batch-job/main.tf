@@ -11,20 +11,20 @@ locals {
     batch_job_role_arn     = aws_iam_role.swipe_batch_main_job.arn,
   }))
   batch_env_vars = merge(var.extra_env_vars, {
-    "WDL_INPUT_URI" = "Set this variable to the S3 URI of the WDL input JSON"
-    "WDL_WORKFLOW_URI" = "Set this variable to the S3 URI of the WDL workflow"
-    "WDL_OUTPUT_URI" = "Set this variable to the S3 URI where the WDL output JSON will be written"
-    "SFN_EXECUTION_ID" = "Set this variable to the current step function execution ARN"
-    "SFN_CURRENT_STATE" = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT"
-    "DEPLOYMENT_ENVIRONMENT" = var.deployment_environment
-    "AWS_DEFAULT_REGION" = data.aws_region.current.name
+    "WDL_INPUT_URI" = "Set this variable to the S3 URI of the WDL input JSON",
+    "WDL_WORKFLOW_URI" = "Set this variable to the S3 URI of the WDL workflow",
+    "WDL_OUTPUT_URI" = "Set this variable to the S3 URI where the WDL output JSON will be written",
+    "SFN_EXECUTION_ID" = "Set this variable to the current step function execution ARN",
+    "SFN_CURRENT_STATE" = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
+    "DEPLOYMENT_ENVIRONMENT" = var.deployment_environment,
+    "AWS_DEFAULT_REGION" = data.aws_region.current.name,
     "MINIWDL__S3PARCP__DOCKER_IMAGE" = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
-    "MINIWDL__DOWNLOAD_CACHE__PUT" = "true"
-    "MINIWDL__DOWNLOAD_CACHE__GET" = "true"
-    "MINIWDL__DOWNLOAD_CACHE__DIR" = "/mnt/download_cache"
-    "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = '["s3://swipe-samples-*/*"]'
-    "DOWNLOAD_CACHE_MAX_GB" = "500"
-    "WDL_PASSTHRU_ENVVARS" = join(" ", [for k, v in var.extra_env_vars: k])
+    "MINIWDL__DOWNLOAD_CACHE__PUT" = "true",
+    "MINIWDL__DOWNLOAD_CACHE__GET" = "true",
+    "MINIWDL__DOWNLOAD_CACHE__DIR" = "/mnt/download_cache",
+    "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = '["s3://swipe-samples-*/*"]',
+    "DOWNLOAD_CACHE_MAX_GB" = "500",
+    "WDL_PASSTHRU_ENVVARS" = join(" ", [for k, v in var.extra_env_vars: k]),
   })
   container_env_vars = {"environment": [for k, v in local.batch_env_vars: {"name": k, "value": v}]}
   final_container_config = merge(local.container_config, local.container_env_vars)
