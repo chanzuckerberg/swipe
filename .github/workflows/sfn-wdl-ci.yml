@@ -72,5 +72,5 @@ jobs:
           key: ${{runner.os}}-cache
       - name: Check For Uncomitted Lambda diff
         run: |
-          make sfn-io-helper-lambdas
-          git diff --exit-code terraform/modules/sfn-io-helper-lambdas/package-hash
+          git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
+          git diff --exit-code
