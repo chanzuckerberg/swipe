@@ -9,8 +9,8 @@
         "s3:PutObject*"
       ],
       "Resource": [
-        "arn:aws:s3:::${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*",
-        "arn:aws:s3:::${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*/*",
+        "arn:aws:s3:::${app_name}-${deployment_environment}-*",
+        "arn:aws:s3:::${app_name}-${deployment_environment}-*/*",
         "arn:aws:s3:::sfn-wdl-dev",
         "arn:aws:s3:::sfn-wdl-dev/*"
       ]
@@ -31,7 +31,7 @@
     {
       "Effect": "Allow",
       "Action": "states:ListStateMachines",
-      "Resource": "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:*"
+      "Resource": "arn:aws:states:${aws_region}:${aws_account_id}:*"
     },
     {
       "Effect": "Allow",
@@ -43,8 +43,8 @@
         "states:GetExecutionHistory"
       ],
       "Resource": [
-        "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*",
-        "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:execution:${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*"
+        "arn:aws:states:${aws_region}:${aws_account_id}:stateMachine:${app_name}-${deployment_environment}-*",
+        "arn:aws:states:${aws_region}:${aws_account_id}:execution:${app_name}-${deployment_environment}-*"
       ]
     },
     {
