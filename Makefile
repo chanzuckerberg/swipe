@@ -17,6 +17,7 @@ deploy: init-tf
 
 deploy-mock:
 	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; terraform apply --auto-approve
+	aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
 
 $(TFSTATE_FILE):
 	terraform state pull > $(TFSTATE_FILE)

@@ -1,3 +1,4 @@
+awscli
 flake8
 moto[server]
 mypy
