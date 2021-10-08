@@ -40,24 +40,21 @@ module "batch_job" {
   tags                        = var.tags
 }
 
-module "sfn-io-helper" {
-  source = "../swipe-sfn-io-helper-lambda"
-}
-
 module "sfn_io_helper" {
   source                      = "../sfn-io-helper-lambdas"
   app_name                    = var.app_name
   batch_job_docker_image_name = var.batch_job_docker_image_name
   batch_job_timeout_seconds   = var.batch_job_timeout_seconds
   deployment_environment      = var.deployment_environment
+  batch_queue_arns            = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
   tags                        = var.tags
 }
 
 locals {
   sfn_common_params = {
     deployment_environment    = var.deployment_environment,
-    batch_spot_job_queue_name = var.batch_spot_job_queue_name,
-    batch_ec2_job_queue_name  = var.batch_ec2_job_queue_name,
+    batch_spot_job_queue_arn  = var.batch_spot_job_queue_arn,
+    batch_ec2_job_queue_arn   = var.batch_ec2_job_queue_arn,
     batch_job_definition_name = module.batch_job.batch_job_definition_name,
   }
   sfn_tags = merge(var.tags, {

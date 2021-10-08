@@ -17,7 +17,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
     Parameters:
-      JobQueue: "${batch_spot_job_queue_name}"
+      JobQueue: "${batch_spot_job_queue_arn}"
       JobName.$: $$.Execution.Name
       JobDefinition: &JobDefinition "${batch_job_definition_name}"
       Timeout: &RunBatchTimeout
@@ -63,7 +63,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
     Parameters:
-      JobQueue: "${batch_ec2_job_queue_name}"
+      JobQueue: "${batch_ec2_job_queue_arn}"
       JobName.$: $$.Execution.Name
       JobDefinition: *JobDefinition
       Timeout: *RunBatchTimeout

@@ -102,20 +102,21 @@ module "report_spot_interruption" {
   tags                   = var.tags
 }
 
-resource "aws_cloudwatch_event_rule" "swipe-dev-process-batch-event-event" {
-  name          = "swipe-dev-process-batch-event-event"
+resource "aws_cloudwatch_event_rule" "process_batch_event" {
+  name          = "${var.app_name}-${var.deployment_environment}-process_batch_event"
   tags          = var.tags
 
   event_pattern = jsonencode({
     "source" = ["aws.batch"],
     "detail" = {
       "status" = ["RUNNABLE"],
+      "jobQueue" = var.batch_queue_arns,
     },
   })
 }
 
-resource "aws_cloudwatch_event_rule" "swipe-dev-process-sfn-event-event" {
-  name          = "swipe-dev-process-sfn-event-event"
+resource "aws_cloudwatch_event_rule" "process_sfn_event" {
+  name          = "${var.app_name}-${var.deployment_environment}-process_sfn_event"
   tags          = var.tags
   event_pattern = jsonencode({ "source" = ["aws.states"] })
 }
@@ -138,54 +139,54 @@ resource "aws_cloudwatch_event_rule" "report_spot_interruption-event" {
   })
 }
 
-resource "aws_cloudwatch_event_target" "swipe-dev-process-batch-event-event" {
-  rule      = aws_cloudwatch_event_rule.swipe-dev-process-batch-event-event.name
-  target_id = "swipe-dev-process-batch-event-event"
+resource "aws_cloudwatch_event_target" "process_batch_event" {
+  rule      = aws_cloudwatch_event_rule.process_batch_event.name
+  target_id = "${var.app_name}-${var.deployment_environment}-process_batch_event"
   arn       = module.process_batch_event.lambda_arn
 }
 
-resource "aws_cloudwatch_event_target" "swipe-dev-process-sfn-event-event" {
-  rule      = aws_cloudwatch_event_rule.swipe-dev-process-sfn-event-event.name
-  target_id = "swipe-dev-process-sfn-event-event"
+resource "aws_cloudwatch_event_target" "process_sfn_event" {
+  rule      = aws_cloudwatch_event_rule.process_sfn_event.name
+  target_id = "${var.app_name}-${var.deployment_environment}-process_batch_event"
   arn       = module.process_sfn_event.lambda_arn
 }
 
-resource "aws_cloudwatch_event_target" "report_metrics-event" {
-  rule      = aws_cloudwatch_event_rule.report_metrics-event.name
-  target_id = "report_metrics-event"
+resource "aws_cloudwatch_event_target" "report_metrics" {
+  rule      = aws_cloudwatch_event_rule.report_metrics.name
+  target_id = "report_metrics"
   arn       = module.report_metrics.lambda_arn
 }
 
-resource "aws_cloudwatch_event_target" "report_spot_interruption-event" {
-  rule      = aws_cloudwatch_event_rule.report_spot_interruption-event.name
-  target_id = "report_spot_interruption-event"
+resource "aws_cloudwatch_event_target" "report_spot_interruption" {
+  rule      = aws_cloudwatch_event_rule.report_spot_interruption.name
+  target_id = "report_spot_interruption"
   arn       = module.report_spot_interruption.lambda_arn
 }
 
-resource "aws_lambda_permission" "swipe-dev-process-batch-event-event" {
+resource "aws_lambda_permission" "process_batch_event" {
   function_name = module.process_batch_event.lambda_arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.swipe-dev-process-batch-event-event.arn
+  source_arn    = aws_cloudwatch_event_rule.process_batch_event.arn
 }
 
-resource "aws_lambda_permission" "swipe-dev-process-sfn-event-event" {
+resource "aws_lambda_permission" "process_sfn_event" {
   function_name = module.process_sfn_event.lamdba_arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.swipe-dev-process-sfn-event-event.arn
+  source_arn    = aws_cloudwatch_event_rule.process_sfn_event.arn
 }
 
-resource "aws_lambda_permission" "report_metrics-event" {
+resource "aws_lambda_permission" "report_metrics" {
   function_name = module.report_metrics.lambda_arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.report_metrics-event.arn
+  source_arn    = aws_cloudwatch_event_rule.report_metrics.arn
 }
 
-resource "aws_lambda_permission" "report_spot_interruption-event" {
+resource "aws_lambda_permission" "report_spot_interruption" {
   function_name = module.report_spot_interruption.lambda_arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.report_spot_interruption-event.arn
+  source_arn    = aws_cloudwatch_event_rule.report_spot_interruption.arn
 }

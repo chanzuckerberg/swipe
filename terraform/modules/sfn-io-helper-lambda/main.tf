@@ -1,5 +1,5 @@
 resource "aws_iam_role" "iam_role" {
-  name = "swipe-${var.deployment_environment}-${var.name}"
+  name = "${var.app_name}-${var.deployment_environment}-${var.name}"
 
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["lambda"],
@@ -21,7 +21,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
 }
 
 resource "aws_lambda_function" "lambda" {
-  function_name    = "swipe-${var.deployment_environment}-${var.name}"
+  function_name    = "${var.app_name}-${var.deployment_environment}-${var.name}"
   runtime          = "python3.9"
   handler          = "app.${var.name}"
   memory_size      = 256
