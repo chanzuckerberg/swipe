@@ -15,7 +15,7 @@ deploy: sfn-io-helper-lambda templates init-tf
 	@if [[ $(DEPLOYMENT_ENVIRONMENT) == prod && $$(git symbolic-ref --short HEAD) != prod ]]; then echo Please deploy prod from the prod branch; exit 1; fi
 	TF_VAR_APP_NAME=$(APP_NAME) TF_VAR_DEPLOYMENT_ENVIRONMENT=$(DEPLOYMENT_ENVIRONMENT) TF_VAR_OWNER=$(OWNER) TF_VAR_BATCH_SSH_PUBLIC_KEY='$(BATCH_SSH_PUBLIC_KEY)' terraform apply
 
-deploy-mock: sfn-io-helper-lambda templates
+deploy-mock: sfn-io-helper-lambda
 	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; terraform apply --auto-approve
 
 $(TFSTATE_FILE):
@@ -33,7 +33,7 @@ check-sfn-io-helper-lambdas:
 	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
 	git diff --exit-code || (echo 'Uncomitted changes to sfn-io-helper-lambdas page, please run: `make sfn-io-helper-lambdas` and commit the result' && exit 1)
 
-lint: templates
+lint:
 	flake8 .
 	yq . terraform/modules/swipe-sfn/sfn-templates/single-wdl.yml > single-wdl.json
 	statelint single-wdl.json
@@ -42,4 +42,4 @@ lint: templates
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(APP_NAME)-$(DEPLOYMENT_ENVIRONMENT)
 
-.PHONY: deploy templates init-tf sfn-io-helper-lambda lint
+.PHONY: deploy init-tf sfn-io-helper-lambdas check-sfn-io-helper-lambdas lint
