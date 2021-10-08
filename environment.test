@@ -1,4 +1,5 @@
 set -a
+APP_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 APP_NAME=swipe
 DEPLOYMENT_ENVIRONMENT=test
 set +a

@@ -4,10 +4,6 @@ ifndef DEPLOYMENT_ENVIRONMENT
 $(error Please run "source environment" in the repo root directory before running make commands)
 endif
 
-templates:
-	for sfn_tpl in terraform/modules/swipe-sfn/sfn-templates/*.yml; do yq . $$sfn_tpl > $${sfn_tpl/.yml/.json}; done
-	cd terraform/modules/swipe-sfn-batch-job; yq . batch_job_container_properties.yml > batch_job_container_properties.json
-
 init-tf:
 	-rm -f $(TF_DATA_DIR)/*.tfstate
 	mkdir -p $(TF_DATA_DIR)
