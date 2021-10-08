@@ -18,8 +18,8 @@ AWS_SDK_LOAD_CONFIG=1
 OWNER=akislyuk@chanzuckerberg.com
 TF_S3_BUCKET=tfstate-$AWS_ACCOUNT_ID
 
-AWS_ACCESS_KEY_ID='testing'
-AWS_SECRET_ACCESS_KEY='testing'
-AWS_SECURITY_TOKEN='testing'
-AWS_SESSION_TOKEN='testing'
+export AWS_ACCESS_KEY_ID='testing'
+export AWS_SECRET_ACCESS_KEY='testing'
+export AWS_SECURITY_TOKEN='testing'
+export AWS_SESSION_TOKEN='testing'
 set +a
