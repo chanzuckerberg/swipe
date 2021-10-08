@@ -114,13 +114,19 @@ module "report_spot_interruption" {
 resource "aws_cloudwatch_event_rule" "swipe-dev-process-batch-event-event" {
   name          = "swipe-dev-process-batch-event-event"
   tags          = var.tags
-  event_pattern = "{\"source\": [\"aws.batch\"], \"detail\": {\"status\": [\"RUNNABLE\"]}}"
+
+  event_pattern = jsonencode({
+    "source" = ["aws.batch"],
+    "detail" = {
+      "status" = ["RUNNABLE"],
+    },
+  })
 }
 
 resource "aws_cloudwatch_event_rule" "swipe-dev-process-sfn-event-event" {
   name          = "swipe-dev-process-sfn-event-event"
   tags          = var.tags
-  event_pattern = "{\"source\": [\"aws.states\"]}"
+  event_pattern = jsonencode({ "source" = ["aws.states"] })
 }
 
 resource "aws_cloudwatch_event_rule" "report_metrics-event" {
@@ -131,8 +137,14 @@ resource "aws_cloudwatch_event_rule" "report_metrics-event" {
 
 resource "aws_cloudwatch_event_rule" "report_spot_interruption-event" {
   name          = "report_spot_interruption-event"
-  event_pattern = "{\"source\": [\"aws.ec2\"], \"detail\": {\"type\": [\"EC2 Spot Instance Interruption Warning\"]}}"
   tags          = var.tags
+
+  event_pattern = jsonencode({
+    "source" = ["aws.ec2"],
+    "detail" = {
+      "type" = ["EC2 Spot Instance Interruption Warning"],
+    },
+  })
 }
 
 resource "aws_cloudwatch_event_target" "swipe-dev-process-batch-event-event" {

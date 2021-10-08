@@ -44,6 +44,15 @@ module "sfn-io-helper" {
   source = "../swipe-sfn-io-helper-lambda"
 }
 
+module "sfn_io_helper" {
+  source                      = "../sfn-io-helper-lambdas"
+  app_name                    = var.app_name
+  batch_job_docker_image_name = var.batch_job_docker_image_name
+  batch_job_timeout_seconds   = var.batch_job_timeout_seconds
+  deployment_environment      = var.deployment_environment
+  tags                        = var.tags
+}
+
 locals {
   sfn_common_params = {
     deployment_environment    = var.deployment_environment,
