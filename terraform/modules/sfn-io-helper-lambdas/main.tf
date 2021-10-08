@@ -1,8 +1,8 @@
 module "preprocess" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "preprocess_input"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "preprocess_input"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -14,8 +14,8 @@ module "preprocess" {
 module "preprocess" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "process_stage_output"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "process_stage_output"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -27,8 +27,8 @@ module "preprocess" {
 module "handle_success" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "handle_success"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "handle_success"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -40,8 +40,8 @@ module "handle_success" {
 module "handle_failure" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "handle_failure"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "handle_failure"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -53,8 +53,8 @@ module "handle_failure" {
 module "process_batch_event" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "process_batch_event"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "process_batch_event"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -66,8 +66,8 @@ module "process_batch_event" {
 module "process_sfn_event" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "process_sfn_event"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "process_sfn_event"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -79,8 +79,8 @@ module "process_sfn_event" {
 module "report_metrics" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "report_metrics"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "report_metrics"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -92,8 +92,8 @@ module "report_metrics" {
 module "report_spot_interruption" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "report_spot_interruption"
-  zip     = filebase64sha256("${path.module}/deployment.zip")
+  name = "report_spot_interruption"
+  zip  = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
@@ -103,13 +103,13 @@ module "report_spot_interruption" {
 }
 
 resource "aws_cloudwatch_event_rule" "process_batch_event" {
-  name          = "${var.app_name}-${var.deployment_environment}-process_batch_event"
-  tags          = var.tags
+  name = "${var.app_name}-${var.deployment_environment}-process_batch_event"
+  tags = var.tags
 
   event_pattern = jsonencode({
     "source" = ["aws.batch"],
     "detail" = {
-      "status" = ["RUNNABLE"],
+      "status"   = ["RUNNABLE"],
       "jobQueue" = var.batch_queue_arns,
     },
   })
@@ -128,8 +128,8 @@ resource "aws_cloudwatch_event_rule" "report_metrics-event" {
 }
 
 resource "aws_cloudwatch_event_rule" "report_spot_interruption-event" {
-  name          = "report_spot_interruption-event"
-  tags          = var.tags
+  name = "report_spot_interruption-event"
+  tags = var.tags
 
   event_pattern = jsonencode({
     "source" = ["aws.ec2"],

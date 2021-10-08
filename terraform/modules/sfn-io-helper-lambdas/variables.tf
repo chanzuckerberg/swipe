@@ -1,21 +1,21 @@
 variable "app_name" {
-    type = string
+  type = string
 }
 
 variable "deployment_environment" {
-    type = string
+  type = string
 }
 
 variable "aws_region" {
-    type = string
+  type = string
 }
 
 variable "aws_account_id" {
-    type = string
+  type = string
 }
 
 variable "batch_queue_arns" {
-    type = list(string)
+  type = list(string)
 }
 
 variable "tags" {

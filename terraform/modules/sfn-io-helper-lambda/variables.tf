@@ -11,19 +11,19 @@ variable "zip" {
 }
 
 variable "app_name" {
-    type = string
+  type = string
 }
 
 variable "deployment_environment" {
-    type = string
+  type = string
 }
 
 variable "aws_region" {
-    type = string
+  type = string
 }
 
 variable "aws_account_id" {
-    type = string
+  type = string
 }
 
 variable "tags" {
