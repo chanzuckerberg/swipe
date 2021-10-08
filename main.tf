@@ -5,9 +5,9 @@ terraform {
       version = "~> 3.37"
     }
   }
-  backend "s3" {
-    region = "us-west-2"
-  }
+  // backend "s3" {
+  //   region = "us-west-2"
+  // }
 }
 
 resource "aws_key_pair" "swipe_batch" {
