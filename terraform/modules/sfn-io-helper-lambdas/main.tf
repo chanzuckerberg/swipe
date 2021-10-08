@@ -1,8 +1,7 @@
 module "preprocess" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "preprocess-input"
-  handler = "app.preprocess_input"
+  name    = "preprocess_input"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -15,8 +14,7 @@ module "preprocess" {
 module "preprocess" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "process-stage-output"
-  handler = "app.process_stage_output"
+  name    = "process_stage_output"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -29,8 +27,7 @@ module "preprocess" {
 module "handle_success" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "handle-success"
-  handler = "app.handle_success"
+  name    = "handle_success"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -43,8 +40,7 @@ module "handle_success" {
 module "handle_failure" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "handle-failure"
-  handler = "app.handle_failure"
+  name    = "handle_failure"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -57,8 +53,7 @@ module "handle_failure" {
 module "process_batch_event" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "process-batch-event"
-  handler = "app.process_batch_event"
+  name    = "process_batch_event"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -71,8 +66,7 @@ module "process_batch_event" {
 module "process_sfn_event" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "process-sfn-event"
-  handler = "app.process_sfn_event"
+  name    = "process_sfn_event"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -85,8 +79,7 @@ module "process_sfn_event" {
 module "report_metrics" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "report-metrics"
-  handler = "app.report_metrics"
+  name    = "report_metrics"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name
@@ -99,8 +92,7 @@ module "report_metrics" {
 module "report_spot_interruption" {
   source = "../sfn-io-helper-lambda"
 
-  name    = "report-spot-interruption"
-  handler = "app.report_spot_interruption"
+  name    = "report_spot_interruption"
   zip     = filebase64sha256("${path.module}/deployment.zip")
 
   app_name               = var.app_name

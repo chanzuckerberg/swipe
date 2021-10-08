@@ -23,7 +23,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
 resource "aws_lambda_function" "lambda" {
   function_name    = "swipe-${var.deployment_environment}-${var.name}"
   runtime          = "python3.9"
-  handler          = var.handler
+  handler          = "app.${var.name}"
   memory_size      = 256
   timeout          = 600
   source_code_hash = filebase64sha256(var.zip)

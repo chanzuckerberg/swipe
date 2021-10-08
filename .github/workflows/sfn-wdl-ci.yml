@@ -60,3 +60,17 @@ jobs:
         run: |
           terraform fmt --recursive ./
           git diff --exit-code
+
+  uncomitted_lambda_diff:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Check For Uncomitted Lambda diff
+        run: |
+          make sfn-io-helper-lambdas
+          git diff --exit-code

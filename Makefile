@@ -25,13 +25,12 @@ deploy-mock: sfn-io-helper-lambda templates
 $(TFSTATE_FILE):
 	terraform state pull > $(TFSTATE_FILE)
 
-sfn-io-helper-lambda:
-	jq .environment_variables.DEPLOYMENT_ENVIRONMENT=env.DEPLOYMENT_ENVIRONMENT $@/.chalice/config.json | sponge $@/.chalice/config.json
-	envsubst < terraform/iam_policy_templates/$@.json > $@/.chalice/policy-$(DEPLOYMENT_ENVIRONMENT).json
-	cd $@; export PYTHONPATH=vendor; chalice package --pkg-format terraform --stage $(DEPLOYMENT_ENVIRONMENT) ../terraform/modules/swipe-$@
-	$(eval TF_JSON=terraform/modules/swipe-$@/chalice.tf.json)
-	jq 'del(.environment_variables.DEPLOYMENT_ENVIRONMENT)' $@/.chalice/config.json | sponge $@/.chalice/config.json
-	jq 'del(.provider.aws) | del(.terraform.required_version)' $(TF_JSON) | sponge $(TF_JSON)
+sfn-io-helper-lambdas:
+	rm -r sfn-io-helper-lambdas-tmp || true
+	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
+	pip install --upgrade --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
+	zip -r terraform/modules/sfn-io-helper-lambdas/deployment.zip sfn-io-helper-lambdas-tmp
+	rm -r sfn-io-helper-lambdas-tmp
 
 lint: templates
 	flake8 .
