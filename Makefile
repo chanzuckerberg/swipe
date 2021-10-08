@@ -27,8 +27,9 @@ $(TFSTATE_FILE):
 
 sfn-io-helper-lambdas:
 	rm -r sfn-io-helper-lambdas-tmp || true
+	find terraform/modules/sfn-io-helper-lambdas/app/ -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -f1 -d' ' > terraform/modules/sfn-io-helper-lambdas/package-hash
 	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
-	pip install --upgrade --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
+	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
 	zip -r terraform/modules/sfn-io-helper-lambdas/deployment.zip sfn-io-helper-lambdas-tmp
 	rm -r sfn-io-helper-lambdas-tmp
 

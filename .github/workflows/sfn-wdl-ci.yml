@@ -73,4 +73,4 @@ jobs:
       - name: Check For Uncomitted Lambda diff
         run: |
           make sfn-io-helper-lambdas
-          git diff --exit-code
+          git diff terraform/modules/sfn-io-helper-lambdas/package-hash --exit-code
