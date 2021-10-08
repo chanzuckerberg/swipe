@@ -6,7 +6,7 @@ module "preprocess" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -19,7 +19,7 @@ module "process_stage_output" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -32,7 +32,7 @@ module "handle_success" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -45,7 +45,7 @@ module "handle_failure" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -58,7 +58,7 @@ module "process_batch_event" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -71,7 +71,7 @@ module "process_sfn_event" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -84,7 +84,7 @@ module "report_metrics" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }
@@ -97,7 +97,7 @@ module "report_spot_interruption" {
 
   app_name               = var.app_name
   deployment_environment = var.deployment_environment
-  aws_default_region     = var.aws_default_region
+  aws_region             = var.aws_default_region
   aws_account_id         = var.aws_account_id
   tags                   = var.tags
 }

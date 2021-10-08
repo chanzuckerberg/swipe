@@ -2,10 +2,6 @@ variable "name" {
   type = string
 }
 
-variable "handler" {
-  type = string
-}
-
 variable "zip" {
   type = string
 }
