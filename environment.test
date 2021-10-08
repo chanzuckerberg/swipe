@@ -15,11 +15,10 @@ TF_CLI_ARGS_init="--backend-config ${APP_HOME}/${TF_DATA_DIR}/aws_config.json"
 # See https://github.com/terraform-providers/terraform-provider-aws/issues/1184
 AWS_SDK_LOAD_CONFIG=1
 
-OWNER=akislyuk@chanzuckerberg.com
 TF_S3_BUCKET=tfstate-$AWS_ACCOUNT_ID
 
-export AWS_ACCESS_KEY_ID='testing'
-export AWS_SECRET_ACCESS_KEY='testing'
-export AWS_SECURITY_TOKEN='testing'
-export AWS_SESSION_TOKEN='testing'
+AWS_ACCESS_KEY_ID='testing'
+AWS_SECRET_ACCESS_KEY='testing'
+AWS_SECURITY_TOKEN='testing'
+AWS_SESSION_TOKEN='testing'
 set +a
