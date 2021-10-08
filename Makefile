@@ -35,7 +35,7 @@ check-sfn-io-helper-lambdas:
 
 lint: templates
 	flake8 .
-	yq terraform/modules/swipe-sfn/sfn-templates/single-wdl.yml single-wdl.yml
+	yq . terraform/modules/swipe-sfn/sfn-templates/single-wdl.yml > single-wdl.json
 	statelint single-wdl.json
 	mypy --check-untyped-defs --no-strict-optional .
 
