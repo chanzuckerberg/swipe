@@ -33,6 +33,10 @@ sfn-io-helper-lambdas:
 	zip -r terraform/modules/sfn-io-helper-lambdas/deployment.zip sfn-io-helper-lambdas-tmp
 	rm -r sfn-io-helper-lambdas-tmp
 
+check-sfn-io-helper-lambdas:
+	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
+	git diff --exit-code || (echo 'Uncomitted changes to sfn-io-helper-lambdas page, please run: `make sfn-io-helper-lambdas` and commit the result' && exit 1)
+
 lint: templates
 	flake8 .
 	statelint terraform/modules/*/sfn-templates/*.json
