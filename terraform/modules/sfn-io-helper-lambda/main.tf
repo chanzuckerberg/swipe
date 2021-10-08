@@ -29,13 +29,6 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = filebase64sha256(var.zip)
   filename         = var.zip
 
-  environment {
-    variables = {
-      RunSPOTMemoryDefault = "128000"
-      RunEC2MemoryDefault  = "128000"
-    }
-  }
-
   role = aws_iam_role.preprocess-input_role.arn
   tags = var.tags
 }

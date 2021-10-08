@@ -1,4 +1,3 @@
-
 module "preprocess" {
   source = "../sfn-io-helper-lambda"
 
