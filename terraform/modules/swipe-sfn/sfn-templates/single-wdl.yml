@@ -41,7 +41,7 @@ States:
       - ErrorEquals: ["Batch.AWSBatchException"]
         IntervalSeconds: 15
         MaxAttempts: 3
-        BackoffRate: 2.0
+        BackoffRate: 2.1 # 2.0 triggers the linter because when this is converted to json it becomes 2 which is an int and not a float
     Catch:
       - ErrorEquals: ["States.ALL"]
         ResultPath: $.BatchJobError.RunSPOT
