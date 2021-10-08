@@ -19,5 +19,6 @@ variable "batch_queue_arns" {
 }
 
 variable "tags" {
-  type = list(string)
+  type        = map(string)
+  default     = {}
 }

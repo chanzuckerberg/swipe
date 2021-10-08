@@ -23,5 +23,6 @@ variable "aws_account_id" {
 }
 
 variable "tags" {
-  type = list(string)
+  type        = map(string)
+  default     = {}
 }
