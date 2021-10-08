@@ -2,4 +2,5 @@ flake8
 moto[server]
 mypy
 pyyaml
+types-PyYAML
 yq
