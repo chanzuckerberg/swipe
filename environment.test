@@ -1,0 +1,4 @@
+set -a
+APP_NAME=swipe
+DEPLOYMENT_ENVIRONMENT=test
+set +a

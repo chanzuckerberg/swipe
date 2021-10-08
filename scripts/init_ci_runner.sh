@@ -26,4 +26,4 @@ pip install -r requirements-dev.txt
 
 set -x
 
-source environment
+source environment.test
