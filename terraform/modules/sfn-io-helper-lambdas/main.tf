@@ -11,7 +11,7 @@ module "preprocess" {
   tags                   = var.tags
 }
 
-module "preprocess" {
+module "process_stage_output" {
   source = "../sfn-io-helper-lambda"
 
   name = "process_stage_output"
