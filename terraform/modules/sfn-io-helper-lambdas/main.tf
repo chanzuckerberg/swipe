@@ -171,7 +171,7 @@ resource "aws_lambda_permission" "process_batch_event" {
 }
 
 resource "aws_lambda_permission" "process_sfn_event" {
-  function_name = module.process_sfn_event.lamdba_arn
+  function_name = module.process_sfn_event.lambda_arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.process_sfn_event.arn
