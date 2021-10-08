@@ -35,8 +35,8 @@ module "sfn" {
   app_name                    = var.APP_NAME
   deployment_environment      = var.DEPLOYMENT_ENVIRONMENT
   batch_job_docker_image_name = "swipe:latest"
-  batch_spot_job_queue_name   = module.batch_queue.batch_spot_job_queue_name
-  batch_ec2_job_queue_name    = module.batch_queue.batch_ec2_job_queue_name
+  batch_spot_job_queue_arn    = module.batch_queue.batch_spot_job_queue_arn
+  batch_ec2_job_queue_arn     = module.batch_queue.batch_ec2_job_queue_arn
 }
 
 output "sfn_arn" {

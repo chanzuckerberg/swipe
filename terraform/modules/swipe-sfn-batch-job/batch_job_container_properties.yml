@@ -1,12 +1,3 @@
-# This is a configuration of AWS Batch container overrides, used by the Terraform resources in this directory.
-# See https://docs.aws.amazon.com/batch/latest/APIReference/API_ContainerOverrides.html for the specification.
-# The definition source is in YAML for brevity and readability. It is compiled into JSON by a Makefile target,
-# then deployed by Terraform.
-#
-# Strings of the form ${...} are interpreted by Terraform as variables. Use $${...} to escape if that is not the intent.
-#
-# Run "make templates" in the top level directory to perform the YAML>JSON preprocessing step.
-
 image: "${batch_docker_image}"
 command:
   - "/bin/bash"
