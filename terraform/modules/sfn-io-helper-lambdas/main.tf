@@ -121,13 +121,13 @@ resource "aws_cloudwatch_event_rule" "process_sfn_event" {
   event_pattern = jsonencode({ "source" = ["aws.states"] })
 }
 
-resource "aws_cloudwatch_event_rule" "report_metrics-event" {
+resource "aws_cloudwatch_event_rule" "report_metrics" {
   name                = "report_metrics-event"
   schedule_expression = "rate(1 minute)"
   tags                = var.tags
 }
 
-resource "aws_cloudwatch_event_rule" "report_spot_interruption-event" {
+resource "aws_cloudwatch_event_rule" "report_spot_interruption" {
   name = "report_spot_interruption-event"
   tags = var.tags
 
