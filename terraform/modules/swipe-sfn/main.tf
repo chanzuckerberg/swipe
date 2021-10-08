@@ -41,13 +41,13 @@ module "batch_job" {
 }
 
 module "sfn_io_helper" {
-  source                      = "../sfn-io-helper-lambdas"
-  app_name                    = var.app_name
-  aws_region                  = data.aws_region.current.name
-  aws_account_id              = data.aws_caller_identity.current.account_id
-  deployment_environment      = var.deployment_environment
-  batch_queue_arns            = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
-  tags                        = var.tags
+  source                 = "../sfn-io-helper-lambdas"
+  app_name               = var.app_name
+  aws_region             = data.aws_region.current.name
+  aws_account_id         = data.aws_caller_identity.current.account_id
+  deployment_environment = var.deployment_environment
+  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
+  tags                   = var.tags
 }
 
 locals {

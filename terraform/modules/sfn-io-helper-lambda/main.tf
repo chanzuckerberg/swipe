@@ -29,6 +29,6 @@ resource "aws_lambda_function" "lambda" {
   source_code_hash = filebase64sha256(var.zip)
   filename         = var.zip
 
-  role = aws_iam_role.preprocess-input_role.arn
+  role = aws_iam_role.iam_role_policy.arn
   tags = var.tags
 }
