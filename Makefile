@@ -16,7 +16,7 @@ deploy: init-tf
 	TF_VAR_APP_NAME=$(APP_NAME) TF_VAR_DEPLOYMENT_ENVIRONMENT=$(DEPLOYMENT_ENVIRONMENT) TF_VAR_OWNER=$(OWNER) TF_VAR_BATCH_SSH_PUBLIC_KEY='$(BATCH_SSH_PUBLIC_KEY)' terraform apply
 
 deploy-mock:
-	aws ssm put-parameter --name /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
+	aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
 	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; terraform apply --auto-approve
 
 $(TFSTATE_FILE):

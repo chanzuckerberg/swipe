@@ -5,7 +5,7 @@ locals {
 }
 
 data "aws_ssm_parameter" "swipe_batch_ami" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  name = "/${var.DEPLOYMENT_ENVIRONMENT == "test" ? "mock-aws" : "aws"}/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
 }
 
 resource "aws_iam_role" "swipe_batch_service_role" {
