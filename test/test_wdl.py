@@ -49,7 +49,16 @@ class TestSFNWDL(unittest.TestCase):
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
                                        name=execution_name,
                                        input=json.dumps(sfn_input))
+
+        arn = res["executionArn"]
         assert res
+
+        description = self.sfn.describe_execution(executionArn=arn)
+        while description["status"] == "RUNNING":
+            time.sleep(10)
+            description = self.sfn.describe_execution(executionArn=arn)
+
+        assert description["status"] == "SUCCEEDED"
 
 
 if __name__ == "__main__":
