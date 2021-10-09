@@ -28,6 +28,7 @@ module "batch_queue" {
   batch_ssh_key_pair_id    = aws_key_pair.swipe_batch.id
   batch_subnet_ids         = module.batch_subnet.batch_subnet_ids
   batch_security_group_ids = [module.batch_subnet.batch_security_group_id]
+  batch_ec2_instance_types = var.DEPLOYMENT_ENVIRONMENT == "test" ? ["optimal"] : ["r5d"]
 }
 
 module "sfn" {
