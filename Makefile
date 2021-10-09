@@ -40,7 +40,10 @@ lint:
 	statelint single-wdl.json
 	mypy --check-untyped-defs --no-strict-optional .
 
+test:
+	python -m unittest discover .
+
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(APP_NAME)-$(DEPLOYMENT_ENVIRONMENT)
 
-.PHONY: deploy init-tf sfn-io-helper-lambdas check-sfn-io-helper-lambdas lint
+.PHONY: deploy init-tf sfn-io-helper-lambdas check-sfn-io-helper-lambdas lint test
