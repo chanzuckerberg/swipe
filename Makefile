@@ -23,6 +23,8 @@ $(TFSTATE_FILE):
 	terraform state pull > $(TFSTATE_FILE)
 
 sfn-io-helper-lambdas:
+	git add terraform/modules/sfn-io-helper-lambdas/app
+	git commit -m "lambda commit"
 	rm -r sfn-io-helper-lambdas-tmp || true
 	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
 	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
