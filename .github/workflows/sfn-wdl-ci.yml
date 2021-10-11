@@ -51,8 +51,8 @@ jobs:
         ports:
           - 9000:9000
         env:
-          - SERVICES="stepfunctions,batch,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
-          - EDGE_PORT=9000
+          SERVICES: "stepfunctions,batch,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
+          EDGE_PORT: 9000
 
   terraform_format:
     runs-on: ubuntu-20.04
