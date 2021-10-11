@@ -50,22 +50,17 @@ module "sfn_io_helper" {
   tags                   = var.tags
 }
 
-locals {
-  sfn_common_params = {
-    deployment_environment    = var.deployment_environment,
-    batch_spot_job_queue_arn  = var.batch_spot_job_queue_arn,
-    batch_ec2_job_queue_arn   = var.batch_ec2_job_queue_arn,
-    batch_job_definition_name = module.batch_job.batch_job_definition_name,
-  }
-  sfn_tags = merge(var.tags, {
-  })
-}
-
 resource "aws_sfn_state_machine" "swipe_single_wdl" {
   name     = "${local.app_slug}-single-wdl"
   role_arn = aws_iam_role.swipe_sfn_service.arn
   definition = jsonencode(yamldecode(templatefile(local.sfn_template_file, merge(local.sfn_common_params, {
-    batch_job_name_prefix = "${local.app_slug}-single-wdl",
+    batch_spot_job_queue_arn         = var.batch_spot_job_queue_arn,
+    batch_ec2_job_queue_arn          = var.batch_ec2_job_queue_arn,
+    batch_job_definition_name        = module.batch_job.batch_job_definition_name,
+    preprocess_input_lambda_name     = module.sfn_io_helper.preprocess_input_lambda_name,
+    process_stage_output_lambda_name = module.sfn_io_helper.process_stage_output_lambda_name,
+    handle_success_lambda_name       = module.sfn_io_helper.handle_success_lambda_name,
+    handle_failure_lambda_name       = module.sfn_io_helper.handle_failure_lambda_name,
   }))))
-  tags = local.sfn_tags
+  tags = var.tags
 }

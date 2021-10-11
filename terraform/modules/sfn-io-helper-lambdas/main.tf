@@ -1,4 +1,4 @@
-module "preprocess" {
+module "preprocess_input" {
   source = "../sfn-io-helper-lambda"
 
   name = "preprocess_input"
