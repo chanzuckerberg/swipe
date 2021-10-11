@@ -52,10 +52,10 @@ jobs:
           - 4566:4566
           - 4571:4571
         env:
-          SERVICES: "stepfunctions,batch,events,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
+          SERVICES: "stepfunctions,batch,events,iam,ec2,lambda,cloudwatch,s3,sts,ssm,secretsmanager"
           DEFAULT_REGION: us-east-1
-          AWS_ACCESS_KEY_ID: test
-          AWS_SECRET_ACCESS_KEY: test
+          AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+          AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
   terraform_format:
     runs-on: ubuntu-20.04
