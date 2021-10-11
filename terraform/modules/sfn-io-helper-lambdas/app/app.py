@@ -1,5 +1,16 @@
+import json
+
+
 def preprocess_input(sfn_data, _):
-    return "{}"
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps({
+            "foo ": "bar",
+        })
+    }
 
 
 def process_stage_output(sfn_data, _):
