@@ -50,7 +50,7 @@ jobs:
         image: localstack/localstack
         ports:
           - 9000:9000
-        environment:
+        env:
           - SERVICES="stepfunctions,batch,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
           - EDGE_PORT=9000
 
