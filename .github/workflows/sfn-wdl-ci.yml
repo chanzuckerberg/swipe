@@ -43,18 +43,19 @@ jobs:
           sudo chmod 666 /etc/hosts
           source scripts/init_ci_runner.sh
           scripts/run_mock_server.sh &
-          for i in {1..30}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 30 ]]; then exit 1; else sleep 1; fi; done
+          for i in {1..30}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/4566"; then break; elif [[ $i == 30 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test
     services:
       localstack:
-        image: localstack/localstack
+        image: localstack/localstack:latest
         ports:
-          - 9000:9000
+          - 4566:4566
+          - 4571:4571
         env:
           SERVICES: "stepfunctions,batch,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
-          EDGE_PORT: 9000
-          DEBUG: 1
-          PORT_WEB_UI: "${PORT_WEB_UI- }"
+          DEFAULT_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
 
   terraform_format:
     runs-on: ubuntu-20.04
