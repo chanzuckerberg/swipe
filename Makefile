@@ -26,6 +26,7 @@ sfn-io-helper-lambdas:
 	git add terraform/modules/sfn-io-helper-lambdas/app
 	git commit -m "lambda commit" || true
 	rm -r sfn-io-helper-lambdas-tmp || true
+	rm terraform/modules/sfn-io-helper-lambdas/deployment.zip
 	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
 	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
 	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
