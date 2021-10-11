@@ -45,17 +45,6 @@ jobs:
           scripts/run_mock_server.sh &
           for i in {1..30}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/4566"; then break; elif [[ $i == 30 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test
-    services:
-      localstack:
-        image: localstack/localstack:latest
-        ports:
-          - 4566:4566
-          - 4571:4571
-        env:
-          SERVICES: "stepfunctions,batch,events,iam,ec2,lambda,cloudwatch,s3,sts,ssm,secretsmanager"
-          DEFAULT_REGION: us-east-1
-          AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
-          AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
   terraform_format:
     runs-on: ubuntu-20.04
