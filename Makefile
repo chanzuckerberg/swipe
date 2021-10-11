@@ -24,12 +24,12 @@ $(TFSTATE_FILE):
 
 sfn-io-helper-lambdas:
 	git add terraform/modules/sfn-io-helper-lambdas/app
-	git commit -m "lambda commit"
+	git commit -m "lambda commit" || true
 	rm -r sfn-io-helper-lambdas-tmp || true
 	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
 	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
 	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
-	zip -r terraform/modules/sfn-io-helper-lambdas/deployment.zip sfn-io-helper-lambdas-tmp/*
+	cd sfn-io-helper-lambdas-tmp && zip -r ../terraform/modules/sfn-io-helper-lambdas/deployment.zip ./*
 	rm -r sfn-io-helper-lambdas-tmp
 
 check-sfn-io-helper-lambdas:
