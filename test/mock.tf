@@ -1,6 +1,6 @@
 provider "aws" {
   endpoints {
-    stepfunctions    = "http://localhost:8083"
+    stepfunctions    = "http://localhost:9000"
     batch            = "http://localhost:9000"
     iam              = "http://localhost:9000"
     ec2              = "http://localhost:9000"

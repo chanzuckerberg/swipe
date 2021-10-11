@@ -45,6 +45,14 @@ jobs:
           scripts/run_mock_server.sh &
           for i in {1..30}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 30 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test
+    services:
+      localstack:
+        image: localstack/localstack
+        ports:
+          - 9000:9000
+        environment:
+          - SERVICES="stepfunctions,batch,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
+          - EDGE_PORT=9000
 
   terraform_format:
     runs-on: ubuntu-20.04
