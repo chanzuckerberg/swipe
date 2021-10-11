@@ -39,7 +39,6 @@ class TestSFNWDL(unittest.TestCase):
         )
         assert False, (response, response["Payload"].read())
 
-
         sfn_input: Dict[str, Any] = {
             "Input": {
                 "HostFilter": {}
