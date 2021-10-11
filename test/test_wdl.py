@@ -37,7 +37,7 @@ class TestSFNWDL(unittest.TestCase):
             InvocationType="RequestResponse",
             Payload=b'{}',
         )
-        assert False, response
+        assert False, (response, response["Payload"].read())
 
 
         sfn_input: Dict[str, Any] = {
