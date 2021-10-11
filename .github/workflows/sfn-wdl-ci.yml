@@ -53,6 +53,8 @@ jobs:
         env:
           SERVICES: "stepfunctions,batch,iam,ec2,lambda,cloudwatch,cloudwatchevents,s3,sts,ssm,secretsmanager"
           EDGE_PORT: 9000
+          DEBUG: 1
+          PORT_WEB_UI: "${PORT_WEB_UI- }"
 
   terraform_format:
     runs-on: ubuntu-20.04
