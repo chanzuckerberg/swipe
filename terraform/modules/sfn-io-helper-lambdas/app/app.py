@@ -1,13 +1,13 @@
 def preprocess_input(sfn_data, _):
-    return {}
+    return "{}"
 
 
 def process_stage_output(sfn_data, _):
-    return {}
+    return "{}"
 
 
 def handle_success(sfn_data, _):
-    return {}
+    return "{}"
 
 
 def handle_failure(sfn_data, _):
