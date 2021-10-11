@@ -58,7 +58,7 @@ class TestSFNWDL(unittest.TestCase):
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
 
-        assert description["status"] == "SUCCEEDED"
+        assert description["status"] == "SUCCEEDED", description
 
 
 if __name__ == "__main__":
