@@ -38,27 +38,28 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def preprocess_input(sfn_data, _):
+    return {}
     assert sfn_data["CurrentState"] == "PreprocessInput"
     assert sfn_data["ExecutionId"].startswith("arn:aws:states:")
     assert len(sfn_data["ExecutionId"].split(":")) == 8
     _, _, _, aws_region, aws_account_id, _, state_machine_name, execution_name = sfn_data["ExecutionId"].split(":")
-    return json.dumps(stage_io.preprocess_sfn_input(sfn_state=sfn_data["Input"],
-                                                    aws_region=aws_region,
-                                                    aws_account_id=aws_account_id,
-                                                    state_machine_name=state_machine_name))
+    return stage_io.preprocess_sfn_input(sfn_state=sfn_data["Input"],
+                                         aws_region=aws_region,
+                                         aws_account_id=aws_account_id,
+                                         state_machine_name=state_machine_name)
 
 
 def process_stage_output(sfn_data, _):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
     sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
     sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)
-    return json.dumps(sfn_state)
+    return sfn_state
 
 
 def handle_success(sfn_data, _):
     sfn_state = sfn_data["Input"]
     reporting.notify_success(sfn_state=sfn_state)
-    return json.dumps(sfn_state)
+    return sfn_state
 
 
 def handle_failure(sfn_data, _):
