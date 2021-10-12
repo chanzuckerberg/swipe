@@ -1,10 +1,10 @@
 #!/bin/bash
 
 set -euo pipefail
-trap "exit" INT TERM
-trap "kill 0" EXIT
+#trap "exit" INT TERM
+#trap "kill 0" EXIT
 
-docker pull amazon/aws-stepfunctions-local
+#docker pull amazon/aws-stepfunctions-local
 
 # moto_server --host 0.0.0.0 --port 4566 &
 
