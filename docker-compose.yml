@@ -7,5 +7,6 @@ services:
     environment:
       - SERVICES=stepfunctions,batch,events,iam,ec2,lambda,cloudwatch,s3,sts,ssm,secretsmanager
       - DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=local
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
