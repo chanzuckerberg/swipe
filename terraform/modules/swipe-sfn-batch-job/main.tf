@@ -48,7 +48,9 @@ resource "aws_batch_job_definition" "swipe_main" {
   container_properties = jsonencode(yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     app_name               = var.app_name,
     deployment_environment = var.deployment_environment,
-    batch_docker_image     = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
+    # TODO: fix docker image
+    # batch_docker_image     = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
+    batch_docker_image     = "ghcr.io/chanzuckerberg/swipe:sha-c145a0ab"
     aws_region             = data.aws_region.current.name,
     batch_job_role_arn     = aws_iam_role.swipe_batch_main_job.arn,
   })))

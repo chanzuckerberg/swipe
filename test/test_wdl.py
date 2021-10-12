@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import time
 import unittest
@@ -37,7 +38,7 @@ class TestSFNWDL(unittest.TestCase):
             InvocationType="RequestResponse",
             Payload=b'{}',
         )
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAA", response, response["Payload"].read())
+        print("AAAAAAAAAAAAAAAAAAAAAAAAAA", response, response["Payload"].read(), file=sys.stderr)
 
         wdl_obj = self.test_bucket.Object("test.wdl")
         wdl_obj.put(Body=test_wdl.encode())
@@ -59,10 +60,10 @@ class TestSFNWDL(unittest.TestCase):
 
         start = time.time()
         description = self.sfn.describe_execution(executionArn=arn)
-        while description["status"] == "RUNNING" and time.time() < start + 180:
+        while description["status"] == "RUNNING" and time.time() < start + 10 * 60:
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
-            print(description)
+            print(description, file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
 
