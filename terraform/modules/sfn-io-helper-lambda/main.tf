@@ -31,4 +31,12 @@ resource "aws_lambda_function" "lambda" {
 
   role = aws_iam_role.iam_role.arn
   tags = var.tags
+
+  environment {
+    variables {
+      DEPLOYMENT_ENVIRONMENT = var.deployment_environment
+      RunSPOTMemoryDefault   = "128000"
+      RunEC2MemoryDefault    = "128000"
+    }
+  }
 }
