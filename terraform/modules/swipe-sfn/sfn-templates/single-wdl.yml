@@ -11,7 +11,7 @@ States:
         ExecutionId.$: $$.Execution.Id
         CurrentState.$: $$.State.Name
         Input.$: $
-    OutputPath: $.Payload
+    OutputPath: $
     Next: RunSPOT
   RunSPOT:
     Type: Task
@@ -83,7 +83,7 @@ States:
     Parameters: &ReadOutputParameters
       FunctionName: "${process_stage_output_lambda_name}"
       Payload: *PassthroughStatePayload
-    OutputPath: $.Payload
+    OutputPath: $
     Next: HandleSuccess
     Catch:
       - ErrorEquals: ["States.ALL"]
@@ -94,7 +94,7 @@ States:
     Parameters:
       FunctionName: "${handle_success_lambda_name}"
       Payload: *PassthroughStatePayload
-    OutputPath: $.Payload
+    OutputPath: $
     End: true
   HandleFailure:
     # The HandleFailure state is expected to read error details, do any housekeeping necessary, then raise an exception
@@ -104,5 +104,5 @@ States:
     Parameters:
       FunctionName: "${handle_failure_lambda_name}"
       Payload: *PassthroughStatePayload
-    OutputPath: $.Payload
+    OutputPath: $
     End: true
