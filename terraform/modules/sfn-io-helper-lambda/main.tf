@@ -33,7 +33,7 @@ resource "aws_lambda_function" "lambda" {
   tags = var.tags
 
   environment {
-    variables {
+    variables = {
       DEPLOYMENT_ENVIRONMENT = var.deployment_environment
       RunSPOTMemoryDefault   = "128000"
       RunEC2MemoryDefault    = "128000"

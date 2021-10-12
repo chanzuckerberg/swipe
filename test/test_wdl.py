@@ -39,17 +39,13 @@ class TestSFNWDL(unittest.TestCase):
         )
         print("AAAAAAAAAAAAAAAAAAAAAAAAAA", response, response["Payload"].read())
 
+        wdl_obj = self.test_bucket.Object("test.wdl")
+        wdl_obj.put(Body=test_wdl.encode())
         sfn_input: Dict[str, Any] = {
-            "Input": {
-                "HostFilter": {}
-            }
+          "RUN_WDL_URI": f"s3://{wdl_obj.bucket_name}/{wdl_obj.key}",
         }
 
-        for stage in "host_filter", "non_host_alignment", "postprocess", "experimental":
-            wdl_obj = self.test_bucket.Object("test.wdl")
-            wdl_obj.put(Body=test_wdl.encode())
-            outputs_obj = self.test_bucket.Object("output.json")
-            sfn_input[f"{stage.upper()}_WDL_URI"] = f"s3://{wdl_obj.bucket_name}/{wdl_obj.key}"
+        outputs_obj = self.test_bucket.Object("output.json")
         sfn_input["OutputPrefix"] = f"s3://{outputs_obj.bucket_name}/{os.path.dirname(outputs_obj.key)}"
 
         execution_name = "idseq-test-{}".format(int(time.time()))
