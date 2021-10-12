@@ -39,7 +39,7 @@ class TestSFNWDL(unittest.TestCase):
     def test_simple_sfn_wdl_workflow(self):
         wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
         wdl_obj.put(Body=test_wdl.encode())
-        input_obj = self.test_bucket.Objoect("input.txt")
+        input_obj = self.test_bucket.Object("input.txt")
         input_obj.put(Body=test_wdl.encode())
         output_prefix = "out"
         sfn_input: Dict[str, Any] = {
