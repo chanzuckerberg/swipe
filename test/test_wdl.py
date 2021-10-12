@@ -66,9 +66,9 @@ class TestSFNWDL(unittest.TestCase):
         while description["status"] == "RUNNING" and time.time() < start + 2 * 60:
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
-            for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
-                print(event, file=sys.stderr)
-            print("AAAAAAAAAAAAAAAAAAAAAAAAAA", file=sys.stderr)
+        print("printing execution history", file=sys.stderr)
+        for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
+            print(event, file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/output.txt")
