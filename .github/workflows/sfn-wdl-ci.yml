@@ -10,7 +10,7 @@ env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   # These are commonly used example mock credentials for local testing with moto.
   AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
-  # AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 jobs:
   linters:
