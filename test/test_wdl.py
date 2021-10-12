@@ -57,10 +57,12 @@ class TestSFNWDL(unittest.TestCase):
         arn = res["executionArn"]
         assert res
 
+        start = time.time()
         description = self.sfn.describe_execution(executionArn=arn)
-        while description["status"] == "RUNNING":
+        while description["status"] == "RUNNING" and time.time() < start + 180:
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
+            print(description)
 
         assert description["status"] == "SUCCEEDED", description
 
