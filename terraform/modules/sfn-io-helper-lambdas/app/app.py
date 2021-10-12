@@ -38,7 +38,6 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def preprocess_input(sfn_data, _):
-    return {}
     assert sfn_data["CurrentState"] == "PreprocessInput"
     assert sfn_data["ExecutionId"].startswith("arn:aws:states:")
     assert len(sfn_data["ExecutionId"].split(":")) == 8
