@@ -53,7 +53,7 @@ class TestSFNWDL(unittest.TestCase):
         }
 
         execution_name = "idseq-test-{}".format(int(time.time()))
-        sfns = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
+        sfns = self.sfn.list_state_machines()["stateMachines"]
         sfn_arn = [sfns for sfn in sfns if sfn["swipe-test-single-wdl"]][0]["stateMachineArn"]
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
                                        name=execution_name,
