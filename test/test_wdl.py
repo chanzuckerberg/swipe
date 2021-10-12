@@ -1,4 +1,3 @@
-import os
 import sys
 import json
 import time
@@ -13,15 +12,20 @@ test_wdl = """
 version 1.0
 task idseq_test {
   input {
-    Int x = 0
+    File hello
   }
-  command {
-    :
-  }
+  command <<<
+    cat {hello} > out.txt
+    cat world >> out.txt
+  >>>
   output {
-    Int y = x + 1
+    File out = out.txt
   }
 }
+"""
+
+test_input = """
+hello
 """
 
 
@@ -33,21 +37,20 @@ class TestSFNWDL(unittest.TestCase):
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
 
     def test_simple_sfn_wdl_workflow(self):
-        response = self.lamb.invoke(
-            FunctionName="swipe-test-preprocess_input",
-            InvocationType="RequestResponse",
-            Payload=b'{}',
-        )
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAA", response, response["Payload"].read(), file=sys.stderr)
-
         wdl_obj = self.test_bucket.Object("test.wdl")
         wdl_obj.put(Body=test_wdl.encode())
+        input_obj = self.test_bucket.Object("input.txt")
+        input_obj.put(Body=test_wdl.encode())
+        output_prefix = "out"
         sfn_input: Dict[str, Any] = {
           "RUN_WDL_URI": f"s3://{wdl_obj.bucket_name}/{wdl_obj.key}",
+          "OutputPrefix": f"s3://{input_obj.bucket_name}/{output_prefix}",
+          "Input": {
+              "Run": {
+                  "hello": f"s3://{input_obj.bucket_name}/{input_obj.key}",
+              }
+          }
         }
-
-        outputs_obj = self.test_bucket.Object("output.json")
-        sfn_input["OutputPrefix"] = f"s3://{outputs_obj.bucket_name}/{os.path.dirname(outputs_obj.key)}"
 
         execution_name = "idseq-test-{}".format(int(time.time()))
         sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
@@ -68,6 +71,8 @@ class TestSFNWDL(unittest.TestCase):
             print("AAAAAAAAAAAAAAAAAAAAAAAAAA", file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/output.txt")
+        assert outputs_obj.get()['Body'].read() == "hello\nworld"
 
 
 if __name__ == "__main__":
