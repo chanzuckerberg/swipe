@@ -27,4 +27,4 @@ pip install -r requirements-dev.txt
 set -x
 
 source environment.test
-aws configure --profile default
+touch ~/.aws/credentials
