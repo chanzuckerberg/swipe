@@ -37,7 +37,7 @@ class TestSFNWDL(unittest.TestCase):
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
 
     def test_simple_sfn_wdl_workflow(self):
-        wdl_obj = self.test_bucket.Object("test.wdl")
+        wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
         wdl_obj.put(Body=test_wdl.encode())
         input_obj = self.test_bucket.Object("input.txt")
         input_obj.put(Body=test_wdl.encode())
