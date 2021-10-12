@@ -54,6 +54,7 @@ class TestSFNWDL(unittest.TestCase):
 
         execution_name = "idseq-test-{}".format(int(time.time()))
         sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
+        print(self.sfn.list_state_machines()["stateMachines"], file=sys.stderr)
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
                                        name=execution_name,
                                        input=json.dumps(sfn_input))
@@ -63,7 +64,7 @@ class TestSFNWDL(unittest.TestCase):
 
         start = time.time()
         description = self.sfn.describe_execution(executionArn=arn)
-        while description["status"] == "RUNNING" and time.time() < start + 10 * 60:
+        while description["status"] == "RUNNING" and time.time() < start + 2 * 60:
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
             for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
