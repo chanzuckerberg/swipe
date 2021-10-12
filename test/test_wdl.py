@@ -32,7 +32,7 @@ hello
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
-        self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:9000")
+        self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
 
@@ -53,8 +53,8 @@ class TestSFNWDL(unittest.TestCase):
         }
 
         execution_name = "idseq-test-{}".format(int(time.time()))
-        sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
-        print(self.sfn.list_state_machines()["stateMachines"], file=sys.stderr)
+        sfns = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
+        sfn_arn = [sfns for sfn in sfns if sfn["swipe-test-single-wdl"]][0]["stateMachineArn"]
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
                                        name=execution_name,
                                        input=json.dumps(sfn_input))
