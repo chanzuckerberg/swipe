@@ -11,6 +11,7 @@ env:
   # These specific values are mandatory, they are sent to lambda hard coded
   AWS_ACCESS_KEY_ID: role-account-id
   AWS_SECRET_ACCESS_KEY: role-secret-key
+  AWS_SESSION_TOKEN: session-token
 
 jobs:
   linters:
