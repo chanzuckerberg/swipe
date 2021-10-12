@@ -22,7 +22,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
 
 resource "aws_lambda_function" "lambda" {
   function_name    = "${var.app_name}-${var.deployment_environment}-${var.name}"
-  runtime          = "python3.9"
+  runtime          = "python3.8"
   handler          = "app.${var.name}"
   memory_size      = 256
   timeout          = 600
