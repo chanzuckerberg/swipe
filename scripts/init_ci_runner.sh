@@ -27,4 +27,5 @@ pip install -r requirements-dev.txt
 set -x
 
 source environment.test
+mkdir ~/.aws
 touch ~/.aws/credentials
