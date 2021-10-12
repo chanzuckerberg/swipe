@@ -1,7 +1,6 @@
 # This script is sourced by GitHub Actions.
 
 set -a
-AWS_DEFAULT_REGION=us-west-2
 AWS_DEFAULT_OUTPUT=json
 DEBIAN_FRONTEND=noninteractive
 TERRAFORM_VERSION=0.15.0

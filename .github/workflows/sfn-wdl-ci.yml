@@ -12,6 +12,7 @@ env:
   AWS_ACCESS_KEY_ID: role-account-id
   AWS_SECRET_ACCESS_KEY: role-secret-key
   AWS_SESSION_TOKEN: session-token
+  AWS_DEFAULT_REGION: us-east-1
 
 jobs:
   linters:
