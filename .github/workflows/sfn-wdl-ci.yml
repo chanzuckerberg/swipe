@@ -43,7 +43,8 @@ jobs:
           sudo chmod 666 /etc/hosts
           source scripts/init_ci_runner.sh
           scripts/run_mock_server.sh &
-          for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/4566"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
+          # for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/4566"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
+          sleep 60
           make deploy-mock test
 
   terraform_format:
