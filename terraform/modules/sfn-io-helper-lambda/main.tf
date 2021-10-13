@@ -38,6 +38,6 @@ resource "aws_lambda_function" "lambda" {
       RunSPOTMemoryDefault   = "128000"
       RunEC2MemoryDefault    = "128000"
       AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://localhost:9000" : ""
-    }, 
+    }
   }
 }
