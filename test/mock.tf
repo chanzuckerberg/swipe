@@ -4,7 +4,7 @@ provider "aws" {
     batch            = "http://localhost:9000"
     iam              = "http://localhost:9000"
     ec2              = "http://localhost:9000"
-    lambda           = "http://localhost:9000"
+    lambda           = "http://localhost:9001"
     cloudwatch       = "http://localhost:9000"
     cloudwatchevents = "http://localhost:9000"
     s3               = "http://localhost:9000"
