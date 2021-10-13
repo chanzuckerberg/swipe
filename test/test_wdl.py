@@ -10,7 +10,7 @@ import boto3
 
 test_wdl = """
 version 1.0
-task idseq_test {
+task swipe_test {
   input {
     File hello
   }
@@ -52,7 +52,7 @@ class TestSFNWDL(unittest.TestCase):
           }
         }
 
-        execution_name = "idseq-test-{}".format(int(time.time()))
+        execution_name = "swipe-test-{}".format(int(time.time()))
         sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
                                        name=execution_name,
