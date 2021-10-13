@@ -40,11 +40,11 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def preprocess_input(sfn_data, _):
-    s3 = boto3.client('s3', endpoint_url=os.getenv("AWS_ENDPOINT_URL"), region_name=os.getenv("AWS_DEFAULT_REGION"))
-    response = s3.list_buckets()
+    client = boto3.client('sts', endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+    response = client.get_caller_identity()
 
     # Output the bucket names
-    raise Exception(" ".join(bucket["Name"] for bucket in response["Buckets"]))
+    raise Exception(json.dumps(response))
     assert sfn_data["CurrentState"] == "PreprocessInput"
     assert sfn_data["ExecutionId"].startswith("arn:aws:states:")
     assert len(sfn_data["ExecutionId"].split(":")) == 8
