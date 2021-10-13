@@ -1,0 +1,14 @@
+version: "3.8"
+
+moto:
+  image: motoserver/moto
+  ports:
+    - "9000:5000"
+stepfunctions_local:
+  image: amazon/aws-stepfunctions-local
+  environment:
+    - BATCH_ENDPOINT=http://moto:9000
+    - LAMBDA_ENDPOINT=http://moto:9000
+    - AWS_ACCOUNT_ID=123456789012
+  ports:
+    - "8083:8083"
