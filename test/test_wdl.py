@@ -10,16 +10,40 @@ import boto3
 
 test_wdl = """
 version 1.0
-task swipe_test {
+workflow swipe_test {
   input {
     File hello
+    String docker_image_id
   }
+
+  call add_world {
+    input:
+      hello = hello,
+      docker_image_id = docker_image_id
+  }
+
+  output {
+    File out = add_world.out
+  }
+}
+
+task add_world {
+  input {
+    File hello
+    String docker_image_id
+  }
+
   command <<<
     cat {hello} > out.txt
     cat world >> out.txt
   >>>
+
   output {
     File out = out.txt
+  }
+
+  runtime {
+      docker: docker_image_id
   }
 }
 """
