@@ -11,10 +11,8 @@ cloudwatch = boto3.client("cloudwatch", endpoint_url=os.getenv("AWS_ENDPOINT_URL
 def s3_object(uri):
     assert uri.startswith("s3://")
     bucket, key = uri.split("/", 3)[2:]
-    try:
-        return s3.Bucket(bucket).Object(key)
-    except Exception:
-        raise Exception(f"{bucket} - {key}")
+    raise Exception(f"{bucket} - {key}")
+    return s3.Bucket(bucket).Object(key)
 
 
 def paginate(boto3_paginator, *args, **kwargs):
