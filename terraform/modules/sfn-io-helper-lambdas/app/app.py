@@ -39,6 +39,10 @@ from sfn_io_helper import batch_events, reporting, stage_io
 logging.getLogger().setLevel(logging.INFO)
 
 
+if os.getenv("DEPLOYMENT_ENVIRONMENT") == "test":
+    with open("/etc/hosts", "a") as f:
+        f.write("host.docker.internal localhost")
+
 def preprocess_input(sfn_data, _):
     client = boto3.client('s3', endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
     response = client.create_bucket(Bucket="swipe-test")
