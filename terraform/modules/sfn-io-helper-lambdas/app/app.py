@@ -40,8 +40,8 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def preprocess_input(sfn_data, _):
-    client = boto3.client('sts', endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
-    response = client.get_caller_identity()
+    client = boto3.client('s3', endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+    response = client.create_bucket("swipe-test")
 
     # Output the bucket names
     raise Exception(json.dumps(response))
