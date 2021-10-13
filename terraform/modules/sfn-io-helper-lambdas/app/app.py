@@ -40,7 +40,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def preprocess_input(sfn_data, _):
-    s3 = boto3.client('s3', endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+    s3 = boto3.client('s3', endpoint_url=os.getenv("AWS_ENDPOINT_URL"), region_name='us-east-1')
     response = s3.list_buckets()
 
     # Output the bucket names
