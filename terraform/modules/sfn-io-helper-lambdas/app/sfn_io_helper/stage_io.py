@@ -25,7 +25,6 @@ def get_stage_input(sfn_state, stage):
 
 def put_stage_input(sfn_state, stage, stage_input):
     input_uri = sfn_state[get_input_uri_key(stage)]
-    raise Exception(input_uri)
     s3_object(input_uri).put(Body=json.dumps(stage_input).encode())
 
 
