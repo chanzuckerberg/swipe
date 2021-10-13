@@ -1,6 +1,7 @@
 awscli
 flake8
-git+https://github.com/morsecodist/moto.git@ce84c03aacf1a8caf1f8903a2dd656042904534c[server]
+flask
+git+https://github.com/morsecodist/moto.git@ce84c03aacf1a8caf1f8903a2dd656042904534c
 mypy
 pyyaml
 types-PyYAML
