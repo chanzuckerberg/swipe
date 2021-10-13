@@ -28,6 +28,7 @@ resource "aws_lambda_function" "lambda" {
   timeout          = 600
   source_code_hash = filebase64sha256(var.zip)
   filename         = var.zip
+  region           = var.aws_region
 
   role = aws_iam_role.iam_role.arn
   tags = var.tags
