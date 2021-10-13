@@ -39,6 +39,10 @@ resource "aws_lambda_function" "lambda" {
       RunEC2MemoryDefault    = "128000"
       AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://host.docker.internal:9000" : ""
       AWS_DEFAULT_REGION     = var.deployment_environment == "test" ? var.aws_region : ""
+      AWS_ACCESS_KEY_ID      = var.deployment_environment == "test" ? "test" : ""
+      AWS_SECRET_ACCESS_KEY  = var.deployment_environment == "test" ? "test" : ""
+      AWS_SECURITY_TOKEN     = var.deployment_environment == "test" ? "test" : ""
+      AWS_SESSION_TOKEN      = var.deployment_environment == "test" ? "test" : ""
     }
   }
 }
