@@ -11,6 +11,7 @@ docker run \
     --network host \
     -e SERVICES=lambda \
     -e DEFAULT_REGION=$AWS_DEFAULT_REGION \
+    -e AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION \
     -e DEBUG=1 \
     -e LAMBDA_EXECUTOR=local \
     -e EDGE_PORT=9001 \
