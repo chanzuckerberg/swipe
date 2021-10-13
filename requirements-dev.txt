@@ -1,6 +1,7 @@
 awscli
 flake8
-git+https://github.com/morsecodist/moto.git@ce84c03aacf1a8caf1f8903a2dd656042904534c#egg=project[server]
+# TODO: hopefully this gets merged
+git+https://github.com/morsecodist/moto.git@405c741c1b24aea27696ed0b52bb4f1d6447ef03#egg=project[server]
 mypy
 pyyaml
 types-PyYAML

@@ -38,6 +38,7 @@ resource "aws_lambda_function" "lambda" {
       RunSPOTMemoryDefault   = "128000"
       RunEC2MemoryDefault    = "128000"
       AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://host.docker.internal:9000" : ""
+      AWS_DEFAULT_REGION     = var.deployment_environment == "test" ? var.aws_region : ""
     }
   }
 }

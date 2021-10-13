@@ -11,7 +11,6 @@ cloudwatch = boto3.client("cloudwatch", endpoint_url=os.getenv("AWS_ENDPOINT_URL
 def s3_object(uri):
     assert uri.startswith("s3://")
     bucket, key = uri.split("/", 3)[2:]
-    raise Exception(f"{bucket} - {key}")
     return s3.Bucket(bucket).Object(key)
 
 
