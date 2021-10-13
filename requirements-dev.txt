@@ -1,7 +1,10 @@
 awscli
 flake8
-flask
+
 git+https://github.com/morsecodist/moto.git@ce84c03aacf1a8caf1f8903a2dd656042904534c
+flask
+flask-cors
+
 mypy
 pyyaml
 types-PyYAML
