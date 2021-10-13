@@ -1,9 +1,11 @@
+import os
+
 import boto3
 
-s3 = boto3.resource("s3")
-batch = boto3.client("batch")
-stepfunctions = boto3.client("stepfunctions")
-cloudwatch = boto3.client("cloudwatch")
+s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+batch = boto3.client("batch", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+stepfunctions = boto3.client("stepfunctions", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+cloudwatch = boto3.client("cloudwatch", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 
 
 def s3_object(uri):
