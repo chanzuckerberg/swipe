@@ -7,6 +7,7 @@ trap "kill 0" EXIT
 moto_server --host 0.0.0.0 --port 9000 &
 
 docker run \
+    -d \
     --network host \
     -e SERVICES=lambda \
     -e DEFAULT_REGION=$AWS_DEFAULT_REGION \
