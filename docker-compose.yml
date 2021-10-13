@@ -2,12 +2,14 @@ version: "3.8"
 
 services:
   moto:
+    container_name: moto
     image: motoserver/moto
     ports:
       - "9000:5000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
   stepfunctions_local:
+    container_name: stepfunctions_local
     image: amazon/aws-stepfunctions-local
     environment:
       - BATCH_ENDPOINT=http://moto:5000
