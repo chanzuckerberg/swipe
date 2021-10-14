@@ -1,6 +1,5 @@
 awscli
+boto3
 flake8
 mypy
-pyyaml
-types-PyYAML
 yq
