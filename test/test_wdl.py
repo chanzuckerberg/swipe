@@ -60,7 +60,7 @@ class TestSFNWDL(unittest.TestCase):
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
 
-    # @unittest.skip("skipped due to networking within lambda and batch causing tests to fail")
+    @unittest.skip("skipped due to networking within lambda and batch causing tests to fail")
     def test_simple_sfn_wdl_workflow(self):
         wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
         wdl_obj.put(Body=test_wdl.encode())
