@@ -45,11 +45,70 @@ resource "aws_iam_role_policy" "iam_role_policy" {
   name = each.key
   role = aws_iam_role.iam_role[each.key].id
 
-  policy = templatefile("${path.module}/../../iam_policy_templates/sfn-io-helper-lambda.json", {
-    app_name               = var.app_name,
-    deployment_environment = var.deployment_environment,
-    aws_region             = var.aws_region,
-    aws_account_id         = var.aws_account_id,
+  policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Effect : "Allow",
+        Action : [
+          "s3:List*",
+          "s3:GetObject*",
+          "s3:PutObject*"
+        ],
+        Resource : [
+          "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*",
+          "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*/*",
+          "arn:aws:s3:::sfn-wdl-dev",
+          "arn:aws:s3:::sfn-wdl-dev/*"
+        ]
+      },
+      {
+        Effect : "Allow",
+        Action : [
+          "batch:DescribeComputeEnvironments",
+          "batch:DescribeJobDefinitions",
+          "batch:DescribeJobQueues",
+          "batch:DescribeJobs",
+          "batch:ListJobs",
+          "batch:TerminateJob",
+          "batch:UpdateComputeEnvironment"
+        ],
+        Resource : "*"
+      },
+      {
+        Effect : "Allow",
+        Action : "states:ListStateMachines",
+        Resource : "arn:aws:states:${var.aws_region}:${var.aws_account_id}:*"
+      },
+      {
+        Effect : "Allow",
+        Action : [
+          "states:DescribeStateMachine",
+          "states:ListExecutions",
+          "states:DescribeExecution",
+          "states:DescribeStateMachineForExecution",
+          "states:GetExecutionHistory"
+        ],
+        Resource : [
+          "arn:aws:states:${var.aws_region}:${var.aws_account_id}:stateMachine:${var.app_name}-${var.deployment_environment}-*",
+          "arn:aws:states:${var.aws_region}:${var.aws_account_id}:execution:${var.app_name}-${var.deployment_environment}-*"
+        ]
+      },
+      {
+        Effect : "Allow",
+        Action : "cloudwatch:PutMetricData",
+        Resource : "*"
+      },
+      {
+        Effect : "Allow",
+        Action : [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource : "arn:aws:logs:*:*:*"
+      }
+    ]
   })
 }
 
