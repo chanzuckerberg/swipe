@@ -8,7 +8,7 @@ locals {
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     app_name           = var.app_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
-    
+
     # TODO: fix docker image
     # batch_docker_image = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
     batch_docker_image = "ghcr.io/chanzuckerberg/swipe:sha-c145a0ab"
