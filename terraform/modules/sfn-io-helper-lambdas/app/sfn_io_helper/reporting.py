@@ -26,7 +26,10 @@ def emit_spot_interruption_metric(event, namespace=f"{os.environ['APP_NAME']}-{o
     """Emit a CloudWatch metric for an EC2 spot instance interruption event"""
 
 
-def emit_periodic_metrics(namespace=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}", time_horizon=timedelta(days=1)):
+def emit_periodic_metrics(
+    namespace=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}",
+    time_horizon=timedelta(days=1)
+):
     """Emit CloudWatch metrics on a fixed schedule"""
     now = datetime.now(timezone.utc)
     terminal_states = {"SUCCEEDED", "ABORTED", "FAILED"}
