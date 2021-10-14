@@ -5,6 +5,7 @@ services:
     container_name: jessmoto
     build:
       dockerfile: Dockerfile.moto
+      context: .
     ports:
       - "9000:5000"
     volumes:
