@@ -55,10 +55,10 @@ hello
 
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
-        self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
+        self.s3 = boto3.resource("s3", endpoint_url="http://localhost:5000")
         self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
-        self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
+        self.lamb = boto3.client("lambda", endpoint_url="http://localhost:5000")
 
     def test_simple_sfn_wdl_workflow(self):
         wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")

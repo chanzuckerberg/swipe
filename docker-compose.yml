@@ -7,7 +7,7 @@ services:
     environment:
       - TEST_SERVER_MODE=1
     ports:
-      - "9000:5000"
+      - "5000:5000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
   stepfunctions_local:
