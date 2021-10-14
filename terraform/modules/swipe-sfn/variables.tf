@@ -21,13 +21,13 @@ variable "batch_job_timeout_seconds" {
   default     = 86400
 }
 
-variable "batch_spot_job_queue_name" {
-  description = "Name of the Batch spot EC2 job queue where this step function will submit its jobs"
+variable "batch_spot_job_queue_arn" {
+  description = "ARN of the Batch spot EC2 job queue where this step function will submit its jobs"
   type        = string
 }
 
-variable "batch_ec2_job_queue_name" {
-  description = "Name of the Batch ondemand EC2 job queue where this step function will submit its jobs"
+variable "batch_ec2_job_queue_arn" {
+  description = "ARN of the Batch ondemand EC2 job queue where this step function will submit its jobs"
   type        = string
 }
 

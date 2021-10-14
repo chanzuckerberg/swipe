@@ -1,6 +1,6 @@
 import os
-from datetime import datetime, timedelta, timezone
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import DefaultDict
 
 from . import batch, cloudwatch, stepfunctions, paginate
@@ -14,19 +14,22 @@ def notify_failure(sfn_state):
     """Placeholder for sending a message to a queue for push based result processing"""
 
 
-def emit_batch_metric_values(event, namespace=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}"):
+def emit_batch_metric_values(event, namespace=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}"):
     """Emit CloudWatch metrics for a Batch event"""
 
 
-def emit_sfn_metric_values(event, namespace=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}"):
+def emit_sfn_metric_values(event, namespace=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}"):
     """Emit CloudWatch metrics for a SFN event"""
 
 
-def emit_spot_interruption_metric(event, namespace=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}"):
+def emit_spot_interruption_metric(event, namespace=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}"):
     """Emit a CloudWatch metric for an EC2 spot instance interruption event"""
 
 
-def emit_periodic_metrics(namespace=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}", time_horizon=timedelta(days=1)):
+def emit_periodic_metrics(
+    namespace=f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}",
+    time_horizon=timedelta(days=1)
+):
     """Emit CloudWatch metrics on a fixed schedule"""
     now = datetime.now(timezone.utc)
     terminal_states = {"SUCCEEDED", "ABORTED", "FAILED"}

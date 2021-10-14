@@ -6,7 +6,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::lambda:invoke
     Parameters:
-      FunctionName: "swipe-${deployment_environment}-preprocess-input"
+      FunctionName: "${preprocess_input_lambda_name}"
       Payload: &PassthroughStatePayload
         ExecutionId.$: $$.Execution.Id
         CurrentState.$: $$.State.Name
@@ -17,7 +17,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
     Parameters:
-      JobQueue: "${batch_spot_job_queue_name}"
+      JobQueue: "${batch_spot_job_queue_arn}"
       JobName.$: $$.Execution.Name
       JobDefinition: &JobDefinition "${batch_job_definition_name}"
       Timeout: &RunBatchTimeout
@@ -41,7 +41,7 @@ States:
       - ErrorEquals: ["Batch.AWSBatchException"]
         IntervalSeconds: 15
         MaxAttempts: 3
-        BackoffRate: 2.0
+        BackoffRate: 2.1 # 2.0 triggers the linter because when this is converted to json it becomes 2 which is an int and not a float
     Catch:
       - ErrorEquals: ["States.ALL"]
         ResultPath: $.BatchJobError.RunSPOT
@@ -63,7 +63,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
     Parameters:
-      JobQueue: "${batch_ec2_job_queue_name}"
+      JobQueue: "${batch_ec2_job_queue_arn}"
       JobName.$: $$.Execution.Name
       JobDefinition: *JobDefinition
       Timeout: *RunBatchTimeout
@@ -81,7 +81,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::lambda:invoke
     Parameters: &ReadOutputParameters
-      FunctionName: "swipe-${deployment_environment}-process-stage-output"
+      FunctionName: "${process_stage_output_lambda_name}"
       Payload: *PassthroughStatePayload
     OutputPath: $.Payload
     Next: HandleSuccess
@@ -92,7 +92,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::lambda:invoke
     Parameters:
-      FunctionName: "swipe-${deployment_environment}-handle-success"
+      FunctionName: "${handle_success_lambda_name}"
       Payload: *PassthroughStatePayload
     OutputPath: $.Payload
     End: true
@@ -102,7 +102,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::lambda:invoke
     Parameters:
-      FunctionName: "swipe-${deployment_environment}-handle-failure"
+      FunctionName: "${handle_failure_lambda_name}"
       Payload: *PassthroughStatePayload
     OutputPath: $.Payload
     End: true

@@ -32,19 +32,12 @@ import os
 import json
 import logging
 
-from chalice import Chalice, Rate
-
-from swipe.sfn_io_helper import batch_events, reporting, stage_io
+from sfn_io_helper import batch_events, reporting, stage_io
 
 logging.getLogger().setLevel(logging.INFO)
 
-batch_queue_arns = os.environ.get("BATCH_QUEUE_ARNS", "").split()
 
-app = Chalice(app_name="swipe")
-
-
-@app.lambda_function("preprocess-input")
-def preprocess_input(sfn_data, context):
+def preprocess_input(sfn_data, _):
     assert sfn_data["CurrentState"] == "PreprocessInput"
     assert sfn_data["ExecutionId"].startswith("arn:aws:states:")
     assert len(sfn_data["ExecutionId"].split(":")) == 8
@@ -55,23 +48,20 @@ def preprocess_input(sfn_data, context):
                                          state_machine_name=state_machine_name)
 
 
-@app.lambda_function("process-stage-output")
-def process_stage_output(sfn_data, context):
+def process_stage_output(sfn_data, _):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
     sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
     sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)
     return sfn_state
 
 
-@app.lambda_function("handle-success")
-def handle_success(sfn_data, context):
+def handle_success(sfn_data, _):
     sfn_state = sfn_data["Input"]
     reporting.notify_success(sfn_state=sfn_state)
     return sfn_state
 
 
-@app.lambda_function("handle-failure")
-def handle_failure(sfn_data, context):
+def handle_failure(sfn_data, _):
     # This Lambda MUST raise an exception with the details of the error that caused the failure.
     sfn_state = sfn_data["Input"]
     assert sfn_data["CurrentState"] == "HandleFailure"
@@ -84,34 +74,21 @@ def handle_failure(sfn_data, context):
     raise failure_type(cause)
 
 
-@app.on_cw_event({
-    "source": ["aws.batch"],
-    "detail": {
-        "status": ["RUNNABLE"],
-        # TODO: re-enable batch queue ARN filtering once configuration information is available
-        # "jobQueue": batch_queue_arns
-    }
-}, name=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}-process-batch-event")
 def process_batch_event(event):
-    # queue_arn = event.detail["jobQueue"]
-    # assert queue_arn in batch_queue_arns
     reporting.emit_batch_metric_values(event)
 
 
-@app.on_cw_event({"source": ["aws.states"]}, name=f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}-process-sfn-event")
 def process_sfn_event(event):
     execution_arn = event.detail["executionArn"]
-    if f"swipe-{os.environ['DEPLOYMENT_ENVIRONMENT']}" in execution_arn:
+    if f"{os.environ['APP_NAME']}-{os.environ['DEPLOYMENT_ENVIRONMENT']}" in execution_arn:
         batch_events.archive_sfn_history(execution_arn)
 
     reporting.emit_sfn_metric_values(event)
 
 
-@app.schedule(Rate(1, unit=Rate.MINUTES))
 def report_metrics(event):
     reporting.emit_periodic_metrics()
 
 
-@app.on_cw_event({"source": ["aws.ec2"], "detail": {"type": ["EC2 Spot Instance Interruption Warning"]}})
 def report_spot_interruption(event):
     reporting.emit_spot_interruption_metric(event)

@@ -8,9 +8,11 @@ env:
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  # These are commonly used example mock credentials for local testing with moto.
-  AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
-  AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  # These specific values are mandatory, they are sent to lambda hard coded
+  AWS_ACCESS_KEY_ID: role-account-id
+  AWS_SECRET_ACCESS_KEY: role-secret-key
+  AWS_SESSION_TOKEN: session-token
+  AWS_DEFAULT_REGION: us-east-1
 
 jobs:
   linters:
@@ -42,9 +44,8 @@ jobs:
           #   we must add an entry for it so we can use DNS locally.
           sudo chmod 666 /etc/hosts
           source scripts/init_ci_runner.sh
-          scripts/build_docker_images.sh
           scripts/run_mock_server.sh &
-          for i in {1..30}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 30 ]]; then exit 1; else sleep 1; fi; done
+          for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test
 
   terraform_format:
@@ -58,5 +59,6 @@ jobs:
           key: ${{runner.os}}-cache
       - name: Check Terraform Format
         run: |
-          terraform fmt --recursive ./
+          make format
           git diff --exit-code
+
