@@ -22,26 +22,14 @@ deploy-mock:
 $(TFSTATE_FILE):
 	terraform state pull > $(TFSTATE_FILE)
 
-sfn-io-helper-lambdas:
-	git add terraform/modules/sfn-io-helper-lambdas/app
-	git commit -m "lambda commit" || true
-	rm -r sfn-io-helper-lambdas-tmp || true
-	rm terraform/modules/sfn-io-helper-lambdas/deployment.zip
-	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
-	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
-	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
-	cd sfn-io-helper-lambdas-tmp && zip -r ../terraform/modules/sfn-io-helper-lambdas/deployment.zip ./*
-	rm -r sfn-io-helper-lambdas-tmp
-
-check-sfn-io-helper-lambdas:
-	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
-	git diff --exit-code || (echo 'Uncomitted changes to sfn-io-helper-lambdas page, please run: `make sfn-io-helper-lambdas` and commit the result' && exit 1)
-
 lint:
 	flake8 .
 	yq . terraform/modules/swipe-sfn/sfn-templates/single-wdl.yml > single-wdl.json
 	statelint single-wdl.json
 	mypy --check-untyped-defs --no-strict-optional .
+
+format:
+	terraform fmt --recursive .
 
 test:
 	python -m unittest discover .
@@ -49,4 +37,4 @@ test:
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(APP_NAME)-$(DEPLOYMENT_ENVIRONMENT)
 
-.PHONY: deploy init-tf sfn-io-helper-lambdas check-sfn-io-helper-lambdas lint test
+.PHONY: deploy init-tf lint format test

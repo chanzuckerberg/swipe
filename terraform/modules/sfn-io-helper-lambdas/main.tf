@@ -1,105 +1,81 @@
-module "preprocess_input" {
-  source = "../sfn-io-helper-lambda"
-
-  name = "preprocess_input"
-  zip  = "${path.module}/deployment.zip"
-
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
+data "archive_file" "lambda_archive" {
+  type             = "zip"
+  source_dir       = "${path.module}/app"
+  output_file_mode = "0666"
+  output_path      = "${path.module}/deployment.zip"
 }
 
-module "process_stage_output" {
-  source = "../sfn-io-helper-lambda"
-
-  name = "process_stage_output"
-  zip  = "${path.module}/deployment.zip"
-
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
+locals {
+  lambda_names = toset([
+    "preprocess_input",
+    "process_stage_output",
+    "handle_success",
+    "handle_failure",
+    "process_batch_event",
+    "process_sfn_event",
+    "report_metrics",
+    "report_spot_interruption",
+  ])
 }
 
-module "handle_success" {
-  source = "../sfn-io-helper-lambda"
+resource "aws_iam_role" "iam_role" {
+  for_each = local.lambda_names
 
-  name = "handle_success"
-  zip  = "${path.module}/deployment.zip"
+  name = "${var.app_name}-${var.deployment_environment}-${each.key}"
 
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action : "sts:AssumeRole",
+        Effect : "Allow",
+        Principal : {
+          Service : ["lambda"],
+        },
+      },
+    ],
+  })
+
+  tags = var.tags
 }
 
-module "handle_failure" {
-  source = "../sfn-io-helper-lambda"
+resource "aws_iam_role_policy" "iam_role_policy" {
+  for_each = local.lambda_names
 
-  name = "handle_failure"
-  zip  = "${path.module}/deployment.zip"
+  name = each.key
+  role = aws_iam_role.iam_role[each.key].id
 
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
+  policy = templatefile("${path.module}/../../iam_policy_templates/sfn-io-helper-lambda.json", {
+    app_name               = var.app_name,
+    deployment_environment = var.deployment_environment,
+    aws_region             = var.aws_region,
+    aws_account_id         = var.aws_account_id,
+  })
 }
 
-module "process_batch_event" {
-  source = "../sfn-io-helper-lambda"
+resource "aws_lambda_function" "lambda" {
+  for_each = local.lambda_names
 
-  name = "process_batch_event"
-  zip  = "${path.module}/deployment.zip"
+  function_name    = "${var.app_name}-${var.deployment_environment}-${each.key}"
+  runtime          = "python3.8"
+  handler          = "app.${each.key}"
+  memory_size      = 256
+  timeout          = 600
+  source_code_hash = data.archive_file.lambda_archive.output_sha
+  filename         = data.archive_file.lambda_archive.output_path
 
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
-}
+  role = aws_iam_role.iam_role[each.key].arn
+  tags = var.tags
 
-module "process_sfn_event" {
-  source = "../sfn-io-helper-lambda"
-
-  name = "process_sfn_event"
-  zip  = "${path.module}/deployment.zip"
-
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
-}
-
-module "report_metrics" {
-  source = "../sfn-io-helper-lambda"
-
-  name = "report_metrics"
-  zip  = "${path.module}/deployment.zip"
-
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
-}
-
-module "report_spot_interruption" {
-  source = "../sfn-io-helper-lambda"
-
-  name = "report_spot_interruption"
-  zip  = "${path.module}/deployment.zip"
-
-  app_name               = var.app_name
-  deployment_environment = var.deployment_environment
-  aws_region             = var.aws_region
-  aws_account_id         = var.aws_account_id
-  tags                   = var.tags
+  environment {
+    variables = {
+      APP_NAME               = var.app_name
+      DEPLOYMENT_ENVIRONMENT = var.deployment_environment
+      RunSPOTMemoryDefault   = "128000"
+      RunEC2MemoryDefault    = "128000"
+      AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://localhost:9000" : ""
+    }
+  }
 }
 
 resource "aws_cloudwatch_event_rule" "process_batch_event" {
@@ -142,50 +118,50 @@ resource "aws_cloudwatch_event_rule" "report_spot_interruption" {
 resource "aws_cloudwatch_event_target" "process_batch_event" {
   rule      = aws_cloudwatch_event_rule.process_batch_event.name
   target_id = "${var.app_name}-${var.deployment_environment}-process_batch_event"
-  arn       = module.process_batch_event.lambda_arn
+  arn       = aws_lambda_function.lambda["process_batch_event"].arn
 }
 
 resource "aws_cloudwatch_event_target" "process_sfn_event" {
   rule      = aws_cloudwatch_event_rule.process_sfn_event.name
   target_id = "${var.app_name}-${var.deployment_environment}-process_batch_event"
-  arn       = module.process_sfn_event.lambda_arn
+  arn       = aws_lambda_function.lambda["process_sfn_event"].arn
 }
 
 resource "aws_cloudwatch_event_target" "report_metrics" {
   rule      = aws_cloudwatch_event_rule.report_metrics.name
   target_id = "report_metrics"
-  arn       = module.report_metrics.lambda_arn
+  arn       = aws_lambda_function.lambda["report_metrics"].arn
 }
 
 resource "aws_cloudwatch_event_target" "report_spot_interruption" {
   rule      = aws_cloudwatch_event_rule.report_spot_interruption.name
   target_id = "report_spot_interruption"
-  arn       = module.report_spot_interruption.lambda_arn
+  arn       = aws_lambda_function.lambda["report_spot_interruption"].arn
 }
 
 resource "aws_lambda_permission" "process_batch_event" {
-  function_name = module.process_batch_event.lambda_arn
+  function_name = aws_lambda_function.lambda["process_batch_event"].arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.process_batch_event.arn
 }
 
 resource "aws_lambda_permission" "process_sfn_event" {
-  function_name = module.process_sfn_event.lambda_arn
+  function_name = aws_lambda_function.lambda["process_sfn_event"].arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.process_sfn_event.arn
 }
 
 resource "aws_lambda_permission" "report_metrics" {
-  function_name = module.report_metrics.lambda_arn
+  function_name = aws_lambda_function.lambda["report_metrics"].arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.report_metrics.arn
 }
 
 resource "aws_lambda_permission" "report_spot_interruption" {
-  function_name = module.report_spot_interruption.lambda_arn
+  function_name = aws_lambda_function.lambda["report_spot_interruption"].arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.report_spot_interruption.arn
