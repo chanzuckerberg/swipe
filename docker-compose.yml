@@ -14,8 +14,8 @@ services:
     container_name: stepfunctions_local
     image: amazon/aws-stepfunctions-local
     environment:
-      - BATCH_ENDPOINT=http://motoserver:9000
-      - LAMBDA_ENDPOINT=http://motoserver:9000
+      - BATCH_ENDPOINT=http://motoserver:5000
+      - LAMBDA_ENDPOINT=http://motoserver:5000
       - AWS_ACCOUNT_ID=123456789012
     ports:
       - "8083:8083"
