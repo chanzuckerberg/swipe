@@ -32,21 +32,12 @@ import os
 import json
 import logging
 
-import boto3
-from botocore.client import Config
-
 from sfn_io_helper import batch_events, reporting, stage_io
 
 logging.getLogger().setLevel(logging.INFO)
 
 
 def preprocess_input(sfn_data, _):
-    client = boto3.client('s3', endpoint_url=os.getenv("AWS_ENDPOINT_URL"),
-                          config=Config(s3={'addressing_style': 'path'}))
-    response = client.create_bucket(Bucket="swipe-test")
-
-    # Output the bucket names
-    raise Exception(json.dumps(response))
     assert sfn_data["CurrentState"] == "PreprocessInput"
     assert sfn_data["ExecutionId"].startswith("arn:aws:states:")
     assert len(sfn_data["ExecutionId"].split(":")) == 8
