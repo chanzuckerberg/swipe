@@ -2,18 +2,33 @@ version: "3.8"
 
 services:
   motoserver:
-    container_name: motoserver
-    image: motoserver/moto
+    container_name: jessmoto
+    build:
+      dockerfile: Dockerfile.moto
     ports:
       - "9000:5000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+    command: ["sleep", "infinity"]
+    entrypoint: []
+    networks:
+      swipetest:
+        aliases:
+          - motoserver
   stepfunctions_local:
     container_name: stepfunctions_local
     image: amazon/aws-stepfunctions-local
     environment:
+      - AWS_ACCESS_KEY_ID=xxxx
+      - AWS_SECRET_ACCESS_KEY=xxxx
       - BATCH_ENDPOINT=http://motoserver:5000
       - LAMBDA_ENDPOINT=http://motoserver:5000
       - AWS_ACCOUNT_ID=123456789012
     ports:
       - "8083:8083"
+    networks:
+      swipetest:
+        aliases:
+          - sfnlocal
+networks:
+  swipetest:

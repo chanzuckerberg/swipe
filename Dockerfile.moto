@@ -1,0 +1,2 @@
+FROM motoserver/moto
+ADD awslambda/models.py /moto/moto/awslambda/models.py
