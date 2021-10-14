@@ -1,7 +1,5 @@
 awscli
 flake8
-# TODO: hack
-git+https://github.com/morsecodist/moto.git@bd0ba8e78c591b01f971c0e4f2dc36fc73bd24fc#egg=project[server]
 mypy
 pyyaml
 types-PyYAML
