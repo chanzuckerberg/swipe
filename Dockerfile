@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
-ARG MINIWDL_VERSION=1.1.5
+ARG MINIWDL_VERSION=1.2.2
 
 LABEL maintainer="IDseq Team idseq-tech@chanzuckerberg.com"
 
@@ -41,11 +41,11 @@ RUN apt-get -q install -y \
         awscli
 
 RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5 miniwdl-s3upload==0.0.8
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/akislyuk-swipe-aspen-vars.zip#subdirectory=sfn-wdl
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.1-alpha/s3parcp_1.0.1-alpha_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
 ADD https://raw.githubusercontent.com/chanzuckerberg/miniwdl/v${MINIWDL_VERSION}/examples/clean_download_cache.sh /usr/local/bin
+ADD scripts/init.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/clean_download_cache.sh
 
 # docker.io is the largest package at 250MB+ / half of all package disk space usage.
@@ -56,3 +56,4 @@ RUN cd /usr/bin; curl -O https://amazon-ecr-credential-helper-releases.s3.amazon
 RUN chmod +x /usr/bin/docker-credential-ecr-login
 RUN mkdir -p /root/.docker
 RUN jq -n '.credsStore="ecr-login"' > /root/.docker/config.json
+ENTRYPOINT ["/usr/local/bin/init.sh"]
