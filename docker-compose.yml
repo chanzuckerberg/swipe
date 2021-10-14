@@ -5,7 +5,7 @@ services:
     container_name: motoserver
     image: motoserver/moto
     environment:
-      - TEST_SERVER_MODE=1
+      - TEST_SERVER_MODE=true
     ports:
       - "5000:5000"
     volumes:
