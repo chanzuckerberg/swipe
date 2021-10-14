@@ -71,5 +71,5 @@ resource "aws_batch_job_definition" "swipe_main" {
   timeout {
     attempt_duration_seconds = var.batch_job_timeout_seconds
   }
-  container_properties = local.container_properties
+  container_properties = jsonencode(local.final_container_config)
 }
