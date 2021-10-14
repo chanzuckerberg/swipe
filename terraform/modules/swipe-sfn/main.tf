@@ -1,6 +1,6 @@
 locals {
   app_slug          = "${var.app_name}-${var.deployment_environment}"
-  sfn_template_file = var.sfn_template_file == "" ? "${path.module}/sfn-templates/single-wdl-1.json" : var.sfn_template_file
+  sfn_template_file = var.sfn_template_file == "" ? "${path.module}/sfn-templates/single-wdl.yml" : var.sfn_template_file
 }
 
 data "aws_region" "current" {}
@@ -40,26 +40,27 @@ module "batch_job" {
   tags                        = var.tags
 }
 
-module "sfn-io-helper" {
-  source = "../swipe-sfn-io-helper-lambda"
+module "sfn_io_helper" {
+  source                 = "../sfn-io-helper-lambdas"
+  app_name               = var.app_name
+  aws_region             = data.aws_region.current.name
+  aws_account_id         = data.aws_caller_identity.current.account_id
+  deployment_environment = var.deployment_environment
+  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
+  tags                   = var.tags
 }
 
-locals {
-  sfn_common_params = {
-    deployment_environment    = var.deployment_environment,
-    batch_spot_job_queue_name = var.batch_spot_job_queue_name,
-    batch_ec2_job_queue_name  = var.batch_ec2_job_queue_name,
-    batch_job_definition_name = module.batch_job.batch_job_definition_name,
-  }
-  sfn_tags = merge(var.tags, {
-  })
-}
-
-resource "aws_sfn_state_machine" "swipe_single_wdl_1" {
-  name     = "${local.app_slug}-single-wdl-1"
+resource "aws_sfn_state_machine" "swipe_single_wdl" {
+  name     = "${local.app_slug}-single-wdl"
   role_arn = aws_iam_role.swipe_sfn_service.arn
-  definition = templatefile(local.sfn_template_file, merge(local.sfn_common_params, {
-    batch_job_name_prefix = "${local.app_slug}-single-wdl",
-  }))
-  tags = local.sfn_tags
+  definition = jsonencode(yamldecode(templatefile(local.sfn_template_file, {
+    batch_spot_job_queue_arn         = var.batch_spot_job_queue_arn,
+    batch_ec2_job_queue_arn          = var.batch_ec2_job_queue_arn,
+    batch_job_definition_name        = module.batch_job.batch_job_definition_name,
+    preprocess_input_lambda_name     = module.sfn_io_helper.preprocess_input_lambda_name,
+    process_stage_output_lambda_name = module.sfn_io_helper.process_stage_output_lambda_name,
+    handle_success_lambda_name       = module.sfn_io_helper.handle_success_lambda_name,
+    handle_failure_lambda_name       = module.sfn_io_helper.handle_failure_lambda_name,
+  })))
+  tags = var.tags
 }

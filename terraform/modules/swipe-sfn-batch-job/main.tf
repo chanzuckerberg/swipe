@@ -7,8 +7,11 @@ locals {
   ecr_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     app_name           = var.app_name,
-    batch_docker_image = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
+    
+    # TODO: fix docker image
+    # batch_docker_image = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
+    batch_docker_image = "ghcr.io/chanzuckerberg/swipe:sha-c145a0ab"
   }))
   batch_env_vars = merge(var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
