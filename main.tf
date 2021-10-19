@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     git = {
-      source  = "integrations/git"
+      source  = "innovationnorway/git"
       version = "0.1.3"
     }
   }
