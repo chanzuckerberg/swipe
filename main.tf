@@ -1,3 +1,6 @@
+provider "git" {
+}
+
 data "git_repository" "self" {
   path = path.module
 }
