@@ -4,6 +4,11 @@ terraform {
     aws = {
       version = "~> 3.37"
     }
+
+    git = {
+      source  = "innovationnorway/git"
+      version = "~> 0.1.3" 
+    }
   }
   // backend "s3" {
   //   region = "us-west-2"
