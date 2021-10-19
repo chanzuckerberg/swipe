@@ -10,15 +10,9 @@ variable "extra_env_vars" {
   default     = {}
 }
 
-variable "batch_job_docker_image_name" {
+variable "batch_job_docker_image" {
   description = "Docker image (name or name:tag) that will be used for Batch jobs"
   type        = string
-}
-
-variable "use_ecr_private_registry" {
-  description = "If true (default), batch_job_docker_image_name is expected to be found in the private registry for the host AWS account. If false, the name is passed verbatim (as a Docker Hub or other registry URL)"
-  type        = bool
-  default     = true
 }
 
 variable "batch_job_timeout_seconds" {

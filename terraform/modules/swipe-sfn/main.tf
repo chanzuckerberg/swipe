@@ -32,12 +32,12 @@ resource "aws_iam_role_policy_attachment" "swipe_sfn_service" {
 }
 
 module "batch_job" {
-  source                      = "../swipe-sfn-batch-job"
-  app_name                    = var.app_name
-  batch_job_docker_image_name = var.batch_job_docker_image_name
-  batch_job_timeout_seconds   = var.batch_job_timeout_seconds
-  deployment_environment      = var.deployment_environment
-  tags                        = var.tags
+  source                    = "../swipe-sfn-batch-job"
+  app_name                  = var.app_name
+  batch_job_docker_image    = var.batch_job_docker_image
+  batch_job_timeout_seconds = var.batch_job_timeout_seconds
+  deployment_environment    = var.deployment_environment
+  tags                      = var.tags
 }
 
 module "sfn_io_helper" {

@@ -10,6 +10,10 @@ terraform {
   // }
 }
 
+data "git_repository" "self" {
+  path = path.module
+}
+
 resource "aws_key_pair" "swipe_batch" {
   key_name   = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
   public_key = var.BATCH_SSH_PUBLIC_KEY
@@ -35,7 +39,7 @@ module "sfn" {
   source                      = "./terraform/modules/swipe-sfn"
   app_name                    = var.APP_NAME
   deployment_environment      = var.DEPLOYMENT_ENVIRONMENT
-  batch_job_docker_image_name = "swipe:latest"
+  batch_job_docker_image      = "ghcr.io/chanzuckerberg/swipe:sha-${substr(data.git_repository.self, 0, 7)}"
   batch_spot_job_queue_arn    = module.batch_queue.batch_spot_job_queue_arn
   batch_ec2_job_queue_arn     = module.batch_queue.batch_ec2_job_queue_arn
 }
