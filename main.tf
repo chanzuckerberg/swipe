@@ -1,4 +1,9 @@
-provider "git" {
+terraform {
+  required_providers {
+    github = {
+      source  = "integrations/git"
+    }
+  }
 }
 
 data "git_repository" "self" {
