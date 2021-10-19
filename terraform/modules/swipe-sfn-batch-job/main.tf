@@ -8,10 +8,7 @@ locals {
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     app_name           = var.app_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
-
-    # TODO: fix docker image
-    # batch_docker_image = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
-    batch_docker_image = "ghcr.io/chanzuckerberg/swipe:sha-c145a0ab"
+    batch_docker_image = var.batch_job_docker_image,
   }))
   batch_env_vars = merge(var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
@@ -21,7 +18,7 @@ locals {
     "SFN_CURRENT_STATE"                         = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
     "DEPLOYMENT_ENVIRONMENT"                    = var.deployment_environment,
     "AWS_DEFAULT_REGION"                        = data.aws_region.current.name,
-    "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.use_ecr_private_registry ? "${local.ecr_url}/${var.batch_job_docker_image_name}" : var.batch_job_docker_image_name,
+    "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__GET"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__DIR"              = "/mnt/download_cache",

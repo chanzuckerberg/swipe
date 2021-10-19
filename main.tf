@@ -4,10 +4,19 @@ terraform {
     aws = {
       version = "~> 3.37"
     }
+
+    git = {
+      source  = "innovationnorway/git"
+      version = "~> 0.1.3"
+    }
   }
   // backend "s3" {
   //   region = "us-west-2"
   // }
+}
+
+data "git_repository" "self" {
+  path = path.module
 }
 
 resource "aws_key_pair" "swipe_batch" {
@@ -32,12 +41,12 @@ module "batch_queue" {
 }
 
 module "sfn" {
-  source                      = "./terraform/modules/swipe-sfn"
-  app_name                    = var.APP_NAME
-  deployment_environment      = var.DEPLOYMENT_ENVIRONMENT
-  batch_job_docker_image_name = "swipe:latest"
-  batch_spot_job_queue_arn    = module.batch_queue.batch_spot_job_queue_arn
-  batch_ec2_job_queue_arn     = module.batch_queue.batch_ec2_job_queue_arn
+  source                   = "./terraform/modules/swipe-sfn"
+  app_name                 = var.APP_NAME
+  deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
+  batch_job_docker_image   = "ghcr.io/chanzuckerberg/swipe:sha-${substr(data.git_repository.self.commit_sha, 0, 7)}"
+  batch_spot_job_queue_arn = module.batch_queue.batch_spot_job_queue_arn
+  batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
 }
 
 output "sfn_arn" {

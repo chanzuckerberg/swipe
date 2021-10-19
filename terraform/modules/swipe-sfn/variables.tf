@@ -10,7 +10,7 @@ variable "sfn_template_file" {
   default     = ""
 }
 
-variable "batch_job_docker_image_name" {
+variable "batch_job_docker_image" {
   description = "Docker image (name or name:tag) that will be used for Batch jobs (expected to be in the private registry for the host AWS account)"
   type        = string
 }
