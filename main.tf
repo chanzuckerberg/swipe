@@ -19,24 +19,18 @@ data "git_repository" "self" {
   path = path.module
 }
 
-resource "aws_key_pair" "swipe_batch" {
-  key_name   = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
-  public_key = var.BATCH_SSH_PUBLIC_KEY
-}
-
-module "batch_subnet" {
-  source                 = "./terraform/modules/swipe-sfn-batch-subnet"
-  app_name               = var.APP_NAME
-  deployment_environment = var.DEPLOYMENT_ENVIRONMENT
-}
+# resource "aws_key_pair" "swipe_batch" {
+#   key_name   = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
+#   public_key = var.BATCH_SSH_PUBLIC_KEY
+# }
 
 module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
   app_name                 = var.APP_NAME
   deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
-  batch_ssh_key_pair_id    = aws_key_pair.swipe_batch.id
-  batch_subnet_ids         = module.batch_subnet.batch_subnet_ids
-  batch_security_group_ids = [module.batch_subnet.batch_security_group_id]
+  # batch_ssh_key_pair_id    = aws_key_pair.swipe_batch.id
+  batch_subnet_ids         = var.batch_subnet_ids
+  batch_security_group_ids = var.batch_security_group_ids
   batch_ec2_instance_types = var.DEPLOYMENT_ENVIRONMENT == "test" ? ["optimal"] : ["r5d"]
 }
 

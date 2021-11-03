@@ -78,13 +78,13 @@ resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
     SPOT = {
       "cr_type" : "SPOT",
-      "min_vcpus" : 16,
-      "max_vcpus" : { "default" : 256, "staging" : 4096, "prod" : 4096 }
+      "min_vcpus" : 4,
+      "max_vcpus" : { "default" : 16, "staging" : 4096, "prod" : 4096 }
     }
     EC2 = {
       "cr_type" : "EC2",
       "min_vcpus" : 0,
-      "max_vcpus" : { "default" : 64, "staging" : 128, "prod" : 4096 }
+      "max_vcpus" : { "default" : 16, "staging" : 128, "prod" : 4096 }
     }
   }
 
@@ -94,12 +94,12 @@ resource "aws_batch_compute_environment" "swipe_main" {
     instance_role      = aws_iam_instance_profile.swipe_batch_main.arn
     instance_type      = var.batch_ec2_instance_types
     image_id           = data.aws_ssm_parameter.swipe_batch_ami.value
-    ec2_key_pair       = var.batch_ssh_key_pair_id
+    # ec2_key_pair       = var.batch_ssh_key_pair_id
     security_group_ids = var.batch_security_group_ids
     subnets            = var.batch_subnet_ids
 
     min_vcpus     = each.value["min_vcpus"]
-    desired_vcpus = 16
+    desired_vcpus = 4
     max_vcpus     = lookup(each.value["max_vcpus"], var.deployment_environment, each.value["max_vcpus"]["default"])
 
     type                = each.value["cr_type"]
