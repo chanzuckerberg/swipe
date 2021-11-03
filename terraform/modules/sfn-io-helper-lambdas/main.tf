@@ -30,7 +30,7 @@ resource "aws_iam_role" "iam_role" {
         Action : "sts:AssumeRole",
         Effect : "Allow",
         Principal : {
-          Service : ["lambda"],
+          Service : "lambda",
         },
       },
     ],
