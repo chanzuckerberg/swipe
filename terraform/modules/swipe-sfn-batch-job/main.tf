@@ -44,14 +44,14 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
           "s3:PutObject*",
           "s3:CreateMultipartUpload"
         ],
-        Resource: [
-          "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}",
-          "arn:aws:s3:::aegea-batch-jobs-${AWS_ACCOUNT_ID}/*",
+        Resource: compact([
+          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
+          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}/*",
           "arn:aws:s3:::sfn-wdl-dev",
           "arn:aws:s3:::sfn-wdl-dev/*",
           var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "", 
           var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
-        ]
+        ])
       },
       {
         Effect: "Allow",
