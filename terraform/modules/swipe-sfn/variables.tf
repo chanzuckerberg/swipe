@@ -42,3 +42,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "additional_s3_path" {
+  description = "additional S3 path to be granted permission for"
+  type = string
+  default = ""
+}

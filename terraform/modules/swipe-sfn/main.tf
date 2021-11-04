@@ -47,6 +47,7 @@ module "sfn_io_helper" {
   aws_account_id         = data.aws_caller_identity.current.account_id
   deployment_environment = var.deployment_environment
   batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
+  additional_s3_path     = var.additional_s3_path
   tags                   = var.tags
 }
 
