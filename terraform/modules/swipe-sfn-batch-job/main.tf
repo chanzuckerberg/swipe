@@ -56,6 +56,17 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
       {
         Effect: "Allow",
         Action: [
+          "s3:ListBucket",
+        ],
+        Resource: compact([
+          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
+          "arn:aws:s3:::sfn-wdl-dev",
+          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "", 
+        ])
+      },
+      {
+        Effect: "Allow",
+        Action: [
           "cloudwatch:PutMetricData"
         ],
         Resource: "*"
