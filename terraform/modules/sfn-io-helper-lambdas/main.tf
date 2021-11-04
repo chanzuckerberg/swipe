@@ -132,8 +132,8 @@ resource "aws_lambda_function" "lambda" {
     variables = {
       APP_NAME               = var.app_name
       DEPLOYMENT_ENVIRONMENT = var.deployment_environment
-      RunSPOTMemoryDefault   = "128000"
-      RunEC2MemoryDefault    = "128000"
+      RunSPOTMemoryDefault   = "16000"
+      RunEC2MemoryDefault    = "16000"
       AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://host.docker.internal:9000" : null
     }
   }
