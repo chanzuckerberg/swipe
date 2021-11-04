@@ -41,6 +41,7 @@ module "sfn" {
   batch_job_docker_image   = "ghcr.io/chanzuckerberg/swipe:sha-${substr(data.git_repository.self.commit_sha, 0, 7)}"
   batch_spot_job_queue_arn = module.batch_queue.batch_spot_job_queue_arn
   batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
+  additional_s3_path       = var.additional_s3_path
 }
 
 output "sfn_arn" {
