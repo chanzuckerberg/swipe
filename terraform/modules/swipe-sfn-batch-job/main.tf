@@ -77,6 +77,11 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_job" {
   policy_arn = aws_iam_policy.swipe_batch_main_job.arn
 }
 
+resource "aws_iam_role_policy_attachment" "swipe_batch_additional_policy" {
+  role       = aws_iam_role.swipe_batch_main_job.name
+  policy_arn = var.additional_policy_arn
+}
+
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_job_ecr_readonly" {
   role       = aws_iam_role.swipe_batch_main_job.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"

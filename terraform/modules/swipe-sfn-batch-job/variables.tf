@@ -43,3 +43,8 @@ variable "additional_s3_path" {
   type = string
   default = ""
 }
+
+variable "additional_policy_arn" {
+  type = string
+  default = ""
+}

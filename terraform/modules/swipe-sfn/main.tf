@@ -38,6 +38,7 @@ module "batch_job" {
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
   deployment_environment    = var.deployment_environment
   additional_s3_path        = var.additional_s3_path
+  additional_policy_arn     = var.additional_policy_arn
   tags                      = var.tags
 }
 

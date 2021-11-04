@@ -48,3 +48,9 @@ variable "additional_s3_path" {
   type = string
   default = ""
 }
+
+variable "additional_policy_arn" { 
+  description = "Additional policy ARN for batch"
+  type = string
+  default = ""
+}
