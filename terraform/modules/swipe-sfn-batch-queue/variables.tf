@@ -7,7 +7,7 @@ variable "app_name" {
 variable "batch_ec2_instance_types" {
   description = "EC2 instance types to use for Batch EC2 compute environments"
   type        = list(string)
-  default     = ["r5d"]
+  default     = ["r5d.4xlarge"]
 }
 
 variable "batch_security_group_ids" {
