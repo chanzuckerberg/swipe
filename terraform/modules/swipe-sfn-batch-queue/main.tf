@@ -78,8 +78,8 @@ resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
     SPOT = {
       "cr_type" : "SPOT",
-      "min_vcpus" : 4,
-      "max_vcpus" : { "default" : 16, "staging" : 4096, "prod" : 4096 }
+      "min_vcpus" : 16,
+      "max_vcpus" : { "default" : 256, "staging" : 4096, "prod" : 4096 }
     }
     EC2 = {
       "cr_type" : "EC2",
