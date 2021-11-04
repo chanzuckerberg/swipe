@@ -99,7 +99,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     subnets            = var.batch_subnet_ids
 
     min_vcpus     = each.value["min_vcpus"]
-    desired_vcpus = 4
+    desired_vcpus = 16
     max_vcpus     = lookup(each.value["max_vcpus"], var.deployment_environment, each.value["max_vcpus"]["default"])
 
     type                = each.value["cr_type"]
