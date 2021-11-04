@@ -37,6 +37,7 @@ module "batch_job" {
   batch_job_docker_image    = var.batch_job_docker_image
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
   deployment_environment    = var.deployment_environment
+  additional_s3_path        = var.additional_s3_path
   tags                      = var.tags
 }
 
