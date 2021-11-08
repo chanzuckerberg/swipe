@@ -21,7 +21,12 @@ jobs:
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}
           VERSION=latest # We're only building the main branch
-          SHA_TAG=sha-${GITHUB_SHA:0:8}
+          if [[ $GITHUB_REF = refs/tags/* ]]
+          then
+            TAG=${GITHUB_REF##*/}
+          else
+            TAG=sha-${GITHUB_SHA:0:8}
+          fi
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')

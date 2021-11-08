@@ -30,7 +30,7 @@ resource "aws_iam_role" "iam_role" {
         Action : "sts:AssumeRole",
         Effect : "Allow",
         Principal : {
-          Service : ["lambda"],
+          Service : "lambda.amazonaws.com",
         },
       },
     ],
@@ -55,12 +55,14 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "s3:GetObject*",
           "s3:PutObject*"
         ],
-        Resource : [
+        Resource : compact([
           "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*",
           "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*/*",
           "arn:aws:s3:::sfn-wdl-dev",
-          "arn:aws:s3:::sfn-wdl-dev/*"
-        ]
+          "arn:aws:s3:::sfn-wdl-dev/*",
+          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "",
+          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
+        ])
       },
       {
         Effect : "Allow",
@@ -130,9 +132,9 @@ resource "aws_lambda_function" "lambda" {
     variables = {
       APP_NAME               = var.app_name
       DEPLOYMENT_ENVIRONMENT = var.deployment_environment
-      RunSPOTMemoryDefault   = "128000"
-      RunEC2MemoryDefault    = "128000"
-      AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://host.docker.internal:9000" : ""
+      RunSPOTMemoryDefault   = "16000"
+      RunEC2MemoryDefault    = "16000"
+      AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://host.docker.internal:9000" : null
     }
   }
 }

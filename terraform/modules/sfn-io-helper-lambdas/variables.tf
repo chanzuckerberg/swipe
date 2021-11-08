@@ -22,3 +22,8 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+variable "additional_s3_path" {
+  type    = string
+  default = ""
+}

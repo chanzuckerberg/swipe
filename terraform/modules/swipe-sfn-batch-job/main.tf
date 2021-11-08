@@ -32,11 +32,46 @@ locals {
 
 resource "aws_iam_policy" "swipe_batch_main_job" {
   name = "${local.app_slug}-batch-job"
-  policy = templatefile("${path.module}/../../iam_policy_templates/batch_job.json", {
-    APP_NAME               = var.app_name,
-    DEPLOYMENT_ENVIRONMENT = var.deployment_environment,
-    AWS_DEFAULT_REGION     = data.aws_region.current.name,
-    AWS_ACCOUNT_ID         = data.aws_caller_identity.current.account_id,
+
+  policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Effect : "Allow",
+        Action : [
+          "s3:List*",
+          "s3:GetObject*",
+          "s3:PutObject*",
+          "s3:CreateMultipartUpload"
+        ],
+        Resource : compact([
+          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
+          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}/*",
+          "arn:aws:s3:::sfn-wdl-dev",
+          "arn:aws:s3:::sfn-wdl-dev/*",
+          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "",
+          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
+        ])
+      },
+      {
+        Effect : "Allow",
+        Action : [
+          "s3:ListBucket",
+        ],
+        Resource : compact([
+          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
+          "arn:aws:s3:::sfn-wdl-dev",
+          var.additional_s3_path != "" ? format("arn:aws:s3:::%s", split("/", var.additional_s3_path)[0]) : "",
+        ])
+      },
+      {
+        Effect : "Allow",
+        Action : [
+          "cloudwatch:PutMetricData"
+        ],
+        Resource : "*"
+      }
+    ]
   })
 }
 
@@ -51,6 +86,12 @@ resource "aws_iam_role" "swipe_batch_main_job" {
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_job" {
   role       = aws_iam_role.swipe_batch_main_job.name
   policy_arn = aws_iam_policy.swipe_batch_main_job.arn
+}
+
+resource "aws_iam_role_policy_attachment" "swipe_batch_additional_policy" {
+  role       = aws_iam_role.swipe_batch_main_job.name
+  policy_arn = var.additional_policy_arn
+  count      = var.additional_policy_arn != "" ? 1 : 0
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_job_ecr_readonly" {

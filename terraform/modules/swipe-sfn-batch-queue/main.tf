@@ -84,7 +84,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     EC2 = {
       "cr_type" : "EC2",
       "min_vcpus" : 0,
-      "max_vcpus" : { "default" : 64, "staging" : 128, "prod" : 4096 }
+      "max_vcpus" : { "default" : 16, "staging" : 128, "prod" : 4096 }
     }
   }
 
@@ -94,7 +94,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     instance_role      = aws_iam_instance_profile.swipe_batch_main.arn
     instance_type      = var.batch_ec2_instance_types
     image_id           = data.aws_ssm_parameter.swipe_batch_ami.value
-    ec2_key_pair       = var.batch_ssh_key_pair_id
+    ec2_key_pair       = var.batch_ssh_key_pair_id != "" ? var.batch_ssh_key_pair_id : null
     security_group_ids = var.batch_security_group_ids
     subnets            = var.batch_subnet_ids
 
