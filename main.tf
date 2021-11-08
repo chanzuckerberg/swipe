@@ -40,7 +40,7 @@ module "batch_queue" {
 }
 
 locals {
-  version = templatefile("${path.module}/version")
+  version = file("${path.module}/version")
 }
 
 module "sfn" {
