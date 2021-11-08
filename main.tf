@@ -39,11 +39,15 @@ module "batch_queue" {
   batch_ec2_instance_types = var.DEPLOYMENT_ENVIRONMENT == "test" ? ["optimal"] : ["r5d"]
 }
 
+locals {
+  version = templatefile("${path.module}/version")
+}
+
 module "sfn" {
   source                   = "./terraform/modules/swipe-sfn"
   app_name                 = var.APP_NAME
   deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
-  batch_job_docker_image   = "ghcr.io/chanzuckerberg/swipe:latest" # TODO: rollback, version
+  batch_job_docker_image   = "ghcr.io/chanzuckerberg/swipe:${local.version}"
   batch_spot_job_queue_arn = module.batch_queue.batch_spot_job_queue_arn
   batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
   additional_s3_path       = var.additional_s3_path
