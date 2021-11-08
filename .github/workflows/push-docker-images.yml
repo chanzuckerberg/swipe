@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - 'main'
+    tags:
+      - v*
 
 jobs:
   build_docker_images:
@@ -33,8 +35,8 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           docker tag ${{ github.repository }} $IMAGE_ID:latest
-          docker tag ${{ github.repository }} $IMAGE_ID:$SHA_TAG
+          docker tag ${{ github.repository }} $IMAGE_ID:$TAG
           docker push $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$SHA_TAG
+          docker push $IMAGE_ID:$TAG
       - name: Checkout
         uses: actions/checkout@v2
