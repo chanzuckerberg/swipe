@@ -19,16 +19,33 @@ data "git_repository" "self" {
 resource "aws_key_pair" "swipe_batch" {
   key_name   = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
   public_key = var.BATCH_SSH_PUBLIC_KEY
-  count      = var.BATCH_SSH_PUBLIC_KEY ? 1 : 0
+  count      = var.BATCH_SSH_PUBLIC_KEY != "" ? 1 : 0
+}
+
+variable "batch_security_group_ids" {
+  description = "EC2 security group IDs for Batch EC2 compute environment container instances"
+  type        = list(string)
+}
+
+variable "batch_subnet_ids" {
+  description = "EC2 subnet IDs for Batch EC2 compute environment container instances"
+  type        = list(string)
+}
+
+module "batch_subnet" {
+  source                 = "./terraform/modules/swipe-sfn-batch-subnet"
+  app_name               = var.APP_NAME
+  deployment_environment = var.DEPLOYMENT_ENVIRONMENT
+  count                  = length(var.batch_security_group_ids) == 0 || length(var.batch_subnet_ids) == 0 ? 1 : 0
 }
 
 module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
   app_name                 = var.APP_NAME
   deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
-  batch_ssh_key_pair_id    = aws_key_pair.swipe_batch ? aws_key_pair.swipe_batch[0].id : ""
-  batch_subnet_ids         = var.batch_subnet_ids
-  batch_security_group_ids = var.batch_security_group_ids
+  batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
+  batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet.batch_subnet_ids : var.batch_subnet_ids
+  batch_security_group_ids = length(module.batch_subnet) > 0 ? [module.batch_subnet.batch_security_group_id] : var.batch_security_group_ids
   batch_ec2_instance_types = var.DEPLOYMENT_ENVIRONMENT == "test" ? ["optimal"] : ["r5d"]
 }
 
