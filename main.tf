@@ -7,10 +7,6 @@ terraform {
   }
 }
 
-data "git_repository" "self" {
-  path = path.module
-}
-
 resource "aws_key_pair" "swipe_batch" {
   key_name   = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
   public_key = var.BATCH_SSH_PUBLIC_KEY
