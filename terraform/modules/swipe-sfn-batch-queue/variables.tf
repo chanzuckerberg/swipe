@@ -20,10 +20,11 @@ variable "batch_subnet_ids" {
   type        = list(string)
 }
 
-# variable "batch_ssh_key_pair_id" {
-#   description = "EC2 SSH key pair to use for Batch EC2 container instances"
-#   type        = string
-# }
+variable "batch_ssh_key_pair_id" {
+  description = "EC2 SSH key pair to use for Batch EC2 container instances"
+  type        = string
+  default     = ""
+}
 
 variable "deployment_environment" {
   description = "deployment environment: (test, dev, staging, prod, etc.)"
