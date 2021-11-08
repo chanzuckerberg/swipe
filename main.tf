@@ -4,11 +4,6 @@ terraform {
     aws = {
       version = "~> 3.28"
     }
-
-    git = {
-      source  = "innovationnorway/git"
-      version = "~> 0.1.3"
-    }
   }
 }
 
