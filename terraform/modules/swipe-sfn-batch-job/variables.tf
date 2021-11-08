@@ -40,11 +40,11 @@ variable "tags" {
 }
 
 variable "additional_s3_path" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "additional_policy_arn" {
-  type = string
+  type    = string
   default = ""
 }

@@ -22,12 +22,12 @@ variable "batch_subnet_ids" {
 
 variable "additional_s3_path" {
   description = "additional S3 path to be granted permission for"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
 
-variable "additional_policy_arn" { 
+variable "additional_policy_arn" {
   description = "Additional policy ARN for batch"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
