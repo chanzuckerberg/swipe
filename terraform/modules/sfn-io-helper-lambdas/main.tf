@@ -60,7 +60,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*/*",
           "arn:aws:s3:::sfn-wdl-dev",
           "arn:aws:s3:::sfn-wdl-dev/*",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "", 
+          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "",
           var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
         ])
       },

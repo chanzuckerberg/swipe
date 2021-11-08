@@ -13,17 +13,20 @@ variable "batch_ec2_instance_types" {
 variable "batch_security_group_ids" {
   description = "EC2 security group IDs for Batch EC2 compute environment container instances"
   type        = list(string)
+  default     = []
 }
 
 variable "batch_subnet_ids" {
   description = "EC2 subnet IDs for Batch EC2 compute environment container instances"
   type        = list(string)
+  default     = []
 }
 
-# variable "batch_ssh_key_pair_id" {
-#   description = "EC2 SSH key pair to use for Batch EC2 container instances"
-#   type        = string
-# }
+variable "batch_ssh_key_pair_id" {
+  description = "EC2 SSH key pair to use for Batch EC2 container instances"
+  type        = string
+  default     = ""
+}
 
 variable "deployment_environment" {
   description = "deployment environment: (test, dev, staging, prod, etc.)"
