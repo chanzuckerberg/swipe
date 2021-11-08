@@ -91,6 +91,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_job" {
 resource "aws_iam_role_policy_attachment" "swipe_batch_additional_policy" {
   role       = aws_iam_role.swipe_batch_main_job.name
   policy_arn = var.additional_policy_arn
+  count      = var.additional_policy_arn != "" ? 1 : 0
 }
 
 resource "aws_iam_role_policy_attachment" "swipe_batch_main_job_ecr_readonly" {
