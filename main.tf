@@ -22,16 +22,6 @@ resource "aws_key_pair" "swipe_batch" {
   count      = var.BATCH_SSH_PUBLIC_KEY != "" ? 1 : 0
 }
 
-variable "batch_security_group_ids" {
-  description = "EC2 security group IDs for Batch EC2 compute environment container instances"
-  type        = list(string)
-}
-
-variable "batch_subnet_ids" {
-  description = "EC2 subnet IDs for Batch EC2 compute environment container instances"
-  type        = list(string)
-}
-
 module "batch_subnet" {
   source                 = "./terraform/modules/swipe-sfn-batch-subnet"
   app_name               = var.APP_NAME
