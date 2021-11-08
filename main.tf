@@ -34,8 +34,8 @@ module "batch_queue" {
   app_name                 = var.APP_NAME
   deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
   batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
-  batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet.batch_subnet_ids : var.batch_subnet_ids
-  batch_security_group_ids = length(module.batch_subnet) > 0 ? [module.batch_subnet.batch_security_group_id] : var.batch_security_group_ids
+  batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.batch_subnet_ids
+  batch_security_group_ids = length(module.batch_subnet) > 0 ? [module.batch_subnet[0].batch_security_group_id] : var.batch_security_group_ids
   batch_ec2_instance_types = var.DEPLOYMENT_ENVIRONMENT == "test" ? ["optimal"] : ["r5d"]
 }
 
