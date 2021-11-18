@@ -57,3 +57,9 @@ variable "ec2_desired_vcpus" {
   description = "Desired EC2 CPUs for this cluster"
   default     = 0
 }
+
+variable "additional_s3_path" {
+  description = "additional S3 path to be granted permission for"
+  type        = string
+  default     = ""
+}

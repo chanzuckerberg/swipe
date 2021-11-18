@@ -90,7 +90,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_job" {
 
 resource "aws_iam_role_policy_attachment" "batch_job_policies" {
   count      = length(var.job_policy_arns)
-  role       = aws_iam_role.batch_job_role.name
+  role       = aws_iam_role.swipe_batch_main_job.name
   policy_arn = var.job_policy_arns[count.index]
 }
 
