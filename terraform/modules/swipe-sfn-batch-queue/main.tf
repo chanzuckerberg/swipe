@@ -139,7 +139,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 }
 
 resource "aws_batch_job_queue" "swipe_main" {
-  for_each = set(["SPOT", "EC2"])
+  for_each = toset(["SPOT", "EC2"])
   name     = "${local.app_slug}-main-${each.key}"
   state    = "ENABLED"
   priority = 10
