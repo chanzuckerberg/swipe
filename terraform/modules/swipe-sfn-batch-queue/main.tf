@@ -73,6 +73,17 @@ resource "aws_launch_template" "swipe_batch_main" {
   tags      = var.tags
 }
 
+resource "aws_security_group" "swipe" {
+  name   = local.app_slug
+  vpc_id = var.vpc_id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # See https://github.com/hashicorp/terraform-provider-aws/pull/16819 for Batch Fargate CE support
 resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
@@ -95,6 +106,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     instance_type      = var.batch_ec2_instance_types
     image_id           = data.aws_ssm_parameter.swipe_batch_ami.value
     ec2_key_pair       = var.batch_ssh_key_pair_id != "" ? var.batch_ssh_key_pair_id : null
+    security_group_ids = [aws_security_group.swipe.id]
     subnets            = var.batch_subnet_ids
 
     min_vcpus     = each.value["min_vcpus"]

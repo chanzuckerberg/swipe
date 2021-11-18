@@ -7,17 +7,6 @@ data "aws_region" "current" {}
 
 data "aws_caller_identity" "current" {}
 
-resource "aws_security_group" "swipe" {
-  name   = local.app_slug
-  vpc_id = var.vpc_id
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "aws_iam_policy" "swipe_sfn_service" {
   name = "${local.app_slug}-sfn-service"
   policy = templatefile("${path.module}/../../iam_policy_templates/sfn_service.json", {

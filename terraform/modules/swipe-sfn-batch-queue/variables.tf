@@ -4,6 +4,11 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "vpc_id" {
+  type    = string
+  default = ""
+}
+
 variable "batch_ec2_instance_types" {
   description = "EC2 instance types to use for Batch EC2 compute environments"
   type        = list(string)
