@@ -28,9 +28,9 @@ variable "job_policy_arns" {
   default     = []
 }
 
-variable "instance_type" {
+variable "batch_ec2_instance_types" {
   type        = list(string)
-  description = "Instance type"
+  description = "Instance type for Batch EC2 instances"
   default     = ["r5d"]
 }
 
