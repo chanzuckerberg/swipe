@@ -25,7 +25,6 @@ TF_CLI_ARGS_init="--backend-config ${APP_HOME}/${TF_DATA_DIR}/aws_config.json"
 # See https://github.com/terraform-providers/terraform-provider-aws/issues/1184
 AWS_SDK_LOAD_CONFIG=1
 
-OWNER=akislyuk@chanzuckerberg.com
 TF_S3_BUCKET=tfstate-$AWS_ACCOUNT_ID
 BATCH_SSH_PUBLIC_KEY="$(cat ~/.ssh/${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}.pub)"
 set +a

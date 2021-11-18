@@ -41,8 +41,7 @@ module "sfn" {
   batch_job_docker_image   = "ghcr.io/chanzuckerberg/swipe:${local.version}"
   batch_spot_job_queue_arn = module.batch_queue.batch_spot_job_queue_arn
   batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
-  additional_s3_path       = var.additional_s3_path
-  additional_policy_arn    = var.additional_policy_arn
+  job_policy_arns          = var.job_policy_arns
 }
 
 output "sfn_arn" {
