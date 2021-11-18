@@ -52,9 +52,9 @@ variable "spot_desired_vcpus" {
   default     = 0
 }
 
-variable "ec2_desired_vcpus" {
+variable "on_demand_desired_vcpus" {
   type        = number
-  description = "Desired EC2 CPUs for this cluster"
+  description = "Desired on demand CPUs for this cluster"
   default     = 0
 }
 

@@ -33,6 +33,30 @@ variable "deployment_environment" {
   default     = "dev"
 }
 
+variable "min_vcpus" {
+  type        = number
+  description = "Minimum CPUs for this cluster"
+  default     = 8
+}
+
+variable "max_vcpus" {
+  type        = number
+  description = "Maximum CPUs for this cluster"
+  default     = 16
+}
+
+variable "spot_desired_vcpus" {
+  type        = number
+  description = "Desired Spot CPUs for this cluster"
+  default     = 0
+}
+
+variable "on_demand_desired_vcpus" {
+  type        = number
+  description = "Desired on demand CPUs for this cluster"
+  default     = 0
+}
+
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)

@@ -89,13 +89,11 @@ resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
     SPOT = {
       "cr_type" : "SPOT",
-      "min_vcpus" : 16,
-      "max_vcpus" : { "default" : 256, "staging" : 4096, "prod" : 4096 }
+      "desired_vcpus" : var.spot_desired_vcpus,
     }
     EC2 = {
       "cr_type" : "EC2",
-      "min_vcpus" : 0,
-      "max_vcpus" : { "default" : 16, "staging" : 128, "prod" : 4096 }
+      "desired_vcpus" : var.on_demand_desired_vcpus,
     }
   }
 
@@ -109,9 +107,9 @@ resource "aws_batch_compute_environment" "swipe_main" {
     security_group_ids = [aws_security_group.swipe.id]
     subnets            = var.batch_subnet_ids
 
-    min_vcpus     = each.value["min_vcpus"]
-    desired_vcpus = 16
-    max_vcpus     = lookup(each.value["max_vcpus"], var.deployment_environment, each.value["max_vcpus"]["default"])
+    min_vcpus     = var.min_vcpus
+    desired_vcpus = each.value["desired_vcpus"]
+    max_vcpus     = var.max_vcpus
 
     type                = each.value["cr_type"]
     allocation_strategy = "BEST_FIT"
@@ -141,10 +139,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 }
 
 resource "aws_batch_job_queue" "swipe_main" {
-  for_each = {
-    "SPOT" : {},
-    "EC2" : {}
-  }
+  for_each = set(["SPOT", "EC2"])
   name     = "${local.app_slug}-main-${each.key}"
   state    = "ENABLED"
   priority = 10
