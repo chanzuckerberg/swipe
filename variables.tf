@@ -13,6 +13,7 @@ variable "BATCH_SSH_PUBLIC_KEY" {
 
 variable "vpc_id" {
   type = string
+  default = ""
 }
 
 variable "batch_subnet_ids" {

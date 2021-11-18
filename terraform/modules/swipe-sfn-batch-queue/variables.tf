@@ -10,12 +10,6 @@ variable "batch_ec2_instance_types" {
   default     = ["r5d.4xlarge"]
 }
 
-variable "batch_security_group_ids" {
-  description = "EC2 security group IDs for Batch EC2 compute environment container instances"
-  type        = list(string)
-  default     = []
-}
-
 variable "batch_subnet_ids" {
   description = "EC2 subnet IDs for Batch EC2 compute environment container instances"
   type        = list(string)
