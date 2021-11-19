@@ -13,7 +13,7 @@ init-tf:
 deploy: init-tf
 	@if [[ $(DEPLOYMENT_ENVIRONMENT) == staging && $$(git symbolic-ref --short HEAD) != staging ]]; then echo Please deploy staging from the staging branch; exit 1; fi
 	@if [[ $(DEPLOYMENT_ENVIRONMENT) == prod && $$(git symbolic-ref --short HEAD) != prod ]]; then echo Please deploy prod from the prod branch; exit 1; fi
-	TF_VAR_APP_NAME=$(APP_NAME) TF_VAR_DEPLOYMENT_ENVIRONMENT=$(DEPLOYMENT_ENVIRONMENT) TF_VAR_OWNER=$(OWNER) TF_VAR_BATCH_SSH_PUBLIC_KEY='$(BATCH_SSH_PUBLIC_KEY)' terraform apply
+	TF_VAR_APP_NAME=$(APP_NAME) TF_VAR_DEPLOYMENT_ENVIRONMENT=$(DEPLOYMENT_ENVIRONMENT) TF_VAR_BATCH_SSH_PUBLIC_KEY='$(BATCH_SSH_PUBLIC_KEY)' terraform apply
 
 deploy-mock:
 	aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000

@@ -17,7 +17,7 @@ module "batch_subnet" {
   source                 = "./terraform/modules/swipe-sfn-batch-subnet"
   app_name               = var.APP_NAME
   deployment_environment = var.DEPLOYMENT_ENVIRONMENT
-  count                  = length(var.batch_security_group_ids) == 0 || length(var.batch_subnet_ids) == 0 ? 1 : 0
+  count                  = var.vpc_id == "" || length(var.batch_subnet_ids) == 0 ? 1 : 0
 }
 
 module "batch_queue" {
@@ -26,8 +26,11 @@ module "batch_queue" {
   deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
   batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
   batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.batch_subnet_ids
-  batch_security_group_ids = length(module.batch_subnet) > 0 ? [module.batch_subnet[0].batch_security_group_id] : var.batch_security_group_ids
-  batch_ec2_instance_types = var.DEPLOYMENT_ENVIRONMENT == "test" ? ["optimal"] : ["r5d"]
+  batch_ec2_instance_types = var.batch_ec2_instance_types
+  min_vcpus                = var.min_vcpus
+  max_vcpus                = var.max_vcpus
+  spot_desired_vcpus       = var.spot_desired_vcpus
+  on_demand_desired_vcpus  = var.on_demand_desired_vcpus
 }
 
 locals {
@@ -42,7 +45,7 @@ module "sfn" {
   batch_spot_job_queue_arn = module.batch_queue.batch_spot_job_queue_arn
   batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
   additional_s3_path       = var.additional_s3_path
-  additional_policy_arn    = var.additional_policy_arn
+  job_policy_arns          = var.job_policy_arns
 }
 
 output "sfn_arn" {

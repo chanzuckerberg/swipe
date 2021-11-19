@@ -49,8 +49,8 @@ variable "additional_s3_path" {
   default     = ""
 }
 
-variable "additional_policy_arn" {
-  description = "Additional policy ARN for batch"
-  type        = string
-  default     = ""
+variable "job_policy_arns" {
+  type        = list(string)
+  description = "Policy ARNs to attach to batch jobs"
+  default     = []
 }
