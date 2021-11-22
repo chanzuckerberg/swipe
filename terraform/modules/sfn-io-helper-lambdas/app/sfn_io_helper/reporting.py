@@ -27,7 +27,7 @@ def emit_spot_interruption_metric(event, namespace=os.environ["APP_NAME"]):
 
 
 def emit_periodic_metrics(
-    namespace=os.environ['APP_NAME'},
+    namespace=os.environ["APP_NAME"],
     time_horizon=timedelta(days=1)
 ):
     """Emit CloudWatch metrics on a fixed schedule"""

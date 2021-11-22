@@ -4,6 +4,11 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "mock" {
+  type    = bool
+  default = false
+}
+
 variable "sfn_template_file" {
   description = "JSON file with SFN contents (default: terraform/modules/swipe-sfn/sfn-templates/single-wdl-1.yml, transcoded to JSON)"
   type        = string
