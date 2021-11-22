@@ -44,7 +44,6 @@ logger = logging.getLogger("sfn_dispatch")
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
 parser = argparse.ArgumentParser("run_sfn", description="Run an SFN-WDL workflow")
-parser.add_argument("--environment", default=os.environ.get("DEPLOYMENT_ENVIRONMENT"))
 parser.add_argument("--sfn-name")
 parser.add_argument("--sfn-arn")
 parser.add_argument("--stages", nargs="+")

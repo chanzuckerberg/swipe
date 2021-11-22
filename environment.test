@@ -1,6 +1,0 @@
-set -a
-APP_NAME=swipe
-TF_VAR_mock=true
-TF_VAR_APP_NAME=$APP_NAME
-TF_VAR_batch_ec2_instance_types='["optimal"]'
-set +a
