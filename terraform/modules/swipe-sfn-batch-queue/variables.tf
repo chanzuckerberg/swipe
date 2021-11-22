@@ -4,6 +4,12 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "mock" {
+  type    = bool
+  default = false
+}
+
+
 variable "vpc_id" {
   type    = string
   default = ""

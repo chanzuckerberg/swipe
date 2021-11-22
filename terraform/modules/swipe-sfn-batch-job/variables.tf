@@ -27,11 +27,6 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
-variable "mock" {
-  type    = bool
-  default = false
-}
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)

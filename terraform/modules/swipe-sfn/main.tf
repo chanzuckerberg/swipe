@@ -17,7 +17,7 @@ resource "aws_iam_policy" "swipe_sfn_service" {
 }
 
 resource "aws_iam_role" "swipe_sfn_service" {
-  name = "${local.app_name}-sfn-service"
+  name = "${var.app_name}-sfn-service"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["states"]
   })
@@ -42,6 +42,7 @@ module "batch_job" {
 module "sfn_io_helper" {
   source             = "../sfn-io-helper-lambdas"
   app_name           = var.app_name
+  mock               = var.mock
   aws_region         = data.aws_region.current.name
   aws_account_id     = data.aws_caller_identity.current.account_id
   batch_queue_arns   = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
