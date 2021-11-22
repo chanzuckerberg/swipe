@@ -27,10 +27,9 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
+variable "mock" {
+  type    = bool
+  default = false
 }
 
 variable "tags" {

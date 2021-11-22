@@ -1,7 +1,3 @@
-locals {
-  app_slug = "${var.app_name}-${var.deployment_environment}"
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -10,14 +6,14 @@ resource "aws_vpc" "swipe" {
   cidr_block           = var.cidr_block
   enable_dns_hostnames = true
   tags = merge(var.tags, {
-    Name = local.app_slug
+    Name = var.app_name
   })
 }
 
 resource "aws_internet_gateway" "swipe" {
   vpc_id = aws_vpc.swipe.id
   tags = merge(var.tags, {
-    Name = local.app_slug
+    Name = var.app_name
   })
 }
 
@@ -34,6 +30,6 @@ resource "aws_subnet" "swipe" {
   cidr_block              = cidrsubnet(aws_vpc.swipe.cidr_block, 8, index(data.aws_availability_zones.available.names, each.key))
   map_public_ip_on_launch = true
   tags = merge(var.tags, {
-    Name = local.app_slug
+    Name = var.app_name
   })
 }

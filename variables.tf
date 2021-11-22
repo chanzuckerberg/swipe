@@ -2,8 +2,9 @@ variable "APP_NAME" {
   type = string
 }
 
-variable "DEPLOYMENT_ENVIRONMENT" {
-  type = string
+variable "mock" {
+  type    = bool
+  default = false
 }
 
 variable "BATCH_SSH_PUBLIC_KEY" {

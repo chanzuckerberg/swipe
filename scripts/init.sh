@@ -19,7 +19,7 @@ check_for_termination() {
 }
 
 put_metric() {
-  aws cloudwatch put-metric-data --metric-name $1 --namespace swipe-$DEPLOYMENT_ENVIRONMENT --unit Percent --value $2 --dimensions SFNCurrentState=$SFN_CURRENT_STATE
+  aws cloudwatch put-metric-data --metric-name $1 --namespace $APP_NAME --unit Percent --value $2 --dimensions SFNCurrentState=$SFN_CURRENT_STATE
 }
 
 put_metrics() {

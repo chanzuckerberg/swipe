@@ -27,12 +27,6 @@ variable "batch_ssh_key_pair_id" {
   default     = ""
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
-}
-
 variable "min_vcpus" {
   type        = number
   description = "Minimum CPUs for this cluster"

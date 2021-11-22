@@ -31,12 +31,6 @@ variable "batch_ec2_job_queue_arn" {
   type        = string
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
-}
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)

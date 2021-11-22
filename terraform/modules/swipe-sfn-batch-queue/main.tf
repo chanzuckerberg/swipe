@@ -1,15 +1,14 @@
 locals {
-  app_slug                       = "${var.app_name}-${var.deployment_environment}"
   launch_template_user_data_file = "${path.module}/container_instance_user_data"
   launch_template_user_data_hash = filemd5(local.launch_template_user_data_file)
 }
 
 data "aws_ssm_parameter" "swipe_batch_ami" {
-  name = "/${var.deployment_environment == "test" ? "mock-aws" : "aws"}/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  name = "/${var.mock ? "mock-aws" : "aws"}/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
 }
 
 resource "aws_iam_role" "swipe_batch_service_role" {
-  name = "${local.app_slug}-batch-service"
+  name = "${var.app_name}-batch-service"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["batch"]
   })
@@ -22,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_service_role" {
 }
 
 resource "aws_iam_role" "swipe_batch_spot_fleet_service_role" {
-  name = "${local.app_slug}-batch-spot-fleet-service"
+  name = "${var.app_name}-batch-spot-fleet-service"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["spotfleet"]
   })
@@ -35,7 +34,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_spot_fleet_service_role" 
 }
 
 resource "aws_iam_role" "swipe_batch_main_instance_role" {
-  name = "${local.app_slug}-batch-main-instance"
+  name = "${var.app_name}-batch-main-instance"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["ec2"]
   })
@@ -58,7 +57,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_instance_role_ssm" {
 }
 
 resource "aws_iam_instance_profile" "swipe_batch_main" {
-  name = "${local.app_slug}-batch-main"
+  name = "${var.app_name}-batch-main"
   role = aws_iam_role.swipe_batch_main_instance_role.name
 }
 
@@ -68,13 +67,13 @@ resource "aws_launch_template" "swipe_batch_main" {
   # The launch template resource increments its version when contents change, but the compute environment resource does
   # not recognize this change. We bind the launch template name to user data contents here, so any changes to user data
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
-  name      = "${local.app_slug}-batch-main-${local.launch_template_user_data_hash}"
+  name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
   user_data = filebase64(local.launch_template_user_data_file)
   tags      = var.tags
 }
 
 resource "aws_security_group" "swipe" {
-  name   = local.app_slug
+  name   = var.app_name
   vpc_id = var.vpc_id
   egress {
     from_port   = 0
@@ -97,7 +96,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     }
   }
 
-  compute_environment_name_prefix = "${local.app_slug}-${each.key}-"
+  compute_environment_name_prefix = "${var.app_name}-${each.key}-"
 
   compute_resources {
     instance_role      = aws_iam_instance_profile.swipe_batch_main.arn
@@ -116,7 +115,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     bid_percentage      = 100
     spot_iam_fleet_role = aws_iam_role.swipe_batch_spot_fleet_service_role.arn
     tags = merge(var.tags, {
-      Name = "${var.app_name}-batch-${var.deployment_environment}-${each.key}"
+      Name = "${var.app_name}-batch-${each.key}"
     })
 
     launch_template {
@@ -140,7 +139,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 
 resource "aws_batch_job_queue" "swipe_main" {
   for_each = toset(["SPOT", "EC2"])
-  name     = "${local.app_slug}-main-${each.key}"
+  name     = "${var.app_name}-main-${each.key}"
   state    = "ENABLED"
   priority = 10
   compute_environments = [
