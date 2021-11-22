@@ -1,6 +1,7 @@
 set -a
 APP_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 APP_NAME=swipe
+DEPLOYMENT_ENVIRONMENT=test
 TF_VAR_mock=true
 
 TF_DATA_DIR=".terraform.${DEPLOYMENT_ENVIRONMENT}"

@@ -14,7 +14,7 @@ def notify_failure(sfn_state):
     """Placeholder for sending a message to a queue for push based result processing"""
 
 
-def emit_batch_metric_values(event, namespace=os.environ["APP_NAME"]}):
+def emit_batch_metric_values(event, namespace=os.environ["APP_NAME"]):
     """Emit CloudWatch metrics for a Batch event"""
 
 
