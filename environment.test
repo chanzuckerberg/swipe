@@ -1,10 +1,5 @@
 set -a
-APP_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 APP_NAME=swipe
-
-# See https://github.com/terraform-providers/terraform-provider-aws/issues/1184
-AWS_SDK_LOAD_CONFIG=1
-
 TF_VAR_mock=true
 TF_VAR_APP_NAME=$APP_NAME
 TF_VAR_batch_ec2_instance_types='["optimal"]'
