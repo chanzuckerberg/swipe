@@ -27,21 +27,21 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
-}
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
   default     = {}
 }
 
-variable "additional_s3_path" {
+variable "workspace_s3_prefix" {
   type    = string
   default = ""
+}
+
+variable "wdl_workflow_s3_prefix" {
+  description = "S3 prefix where WDL workflows are stored, read permissions will be granted for this prefix"
+  type        = string
+  default     = ""
 }
 
 variable "job_policy_arns" {

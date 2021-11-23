@@ -4,6 +4,11 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "mock" {
+  type    = bool
+  default = false
+}
+
 variable "sfn_template_file" {
   description = "JSON file with SFN contents (default: terraform/modules/swipe-sfn/sfn-templates/single-wdl-1.yml, transcoded to JSON)"
   type        = string
@@ -31,19 +36,13 @@ variable "batch_ec2_job_queue_arn" {
   type        = string
 }
 
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
-}
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
   default     = {}
 }
 
-variable "additional_s3_path" {
+variable "workspace_s3_prefix" {
   description = "additional S3 path to be granted permission for"
   type        = string
   default     = ""

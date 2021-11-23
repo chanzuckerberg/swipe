@@ -9,7 +9,7 @@
         "states:StopExecution"
       ],
       "Resource": [
-        "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*"
+        "arn:aws:states:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${app_name}-*"
       ]
     },
     {
@@ -47,7 +47,7 @@
         "lambda:InvokeFunction"
       ],
       "Resource": [
-        "arn:aws:lambda:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:function:${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*"
+        "arn:aws:lambda:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:function:${app_name}-*"
       ]
     },
     {
@@ -56,7 +56,7 @@
         "sqs:SendMessage"
       ],
       "Resource": [
-        "arn:aws:sqs:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:${APP_NAME}-${DEPLOYMENT_ENVIRONMENT}-*"
+        "arn:aws:sqs:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:${app_name}-*"
       ]
     }
   ]

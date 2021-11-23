@@ -44,7 +44,6 @@ logger = logging.getLogger("sfn_dispatch")
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
 parser = argparse.ArgumentParser("run_sfn", description="Run an SFN-WDL workflow")
-parser.add_argument("--environment", default=os.environ.get("DEPLOYMENT_ENVIRONMENT"))
 parser.add_argument("--sfn-name")
 parser.add_argument("--sfn-arn")
 parser.add_argument("--stages", nargs="+")
@@ -58,7 +57,7 @@ sfn = boto3.client("stepfunctions")
 logs = boto3.client("logs")
 batch = boto3.client("batch")
 
-app_slug = f"{os.environ['APP_NAME']}-{args.environment}"
+app_name = os.environ["APP_NAME"]
 
 if args.sfn_name is None:
     args.sfn_name = "single-wdl"
@@ -68,7 +67,7 @@ if args.stages is None:
 
 if args.sfn_arn is None:
     args.sfn_arn = str(ARN(service="states",
-                           resource=f"stateMachine:{app_slug}-{args.sfn_name}-1"))
+                           resource=f"stateMachine:{app_name}-{args.sfn_name}-1"))
 
 args.sfn_input.setdefault("Input", {
     "Run": {
@@ -81,7 +80,7 @@ for stage in args.stages:
     wdl_uri = args.wdl_uri
     args.sfn_input[f"{stage.upper()}_WDL_URI"] = wdl_uri
 
-execution_name = f"{app_slug}-{timestamp}"
+execution_name = f"{app_name}-{timestamp}"
 
 logger.info("Starting execution for %s", execution_name)
 res = sfn.start_execution(stateMachineArn=args.sfn_arn,

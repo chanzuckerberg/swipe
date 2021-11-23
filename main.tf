@@ -8,22 +8,21 @@ terraform {
 }
 
 resource "aws_key_pair" "swipe_batch" {
-  key_name   = "${var.APP_NAME}-${var.DEPLOYMENT_ENVIRONMENT}"
-  public_key = var.BATCH_SSH_PUBLIC_KEY
-  count      = var.BATCH_SSH_PUBLIC_KEY != "" ? 1 : 0
+  key_name   = var.app_name
+  public_key = var.batch_ssh_public_key
+  count      = var.batch_ssh_public_key != "" ? 1 : 0
 }
 
 module "batch_subnet" {
-  source                 = "./terraform/modules/swipe-sfn-batch-subnet"
-  app_name               = var.APP_NAME
-  deployment_environment = var.DEPLOYMENT_ENVIRONMENT
-  count                  = var.vpc_id == "" || length(var.batch_subnet_ids) == 0 ? 1 : 0
+  source   = "./terraform/modules/swipe-sfn-batch-subnet"
+  app_name = var.app_name
+  count    = var.vpc_id == "" || length(var.batch_subnet_ids) == 0 ? 1 : 0
 }
 
 module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
-  app_name                 = var.APP_NAME
-  deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
+  app_name                 = var.app_name
+  mock                     = var.mock
   batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
   batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.batch_subnet_ids
   batch_ec2_instance_types = var.batch_ec2_instance_types
@@ -39,12 +38,11 @@ locals {
 
 module "sfn" {
   source                   = "./terraform/modules/swipe-sfn"
-  app_name                 = var.APP_NAME
-  deployment_environment   = var.DEPLOYMENT_ENVIRONMENT
+  app_name                 = var.app_name
   batch_job_docker_image   = "ghcr.io/chanzuckerberg/swipe:${local.version}"
   batch_spot_job_queue_arn = module.batch_queue.batch_spot_job_queue_arn
   batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
-  additional_s3_path       = var.additional_s3_path
+  workspace_s3_prefix      = var.workspace_s3_prefix
   job_policy_arns          = var.job_policy_arns
 }
 

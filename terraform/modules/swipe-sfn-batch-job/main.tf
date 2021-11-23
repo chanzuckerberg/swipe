@@ -3,8 +3,7 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
-  app_slug = "${var.app_name}-${var.deployment_environment}"
-  ecr_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
+  ecr_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     app_name           = var.app_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
@@ -16,7 +15,7 @@ locals {
     "WDL_OUTPUT_URI"                            = "Set this variable to the S3 URI where the WDL output JSON will be written",
     "SFN_EXECUTION_ID"                          = "Set this variable to the current step function execution ARN",
     "SFN_CURRENT_STATE"                         = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
-    "DEPLOYMENT_ENVIRONMENT"                    = var.deployment_environment,
+    "APP_NAME"                                  = var.app_name
     "AWS_DEFAULT_REGION"                        = data.aws_region.current.name,
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
@@ -31,7 +30,7 @@ locals {
 }
 
 resource "aws_iam_policy" "swipe_batch_main_job" {
-  name = "${local.app_slug}-batch-job"
+  name = "${var.app_name}-batch-job"
 
   policy = jsonencode({
     Version : "2012-10-17",
@@ -47,10 +46,10 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
         Resource : compact([
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}/*",
-          "arn:aws:s3:::sfn-wdl-dev",
-          "arn:aws:s3:::sfn-wdl-dev/*",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
+          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
+          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
+          var.workspace_s3_prefix != "" ? "arn:aws:s3:::${var.workspace_s3_prefix}" : "",
+          var.workspace_s3_prefix != "" ? "arn:aws:s3:::${var.workspace_s3_prefix}/*" : "",
         ])
       },
       {
@@ -60,8 +59,8 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
         ],
         Resource : compact([
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
-          "arn:aws:s3:::sfn-wdl-dev",
-          var.additional_s3_path != "" ? format("arn:aws:s3:::%s", split("/", var.additional_s3_path)[0]) : "",
+          var.wdl_workflow_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.wdl_workflow_s3_prefix)[0]) : "",
+          var.workspace_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.workspace_s3_prefix)[0]) : "",
         ])
       },
       {
@@ -76,7 +75,7 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
 }
 
 resource "aws_iam_role" "swipe_batch_main_job" {
-  name = "${local.app_slug}-batch-job"
+  name = "${var.app_name}-batch-job"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["ecs-tasks"]
   })
@@ -100,7 +99,7 @@ resource "aws_iam_role_policy_attachment" "swipe_batch_main_job_ecr_readonly" {
 }
 
 resource "aws_batch_job_definition" "swipe_main" {
-  name = "${local.app_slug}-main"
+  name = "${var.app_name}-main"
   type = "container"
   tags = var.tags
   retry_strategy {

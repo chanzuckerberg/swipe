@@ -21,7 +21,8 @@ locals {
 resource "aws_iam_role" "iam_role" {
   for_each = local.lambda_names
 
-  name = "${var.app_name}-${var.deployment_environment}-${each.key}"
+
+  name = "${var.app_name}-${each.key}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -47,7 +48,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
 
   policy = jsonencode({
     Version : "2012-10-17",
-    Statement : [
+    Statement : concat(var.workspace_s3_prefix == "" ? [] : [
       {
         Effect : "Allow",
         Action : [
@@ -55,15 +56,11 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "s3:GetObject*",
           "s3:PutObject*"
         ],
-        Resource : compact([
-          "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*",
-          "arn:aws:s3:::${var.app_name}-${var.deployment_environment}-*/*",
-          "arn:aws:s3:::sfn-wdl-dev",
-          "arn:aws:s3:::sfn-wdl-dev/*",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
-        ])
-      },
+        Resource : [
+          "arn:aws:s3:::${var.workspace_s3_prefix}",
+          "arn:aws:s3:::${var.workspace_s3_prefix}/*",
+        ]
+      }], [
       {
         Effect : "Allow",
         Action : [
@@ -92,8 +89,8 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "states:GetExecutionHistory"
         ],
         Resource : [
-          "arn:aws:states:${var.aws_region}:${var.aws_account_id}:stateMachine:${var.app_name}-${var.deployment_environment}-*",
-          "arn:aws:states:${var.aws_region}:${var.aws_account_id}:execution:${var.app_name}-${var.deployment_environment}-*"
+          "arn:aws:states:${var.aws_region}:${var.aws_account_id}:stateMachine:${var.app_name}-*",
+          "arn:aws:states:${var.aws_region}:${var.aws_account_id}:execution:${var.app_name}-*"
         ]
       },
       {
@@ -110,14 +107,14 @@ resource "aws_iam_role_policy" "iam_role_policy" {
         ],
         Resource : "arn:aws:logs:*:*:*"
       }
-    ]
+    ])
   })
 }
 
 resource "aws_lambda_function" "lambda" {
   for_each = local.lambda_names
 
-  function_name    = "${var.app_name}-${var.deployment_environment}-${each.key}"
+  function_name    = "${var.app_name}-${each.key}"
   runtime          = "python3.8"
   handler          = "app.${each.key}"
   memory_size      = 256
@@ -130,17 +127,16 @@ resource "aws_lambda_function" "lambda" {
 
   environment {
     variables = {
-      APP_NAME               = var.app_name
-      DEPLOYMENT_ENVIRONMENT = var.deployment_environment
-      RunSPOTMemoryDefault   = "16000"
-      RunEC2MemoryDefault    = "16000"
-      AWS_ENDPOINT_URL       = var.deployment_environment == "test" ? "http://host.docker.internal:9000" : null
+      APP_NAME             = var.app_name
+      RunSPOTMemoryDefault = "16000"
+      RunEC2MemoryDefault  = "16000"
+      AWS_ENDPOINT_URL     = var.mock ? "http://host.docker.internal:9000" : null
     }
   }
 }
 
 resource "aws_cloudwatch_event_rule" "process_batch_event" {
-  name = "${var.app_name}-${var.deployment_environment}-process_batch_event"
+  name = "${var.app_name}-process_batch_event"
   tags = var.tags
 
   event_pattern = jsonencode({
@@ -153,7 +149,7 @@ resource "aws_cloudwatch_event_rule" "process_batch_event" {
 }
 
 resource "aws_cloudwatch_event_rule" "process_sfn_event" {
-  name          = "${var.app_name}-${var.deployment_environment}-process_sfn_event"
+  name          = "${var.app_name}-process_sfn_event"
   tags          = var.tags
   event_pattern = jsonencode({ "source" = ["aws.states"] })
 }
@@ -178,13 +174,13 @@ resource "aws_cloudwatch_event_rule" "report_spot_interruption" {
 
 resource "aws_cloudwatch_event_target" "process_batch_event" {
   rule      = aws_cloudwatch_event_rule.process_batch_event.name
-  target_id = "${var.app_name}-${var.deployment_environment}-process_batch_event"
+  target_id = "${var.app_name}-process_batch_event"
   arn       = aws_lambda_function.lambda["process_batch_event"].arn
 }
 
 resource "aws_cloudwatch_event_target" "process_sfn_event" {
   rule      = aws_cloudwatch_event_rule.process_sfn_event.name
-  target_id = "${var.app_name}-${var.deployment_environment}-process_batch_event"
+  target_id = "${var.app_name}-process_batch_event"
   arn       = aws_lambda_function.lambda["process_sfn_event"].arn
 }
 

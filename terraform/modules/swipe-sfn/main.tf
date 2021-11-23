@@ -1,5 +1,4 @@
 locals {
-  app_slug          = "${var.app_name}-${var.deployment_environment}"
   sfn_template_file = var.sfn_template_file == "" ? "${path.module}/sfn-templates/single-wdl.yml" : var.sfn_template_file
 }
 
@@ -8,18 +7,17 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_policy" "swipe_sfn_service" {
-  name = "${local.app_slug}-sfn-service"
+  name = "${var.app_name}-sfn-service"
   policy = templatefile("${path.module}/../../iam_policy_templates/sfn_service.json", {
-    APP_NAME               = var.app_name,
-    DEPLOYMENT_ENVIRONMENT = var.deployment_environment,
-    sfn_service_role_name  = "${local.app_slug}-sfn-service",
-    AWS_DEFAULT_REGION     = data.aws_region.current.name,
-    AWS_ACCOUNT_ID         = data.aws_caller_identity.current.account_id,
+    app_name              = var.app_name,
+    sfn_service_role_name = "${var.app_name}-sfn-service",
+    AWS_DEFAULT_REGION    = data.aws_region.current.name,
+    AWS_ACCOUNT_ID        = data.aws_caller_identity.current.account_id,
   })
 }
 
 resource "aws_iam_role" "swipe_sfn_service" {
-  name = "${local.app_slug}-sfn-service"
+  name = "${var.app_name}-sfn-service"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
     trust_services = ["states"]
   })
@@ -36,25 +34,24 @@ module "batch_job" {
   app_name                  = var.app_name
   batch_job_docker_image    = var.batch_job_docker_image
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
-  deployment_environment    = var.deployment_environment
-  additional_s3_path        = var.additional_s3_path
+  workspace_s3_prefix       = var.workspace_s3_prefix
   job_policy_arns           = var.job_policy_arns
   tags                      = var.tags
 }
 
 module "sfn_io_helper" {
-  source                 = "../sfn-io-helper-lambdas"
-  app_name               = var.app_name
-  aws_region             = data.aws_region.current.name
-  aws_account_id         = data.aws_caller_identity.current.account_id
-  deployment_environment = var.deployment_environment
-  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
-  additional_s3_path     = var.additional_s3_path
-  tags                   = var.tags
+  source              = "../sfn-io-helper-lambdas"
+  app_name            = var.app_name
+  mock                = var.mock
+  aws_region          = data.aws_region.current.name
+  aws_account_id      = data.aws_caller_identity.current.account_id
+  batch_queue_arns    = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
+  workspace_s3_prefix = var.workspace_s3_prefix
+  tags                = var.tags
 }
 
 resource "aws_sfn_state_machine" "swipe_single_wdl" {
-  name     = "${local.app_slug}-single-wdl"
+  name     = "${var.app_name}-single-wdl"
   role_arn = aws_iam_role.swipe_sfn_service.arn
   definition = jsonencode(yamldecode(templatefile(local.sfn_template_file, {
     batch_spot_job_queue_arn         = var.batch_spot_job_queue_arn,

@@ -4,6 +4,12 @@ variable "app_name" {
   default     = "swipe"
 }
 
+variable "mock" {
+  type    = bool
+  default = false
+}
+
+
 variable "vpc_id" {
   type    = string
   default = ""
@@ -12,7 +18,7 @@ variable "vpc_id" {
 variable "batch_ec2_instance_types" {
   description = "EC2 instance types to use for Batch EC2 compute environments"
   type        = list(string)
-  default     = ["r5d.4xlarge"]
+  default     = ["r5d"]
 }
 
 variable "batch_subnet_ids" {
@@ -25,12 +31,6 @@ variable "batch_ssh_key_pair_id" {
   description = "EC2 SSH key pair to use for Batch EC2 container instances"
   type        = string
   default     = ""
-}
-
-variable "deployment_environment" {
-  description = "deployment environment: (test, dev, staging, prod, etc.)"
-  type        = string
-  default     = "dev"
 }
 
 variable "min_vcpus" {

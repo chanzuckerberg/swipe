@@ -2,8 +2,9 @@ variable "app_name" {
   type = string
 }
 
-variable "deployment_environment" {
-  type = string
+variable "mock" {
+  type    = bool
+  default = false
 }
 
 variable "aws_region" {
@@ -23,7 +24,7 @@ variable "tags" {
   default = {}
 }
 
-variable "additional_s3_path" {
+variable "workspace_s3_prefix" {
   type    = string
   default = ""
 }
