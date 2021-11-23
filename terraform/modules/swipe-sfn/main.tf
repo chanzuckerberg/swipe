@@ -9,7 +9,7 @@ data "aws_caller_identity" "current" {}
 resource "aws_iam_policy" "swipe_sfn_service" {
   name = "${var.app_name}-sfn-service"
   policy = templatefile("${path.module}/../../iam_policy_templates/sfn_service.json", {
-    APP_NAME              = var.app_name,
+    app_name              = var.app_name,
     sfn_service_role_name = "${var.app_name}-sfn-service",
     AWS_DEFAULT_REGION    = data.aws_region.current.name,
     AWS_ACCOUNT_ID        = data.aws_caller_identity.current.account_id,

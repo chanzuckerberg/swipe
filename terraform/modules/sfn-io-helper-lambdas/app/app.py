@@ -80,7 +80,7 @@ def process_batch_event(event):
 
 def process_sfn_event(event):
     execution_arn = event.detail["executionArn"]
-    if os.environ["APP_NAME"] in execution_arn:
+    if os.environ["app_name"] in execution_arn:
         batch_events.archive_sfn_history(execution_arn)
 
     reporting.emit_sfn_metric_values(event)

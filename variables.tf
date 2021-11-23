@@ -1,4 +1,4 @@
-variable "APP_NAME" {
+variable "app_name" {
   type = string
 }
 
@@ -7,7 +7,7 @@ variable "mock" {
   default = false
 }
 
-variable "BATCH_SSH_PUBLIC_KEY" {
+variable "batch_ssh_public_key" {
   type    = string
   default = ""
 }

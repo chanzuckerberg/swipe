@@ -14,20 +14,20 @@ def notify_failure(sfn_state):
     """Placeholder for sending a message to a queue for push based result processing"""
 
 
-def emit_batch_metric_values(event, namespace=os.environ["APP_NAME"]):
+def emit_batch_metric_values(event, namespace=os.environ["app_name"]):
     """Emit CloudWatch metrics for a Batch event"""
 
 
-def emit_sfn_metric_values(event, namespace=os.environ["APP_NAME"]):
+def emit_sfn_metric_values(event, namespace=os.environ["app_name"]):
     """Emit CloudWatch metrics for a SFN event"""
 
 
-def emit_spot_interruption_metric(event, namespace=os.environ["APP_NAME"]):
+def emit_spot_interruption_metric(event, namespace=os.environ["app_name"]):
     """Emit a CloudWatch metric for an EC2 spot instance interruption event"""
 
 
 def emit_periodic_metrics(
-    namespace=os.environ["APP_NAME"],
+    namespace=os.environ["app_name"],
     time_horizon=timedelta(days=1)
 ):
     """Emit CloudWatch metrics on a fixed schedule"""

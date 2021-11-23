@@ -131,7 +131,7 @@ resource "aws_lambda_function" "lambda" {
 
   environment {
     variables = {
-      APP_NAME             = var.app_name
+      app_name             = var.app_name
       RunSPOTMemoryDefault = "16000"
       RunEC2MemoryDefault  = "16000"
       AWS_ENDPOINT_URL     = var.mock ? "http://host.docker.internal:9000" : null

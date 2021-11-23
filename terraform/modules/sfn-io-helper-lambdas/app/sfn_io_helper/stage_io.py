@@ -84,7 +84,7 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
         ecr_repo = f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
         if "docker_image_id" not in stage_input:
             workflow_name, workflow_version = get_workflow_name(sfn_state).rsplit("-v", 1)
-            default_docker_image_id = f"{ecr_repo}/{os.environ['APP_NAME']}-{workflow_name}:v{workflow_version}"
+            default_docker_image_id = f"{ecr_repo}/{os.environ['app_name']}-{workflow_name}:v{workflow_version}"
             stage_input["docker_image_id"] = default_docker_image_id
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
     return sfn_state

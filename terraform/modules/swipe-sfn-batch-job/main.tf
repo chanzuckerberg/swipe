@@ -15,7 +15,7 @@ locals {
     "WDL_OUTPUT_URI"                            = "Set this variable to the S3 URI where the WDL output JSON will be written",
     "SFN_EXECUTION_ID"                          = "Set this variable to the current step function execution ARN",
     "SFN_CURRENT_STATE"                         = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
-    "APP_NAME"                                  = var.app_name
+    "app_name"                                  = var.app_name
     "AWS_DEFAULT_REGION"                        = data.aws_region.current.name,
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
