@@ -32,7 +32,7 @@ variable "job_policy_arns" {
 variable "batch_ec2_instance_types" {
   type        = list(string)
   description = "Instance type for Batch EC2 instances"
-  # default     = ["r5d"]
+  default     = ["r5d"]
 }
 
 variable "min_vcpus" {
