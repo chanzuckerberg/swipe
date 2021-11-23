@@ -59,8 +59,14 @@ variable "on_demand_desired_vcpus" {
   default     = 0
 }
 
-variable "additional_s3_path" {
-  description = "additional S3 path to be granted permission for"
+variable "workspace_s3_prefix" {
+  description = "S3 prefix where input, output, and log files will be stored, read and write permissions will be granted for this prefix"
+  type        = string
+  default     = ""
+}
+
+variable "wdl_workflow_s3_prefix" {
+  description = "S3 prefix where WDL workflows are stored, read permissions will be granted for this prefix"
   type        = string
   default     = ""
 }

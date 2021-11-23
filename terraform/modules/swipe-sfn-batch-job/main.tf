@@ -46,10 +46,10 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
         Resource : compact([
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}/*",
-          "arn:aws:s3:::sfn-wdl-dev",
-          "arn:aws:s3:::sfn-wdl-dev/*",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}" : "",
-          var.additional_s3_path != "" ? "arn:aws:s3:::${var.additional_s3_path}/*" : "",
+          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
+          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
+          var.workspace_s3_prefix != "" ? "arn:aws:s3:::${var.workspace_s3_prefix}" : "",
+          var.workspace_s3_prefix != "" ? "arn:aws:s3:::${var.workspace_s3_prefix}/*" : "",
         ])
       },
       {
@@ -59,8 +59,8 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
         ],
         Resource : compact([
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
-          "arn:aws:s3:::sfn-wdl-dev",
-          var.additional_s3_path != "" ? format("arn:aws:s3:::%s", split("/", var.additional_s3_path)[0]) : "",
+          var.wdl_workflow_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.wdl_workflow_s3_prefix)[0]) : "",
+          var.workspace_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.workspace_s3_prefix)[0]) : "",
         ])
       },
       {

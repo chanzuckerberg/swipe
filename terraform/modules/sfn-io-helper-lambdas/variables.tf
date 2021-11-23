@@ -24,7 +24,7 @@ variable "tags" {
   default = {}
 }
 
-variable "additional_s3_path" {
+variable "workspace_s3_prefix" {
   type    = string
   default = ""
 }

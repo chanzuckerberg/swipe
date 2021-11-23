@@ -42,7 +42,7 @@ variable "tags" {
   default     = {}
 }
 
-variable "additional_s3_path" {
+variable "workspace_s3_prefix" {
   description = "additional S3 path to be granted permission for"
   type        = string
   default     = ""
