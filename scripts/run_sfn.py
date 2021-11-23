@@ -57,7 +57,7 @@ sfn = boto3.client("stepfunctions")
 logs = boto3.client("logs")
 batch = boto3.client("batch")
 
-app_name = os.environ[["APP_NAME"]
+app_name = os.environ["APP_NAME"]
 
 if args.sfn_name is None:
     args.sfn_name = "single-wdl"
