@@ -28,6 +28,3 @@ set -x
 mkdir ~/.aws
 touch ~/.aws/credentials
 
-export TF_VAR_mock=true
-export TF_VAR_APP_NAME=swipe-test
-export TF_VAR_batch_ec2_instance_types='["optimal"]'
