@@ -10,7 +10,7 @@ terraform {
 resource "aws_key_pair" "swipe_batch" {
   key_name   = var.app_name
   public_key = var.batch_ssh_public_key
-  count      = var.batch_ssh_public_key == "" ? 1 : 0
+  count      = var.batch_ssh_public_key != "" ? 1 : 0
 }
 
 module "batch_subnet" {
