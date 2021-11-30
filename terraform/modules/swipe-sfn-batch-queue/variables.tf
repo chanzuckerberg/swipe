@@ -11,7 +11,7 @@ variable "mock" {
 
 
 variable "vpc_id" {
-  type    = string
+  type = string
 }
 
 variable "batch_ec2_instance_types" {
