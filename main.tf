@@ -10,7 +10,7 @@ terraform {
 resource "aws_key_pair" "swipe_batch" {
   key_name   = var.app_name
   public_key = var.batch_ssh_public_key
-  count      = var.batch_ssh_public_key != "" ? 1 : 0
+  count      = var.batch_ssh_public_key == "" ? 1 : 0
 }
 
 module "batch_subnet" {
@@ -23,6 +23,7 @@ module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
   app_name                 = var.app_name
   mock                     = var.mock
+  vpc_id                   = var.vpc_id
   batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
   batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.batch_subnet_ids
   batch_ec2_instance_types = var.batch_ec2_instance_types

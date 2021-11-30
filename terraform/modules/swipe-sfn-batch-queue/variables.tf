@@ -12,7 +12,6 @@ variable "mock" {
 
 variable "vpc_id" {
   type    = string
-  default = ""
 }
 
 variable "batch_ec2_instance_types" {
