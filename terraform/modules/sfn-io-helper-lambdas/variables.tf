@@ -28,3 +28,10 @@ variable "workspace_s3_prefix" {
   type    = string
   default = ""
 }
+
+variable "stage_memory_defaults" {
+  type = map({
+    on_demand = number,
+    spot      = number,
+  })
+}

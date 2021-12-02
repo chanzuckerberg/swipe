@@ -126,12 +126,15 @@ resource "aws_lambda_function" "lambda" {
   tags = var.tags
 
   environment {
-    variables = {
+    variables = merge({
       APP_NAME             = var.app_name
-      RunSPOTMemoryDefault = "16000"
-      RunEC2MemoryDefault  = "16000"
       AWS_ENDPOINT_URL     = var.mock ? "http://host.docker.internal:9000" : null
-    }
+      }, {
+      for stage, defaults in var.stage_memory_defaults : "${stage}SPOTMemoryDefault" => "${defaults.spot}"
+      }, {
+      for stage, defaults in var.stage_memory_defaults : "${stage}EC2MemoryDefault" => "${defaults.on_demand}"
+      },
+    )
   }
 }
 

@@ -75,3 +75,17 @@ variable "sfn_template_files" {
   type    = map(string)
   default = {}
 }
+
+variable "stage_memory_defaults" {
+  type = map({
+    on_demand = number,
+    spot      = number,
+  })
+
+  default = {
+    "Run" : {
+      on_demand = 128000,
+      spot      = 128000,
+    }
+  }
+}
