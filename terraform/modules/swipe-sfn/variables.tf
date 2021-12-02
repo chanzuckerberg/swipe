@@ -52,3 +52,10 @@ variable "job_policy_arns" {
   description = "Policy ARNs to attach to batch jobs"
   default     = []
 }
+
+variable "stage_memory_defaults" {
+  type = map(object({
+    on_demand = number,
+    spot      = number,
+  }))
+}

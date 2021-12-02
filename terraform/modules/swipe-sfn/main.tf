@@ -49,6 +49,7 @@ module "sfn_io_helper" {
   aws_account_id      = data.aws_caller_identity.current.account_id
   batch_queue_arns    = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
   workspace_s3_prefix = var.workspace_s3_prefix
+  stage_memory_defaults = var.stage_memory_defaults
   tags                = var.tags
 }
 
