@@ -47,6 +47,6 @@ module "sfn" {
   job_policy_arns          = var.job_policy_arns
 }
 
-output "sfn_arn" {
-  value = module.sfn.sfn_arn
+output "sfn_arns" {
+  value = module.sfn.sfn_arns
 }
