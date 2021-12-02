@@ -73,18 +73,13 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
     assert sfn_state["OutputPrefix"].startswith("s3://")
     output_prefix = sfn_state["OutputPrefix"]
     output_path = os.path.join(output_prefix, re.sub(r"v(\d+)\..+", r"\1", get_workflow_name(sfn_state)))
-    stages = ["Run"]
-    for stage in stages:
+
+    for stage in sfn_state["Input"].keys():
         sfn_state[get_input_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_input.json")
         sfn_state[get_output_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_output.json")
         for compute_env in "SPOT", "EC2":
             memory_key = stage + compute_env + "Memory"
             sfn_state.setdefault(memory_key, int(os.environ[memory_key + "Default"]))
         stage_input = sfn_state["Input"].get(stage, {})
-        ecr_repo = f"{aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
-        if "docker_image_id" not in stage_input:
-            workflow_name, workflow_version = get_workflow_name(sfn_state).rsplit("-v", 1)
-            default_docker_image_id = f"{ecr_repo}/{os.environ['app_name']}-{workflow_name}:v{workflow_version}"
-            stage_input["docker_image_id"] = default_docker_image_id
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
     return sfn_state
