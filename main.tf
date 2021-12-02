@@ -45,6 +45,7 @@ module "sfn" {
   batch_ec2_job_queue_arn  = module.batch_queue.batch_ec2_job_queue_arn
   workspace_s3_prefix      = var.workspace_s3_prefix
   job_policy_arns          = var.job_policy_arns
+  sfn_template_files       = var.sfn_template_files
 }
 
 output "sfn_arns" {
