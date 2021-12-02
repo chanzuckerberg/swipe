@@ -46,7 +46,7 @@ def read_state_from_s3(sfn_state, current_state):
             error_type = type(stage_output["error"], (Exception,), dict())
             raise error_type(stage_output["cause"])
 
-    sfn_state["Result"].update({k.split(".")[1]: v for k, v in stage_output})
+    sfn_state["Result"].update({k.split(".")[1]: v for k, v in stage_output.items()})
 
     return sfn_state
 
