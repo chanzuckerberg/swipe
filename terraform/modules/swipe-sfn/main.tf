@@ -54,7 +54,7 @@ module "sfn_io_helper" {
 
 resource "aws_sfn_state_machine" "swipe_single_wdl" {
   for_each = merge(var.sfn_template_files, {
-    "default" : "${path.module}/sfn-templates/single-wdl.yml",
+    "default" : "${path.module}/default-wdl.yml",
   })
 
   name     = "${var.app_name}-${each.key}-wdl"
