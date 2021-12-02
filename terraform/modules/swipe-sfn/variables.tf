@@ -10,8 +10,8 @@ variable "mock" {
 }
 
 variable "sfn_template_files" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }
 
 variable "batch_job_docker_image" {
