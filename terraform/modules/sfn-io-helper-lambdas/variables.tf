@@ -30,8 +30,8 @@ variable "workspace_s3_prefix" {
 }
 
 variable "stage_memory_defaults" {
-  type = map({
+  type = map(object({
     on_demand = number,
     spot      = number,
-  })
+  }))
 }
