@@ -9,7 +9,7 @@ $(TFSTATE_FILE):
 
 lint:
 	flake8 .
-	yq . terraform/modules/swipe-sfn/sfn-templates/single-wdl.yml > single-wdl.json
+	yq . terraform/modules/swipe-sfn/default-wdl.yml > single-wdl.json
 	statelint single-wdl.json
 	mypy --check-untyped-defs --no-strict-optional .
 

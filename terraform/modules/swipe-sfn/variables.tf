@@ -9,10 +9,9 @@ variable "mock" {
   default = false
 }
 
-variable "sfn_template_file" {
-  description = "JSON file with SFN contents (default: terraform/modules/swipe-sfn/sfn-templates/single-wdl-1.yml, transcoded to JSON)"
-  type        = string
-  default     = ""
+variable "sfn_template_files" {
+  type    = map(string)
+  default = {}
 }
 
 variable "batch_job_docker_image" {
