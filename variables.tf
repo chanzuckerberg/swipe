@@ -89,3 +89,9 @@ variable "stage_memory_defaults" {
     }
   }
 }
+
+variable "tags" {
+  description = "Tags to apply to managed assets"
+  type        = map(string)
+  default     = {}
+}
