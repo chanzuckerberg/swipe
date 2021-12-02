@@ -1,5 +1,7 @@
 locals {
-  sfn_template_file = var.sfn_template_file == "" ? "${path.module}/sfn-templates/single-wdl.yml" : var.sfn_template_file
+  sfn_template_files = merge(var.sfn_template_files, {
+    "default" : "${path.module}/sfn-templates/single-wdl.yml",
+  })
 }
 
 data "aws_region" "current" {}
@@ -51,9 +53,13 @@ module "sfn_io_helper" {
 }
 
 resource "aws_sfn_state_machine" "swipe_single_wdl" {
-  name     = "${var.app_name}-single-wdl"
+  for_each = merge(var.sfn_template_files, {
+    "default" : "${path.module}/sfn-templates/single-wdl.yml",
+  })
+
+  name     = "${var.app_name}-${each.key}-wdl"
   role_arn = aws_iam_role.swipe_sfn_service.arn
-  definition = jsonencode(yamldecode(templatefile(local.sfn_template_file, {
+  definition = jsonencode(yamldecode(templatefile(each.value, {
     batch_spot_job_queue_arn         = var.batch_spot_job_queue_arn,
     batch_ec2_job_queue_arn          = var.batch_ec2_job_queue_arn,
     batch_job_definition_name        = module.batch_job.batch_job_definition_name,

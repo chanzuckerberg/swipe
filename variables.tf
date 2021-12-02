@@ -70,3 +70,8 @@ variable "wdl_workflow_s3_prefix" {
   type        = string
   default     = ""
 }
+
+variable "sfn_template_files" {
+  type    = map(string)
+  default = {}
+}
