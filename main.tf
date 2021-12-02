@@ -46,8 +46,8 @@ module "sfn" {
   workspace_s3_prefix      = var.workspace_s3_prefix
   job_policy_arns          = var.job_policy_arns
   sfn_template_files       = var.sfn_template_files
-  stage_memory_defaults = var.stage_memory_defaults
-  tags = var.tags
+  stage_memory_defaults    = var.stage_memory_defaults
+  tags                     = var.tags
 }
 
 output "sfn_arns" {
