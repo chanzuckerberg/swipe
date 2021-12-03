@@ -119,7 +119,7 @@ def link_outputs(sfn_state):
         for input_name, source in mappy_map.get(stage, {}).items():
             if isinstance(source, list):
                 stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
-            else:
+            elif source in sfn_state["Result"]:
                 stage_input[input_name] = sfn_state["Result"][source]
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
 
