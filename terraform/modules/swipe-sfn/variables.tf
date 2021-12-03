@@ -59,3 +59,9 @@ variable "stage_memory_defaults" {
     spot      = number,
   }))
 }
+
+variable "extra_env_vars" {
+  description = "Additional env vars to set on batch task definitions"
+  type        = map(string)
+  default     = {}
+}

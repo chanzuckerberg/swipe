@@ -90,6 +90,12 @@ variable "stage_memory_defaults" {
   }
 }
 
+variable "extra_env_vars" {
+  description = "Additional env vars to set on batch task definitions"
+  type        = map(string)
+  default     = {}
+}
+
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)

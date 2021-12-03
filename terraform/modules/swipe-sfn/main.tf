@@ -38,6 +38,7 @@ module "batch_job" {
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
   workspace_s3_prefix       = var.workspace_s3_prefix
   job_policy_arns           = var.job_policy_arns
+  extra_env_vars            = var.extra_env_vars
   tags                      = var.tags
 }
 
