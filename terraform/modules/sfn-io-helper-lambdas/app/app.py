@@ -51,6 +51,7 @@ def preprocess_input(sfn_data, _):
 def process_stage_output(sfn_data, _):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
     sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
+    stage_io.link_outputs(sfn_state)
     sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)
     return sfn_state
 

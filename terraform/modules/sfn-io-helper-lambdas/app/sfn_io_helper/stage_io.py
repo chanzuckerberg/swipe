@@ -110,6 +110,20 @@ def get_workflow_name(sfn_state):
             return os.path.splitext(os.path.basename(s3_object(v).key))[0]
 
 
+def link_outputs(sfn_state):
+    if len(list(sfn_state["Input"])) == 0:
+        return
+
+    for stage in sfn_state["Input"].keys():
+        stage_input = sfn_state[stage]
+        for input_name, source in mappy_map.get(stage, {}).items():
+            if isinstance(source, list):
+                stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
+            else:
+                stage_input[input_name] = sfn_state["Result"]["source"]
+        put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
+
+
 def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_name):
     # TODO: add input validation assertions here (use JSON schema?)
     assert sfn_state["OutputPrefix"].startswith("s3://")
@@ -122,12 +136,5 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
         for compute_env in "SPOT", "EC2":
             memory_key = stage + compute_env + "Memory"
             sfn_state.setdefault(memory_key, int(os.environ[memory_key + "Default"]))
-        stage_input = sfn_state["Input"].get(stage, {})
-        if "Result" in sfn_state:
-            for input_name, source in mappy_map.get(stage, {}).items():
-                if isinstance(source, list):
-                    stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
-                else:
-                    stage_input[input_name] = sfn_state["Result"]["source"]
-            put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
+
     return sfn_state
