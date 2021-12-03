@@ -123,10 +123,11 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
             memory_key = stage + compute_env + "Memory"
             sfn_state.setdefault(memory_key, int(os.environ[memory_key + "Default"]))
         stage_input = sfn_state["Input"].get(stage, {})
-        for input_name, source in mappy_map.get(stage, {}).items():
-            if isinstance(source, list):
-                stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
-            else:
-                stage_input[input_name] = sfn_state["Result"]["source"]
-        put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
+        if "Result" in sfn_state:
+            for input_name, source in mappy_map.get(stage, {}).items():
+                if isinstance(source, list):
+                    stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
+                else:
+                    stage_input[input_name] = sfn_state["Result"]["source"]
+            put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
     return sfn_state
