@@ -120,7 +120,7 @@ def link_outputs(sfn_state):
             if isinstance(source, list):
                 stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
             else:
-                stage_input[input_name] = sfn_state["Result"]["source"]
+                stage_input[input_name] = sfn_state["Result"][source]
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
 
 
