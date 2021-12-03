@@ -9,6 +9,48 @@ from . import s3_object
 
 logger = logging.getLogger()
 
+# TODO: DELETE ME!
+mappy_map = {
+    "NonHostAlignment": {
+        "host_filter_out_gsnap_filter_1_fa": "gsnap_filter_out_gsnap_filter_1_fa",
+        "host_filter_out_gsnap_filter_2_fa": "gsnap_filter_out_gsnap_filter_2_fa",
+        "host_filter_out_gsnap_filter_merged_fa": "gsnap_filter_out_gsnap_filter_merged_fa",
+        "duplicate_cluster_sizes_tsv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
+        "idseq_dedup_out_duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv",
+    },
+    "Postprocess": {
+        "host_filter_out_gsnap_filter_1_fa": "gsnap_filter_out_gsnap_filter_1_fa",
+        "host_filter_out_gsnap_filter_2_fa": "gsnap_filter_out_gsnap_filter_2_fa",
+        "host_filter_out_gsnap_filter_merged_fa": "gsnap_filter_out_gsnap_filter_merged_fa",
+        "gsnap_out_gsnap_m8": "gsnap_out_gsnap_m8",
+        "gsnap_out_gsnap_deduped_m8": "gsnap_out_gsnap_deduped_m8",
+        "gsnap_out_gsnap_hitsummary_tab": "gsnap_out_gsnap_hitsummary_tab",
+        "gsnap_out_gsnap_counts_with_dcr_json": "gsnap_out_gsnap_counts_with_dcr_json",
+        "rapsearch2_out_rapsearch2_m8": "rapsearch2_out_rapsearch2_m8",
+        "rapsearch2_out_rapsearch2_deduped_m8": "rapsearch2_out_rapsearch2_deduped_m8",
+        "rapsearch2_out_rapsearch2_hitsummary_tab": "rapsearch2_out_rapsearch2_hitsummary_tab",
+        "rapsearch2_out_rapsearch2_counts_with_dcr_json": "rapsearch2_out_rapsearch2_counts_with_dcr_json",
+        "duplicate_cluster_sizes_tsv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
+        "idseq_dedup_out_duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv"
+    },
+    "Experimental": {
+        "taxid_fasta_in_annotated_merged_fa": "refined_annotated_out_assembly_refined_annotated_merged_fa",
+        "taxid_fasta_in_gsnap_hitsummary_tab": "gsnap_out_gsnap_hitsummary_tab",
+        "taxid_fasta_in_rapsearch2_hitsummary_tab": "rapsearch2_out_rapsearch2_hitsummary_tab",
+        "gsnap_m8_gsnap_deduped_m8": "gsnap_out_gsnap_deduped_m8",
+        "refined_gsnap_in_gsnap_reassigned_m8": "refined_gsnap_out_assembly_gsnap_reassigned_m8",
+        "refined_gsnap_in_gsnap_hitsummary2_tab": "refined_gsnap_out_assembly_gsnap_hitsummary2_tab",
+        "refined_gsnap_in_gsnap_blast_top_m8": "refined_gsnap_out_assembly_gsnap_blast_top_m8",
+        "contig_in_contig_coverage_json": "coverage_out_assembly_contig_coverage_json",
+        "contig_in_contig_stats_json": "assembly_out_assembly_contig_stats_json",
+        "contig_in_contigs_fasta": "assembly_out_assembly_contigs_fasta",
+        "fastqs_0": ["HostFilter", "fastqs_0"],
+        "fastqs_1": ["HostFilter", "fastqs_1"],
+        "duplicate_cluster_sizes_tsv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
+        "idseq_dedup_out_duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv",
+    },
+}
+
 
 def get_input_uri_key(stage):
     return f"{xform_name(stage).upper()}_INPUT_URI"
@@ -47,6 +89,13 @@ def read_state_from_s3(sfn_state, current_state):
             raise error_type(stage_output["cause"])
 
     sfn_state["Result"].update({k.split(".")[1]: v for k, v in stage_output.items()})
+
+    stage_input = sfn_state["Input"].get(stage, {})
+    for input_name, source in mappy_map.get(stage, {}).items():
+        if isinstance(source, list):
+            stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
+        else:
+            stage_input[input_name] = sfn_state["Result"]["source"]
 
     return sfn_state
 
