@@ -46,8 +46,7 @@ mappy_map = {
         "contig_in_contigs_fasta": "assembly_out_assembly_contigs_fasta",
         "fastqs_0": ["HostFilter", "fastqs_0"],
         "fastqs_1": ["HostFilter", "fastqs_1"],
-        "duplicate_cluster_sizes_tsv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
-        "idseq_dedup_out_duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv",
+        "duplicate_cluster_sizes_csv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
     },
 }
 
