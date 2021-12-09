@@ -29,7 +29,7 @@ sfn-io-helper-lambdas:
 	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
 	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
 	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
-	zip -r terraform/modules/sfn-io-helper-lambdas/deployment.zip sfn-io-helper-lambdas-tmp
+	cd sfn-io-helper-lambdas-tmp ; zip -r ../terraform/modules/sfn-io-helper-lambdas/deployment.zip *
 	rm -r sfn-io-helper-lambdas-tmp
 
 check-sfn-io-helper-lambdas:
