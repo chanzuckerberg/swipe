@@ -7,7 +7,7 @@ data "archive_file" "lambda_archive" {
     for_each = fileset("${path.module}/app")
 
     content  = file(each.key)
-    filename = replace(replace(each.key, path.module, ""), "/^vendor\//", "")
+    filename = replace(replace(each.key, path.module, ""), "/^vendor\\//", "")
   }
 }
 
