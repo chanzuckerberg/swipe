@@ -3,11 +3,13 @@ data "archive_file" "lambda_archive" {
   output_file_mode = "0666"
   output_path      = "${path.module}/deployment.zip"
 
-  dynamic source {
+  dynamic "source" {
     for_each = fileset("${path.module}/app")
 
-    content  = file(each.key)
-    filename = replace(replace(each.key, path.module, ""), "/^vendor\\//", "")
+    content {
+      content  = file(each.key)
+      filename = replace(replace(each.key, path.module, ""), "/^vendor\\//", "")
+    }
   }
 }
 

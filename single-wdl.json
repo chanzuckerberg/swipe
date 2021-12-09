@@ -1,0 +1,206 @@
+{
+  "Comment": "SWIPE single-wdl pipeline entry point",
+  "StartAt": "PreprocessInput",
+  "TimeoutSeconds": 259200,
+  "States": {
+    "PreprocessInput": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${preprocess_input_lambda_name}",
+        "Payload": {
+          "ExecutionId.$": "$$.Execution.Id",
+          "CurrentState.$": "$$.State.Name",
+          "Input.$": "$"
+        }
+      },
+      "OutputPath": "$.Payload",
+      "Next": "RunSPOT"
+    },
+    "RunSPOT": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobQueue": "${batch_spot_job_queue_arn}",
+        "JobName.$": "$$.Execution.Name",
+        "JobDefinition": "${batch_job_definition_name}",
+        "Timeout": {
+          "AttemptDurationSeconds": 18000
+        },
+        "ContainerOverrides": {
+          "Memory.$": "$.RunSPOTMemory",
+          "Environment": [
+            {
+              "Name": "WDL_INPUT_URI",
+              "Value.$": "$.RUN_INPUT_URI"
+            },
+            {
+              "Name": "WDL_WORKFLOW_URI",
+              "Value.$": "$.RUN_WDL_URI"
+            },
+            {
+              "Name": "WDL_OUTPUT_URI",
+              "Value.$": "$.RUN_OUTPUT_URI"
+            },
+            {
+              "Name": "SFN_EXECUTION_ID",
+              "Value.$": "$$.Execution.Id"
+            },
+            {
+              "Name": "SFN_CURRENT_STATE",
+              "Value.$": "$$.State.Name"
+            }
+          ]
+        }
+      },
+      "ResultPath": "$.BatchJobDetails.Run",
+      "Next": "RunReadOutput",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Batch.AWSBatchException"
+          ],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.BatchJobError.RunSPOT",
+          "Next": "RunGetCause"
+        }
+      ]
+    },
+    "RunGetCause": {
+      "Type": "Pass",
+      "Parameters": {
+        "Cause.$": "States.StringToJson($.BatchJobError.RunSPOT.Cause)"
+      },
+      "ResultPath": "$.BatchJobError.RunSPOT",
+      "Next": "RunDetectError"
+    },
+    "RunDetectError": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.BatchJobError.RunSPOT.Cause.StatusReason",
+          "StringMatches": "Host EC2 (instance i-*) terminated.",
+          "Next": "RunEC2"
+        }
+      ],
+      "Default": "RunReadOutput"
+    },
+    "RunEC2": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobQueue": "${batch_ec2_job_queue_arn}",
+        "JobName.$": "$$.Execution.Name",
+        "JobDefinition": "${batch_job_definition_name}",
+        "Timeout": {
+          "AttemptDurationSeconds": 18000
+        },
+        "ContainerOverrides": {
+          "Memory.$": "$.RunEC2Memory",
+          "Environment": [
+            {
+              "Name": "WDL_INPUT_URI",
+              "Value.$": "$.RUN_INPUT_URI"
+            },
+            {
+              "Name": "WDL_WORKFLOW_URI",
+              "Value.$": "$.RUN_WDL_URI"
+            },
+            {
+              "Name": "WDL_OUTPUT_URI",
+              "Value.$": "$.RUN_OUTPUT_URI"
+            },
+            {
+              "Name": "SFN_EXECUTION_ID",
+              "Value.$": "$$.Execution.Id"
+            },
+            {
+              "Name": "SFN_CURRENT_STATE",
+              "Value.$": "$$.State.Name"
+            }
+          ]
+        }
+      },
+      "ResultPath": "$.BatchJobDetails.Run",
+      "Next": "RunReadOutput",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Batch.AWSBatchException"
+          ],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.BatchJobError.RunEC2",
+          "Next": "RunReadOutput"
+        }
+      ]
+    },
+    "RunReadOutput": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${process_stage_output_lambda_name}",
+        "Payload": {
+          "ExecutionId.$": "$$.Execution.Id",
+          "CurrentState.$": "$$.State.Name",
+          "Input.$": "$"
+        }
+      },
+      "OutputPath": "$.Payload",
+      "Next": "HandleSuccess",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleFailure"
+        }
+      ]
+    },
+    "HandleSuccess": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${handle_success_lambda_name}",
+        "Payload": {
+          "ExecutionId.$": "$$.Execution.Id",
+          "CurrentState.$": "$$.State.Name",
+          "Input.$": "$"
+        }
+      },
+      "OutputPath": "$.Payload",
+      "End": true
+    },
+    "HandleFailure": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${handle_failure_lambda_name}",
+        "Payload": {
+          "ExecutionId.$": "$$.Execution.Id",
+          "CurrentState.$": "$$.State.Name",
+          "Input.$": "$"
+        }
+      },
+      "OutputPath": "$.Payload",
+      "End": true
+    }
+  }
+}
