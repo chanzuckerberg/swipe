@@ -7,7 +7,7 @@ data "archive_file" "lambda_archive" {
     for_each = fileset(path.module, "app/**")
 
     content {
-      content  = file("${path.module}/${source.key}")
+      content  = filebase64("${path.module}/${source.key}")
       filename = replace(source.key, "/^vendor\\//", "")
     }
   }
