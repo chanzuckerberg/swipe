@@ -1,5 +1,6 @@
 data "archive_file" "lambda_archive" {
   type             = "zip"
+  source_dir       = "${path.module}/vendor"
   output_file_mode = "0666"
   output_path      = "${path.module}/deployment.zip"
 
@@ -7,8 +8,8 @@ data "archive_file" "lambda_archive" {
     for_each = fileset(path.module, "app/**")
 
     content {
-      content  = filebase64("${path.module}/${source.key}")
-      filename = replace(source.key, "/^vendor\\//", "")
+      content  = file("${path.module}/${source.key}")
+      filename = replace(source.key, "/^app\\//", "")
     }
   }
 }
