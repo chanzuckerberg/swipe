@@ -9,7 +9,7 @@ from . import s3_object
 
 logger = logging.getLogger()
 
-# TODO: DELETE ME!
+# TODO: DELETE ME! soon
 mappy_map = {
     "NonHostAlignment": {
         "host_filter_out_gsnap_filter_1_fa": "gsnap_filter_out_gsnap_filter_1_fa",
