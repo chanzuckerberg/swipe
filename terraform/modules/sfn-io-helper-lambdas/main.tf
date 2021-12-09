@@ -4,7 +4,7 @@ data "archive_file" "lambda_archive" {
   output_path      = "${path.module}/deployment.zip"
 
   dynamic "source" {
-    for_each = fileset("${path.module}/app")
+    for_each = fileset(path.module, "app/**")
 
     content {
       content  = file(each.key)
