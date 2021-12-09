@@ -5,51 +5,11 @@ import logging
 
 from botocore import xform_name
 
+import WDL
+
 from . import s3_object
 
 logger = logging.getLogger()
-
-# TODO: DELETE ME! soon
-mappy_map = {
-    "NonHostAlignment": {
-        "host_filter_out_gsnap_filter_1_fa": "gsnap_filter_out_gsnap_filter_1_fa",
-        "host_filter_out_gsnap_filter_2_fa": "gsnap_filter_out_gsnap_filter_2_fa",
-        "host_filter_out_gsnap_filter_merged_fa": "gsnap_filter_out_gsnap_filter_merged_fa",
-        "duplicate_cluster_sizes_tsv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
-        "idseq_dedup_out_duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv",
-    },
-    "Postprocess": {
-        "host_filter_out_gsnap_filter_1_fa": "gsnap_filter_out_gsnap_filter_1_fa",
-        "host_filter_out_gsnap_filter_2_fa": "gsnap_filter_out_gsnap_filter_2_fa",
-        "host_filter_out_gsnap_filter_merged_fa": "gsnap_filter_out_gsnap_filter_merged_fa",
-        "gsnap_out_gsnap_m8": "gsnap_out_gsnap_m8",
-        "gsnap_out_gsnap_deduped_m8": "gsnap_out_gsnap_deduped_m8",
-        "gsnap_out_gsnap_hitsummary_tab": "gsnap_out_gsnap_hitsummary_tab",
-        "gsnap_out_gsnap_counts_with_dcr_json": "gsnap_out_gsnap_counts_with_dcr_json",
-        "rapsearch2_out_rapsearch2_m8": "rapsearch2_out_rapsearch2_m8",
-        "rapsearch2_out_rapsearch2_deduped_m8": "rapsearch2_out_rapsearch2_deduped_m8",
-        "rapsearch2_out_rapsearch2_hitsummary_tab": "rapsearch2_out_rapsearch2_hitsummary_tab",
-        "rapsearch2_out_rapsearch2_counts_with_dcr_json": "rapsearch2_out_rapsearch2_counts_with_dcr_json",
-        "duplicate_cluster_sizes_tsv": "idseq_dedup_out_duplicate_cluster_sizes_tsv",
-        "idseq_dedup_out_duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv"
-    },
-    "Experimental": {
-        "taxid_fasta_in_annotated_merged_fa": "refined_annotated_out_assembly_refined_annotated_merged_fa",
-        "taxid_fasta_in_gsnap_hitsummary_tab": "gsnap_out_gsnap_hitsummary_tab",
-        "taxid_fasta_in_rapsearch2_hitsummary_tab": "rapsearch2_out_rapsearch2_hitsummary_tab",
-        "gsnap_m8_gsnap_deduped_m8": "gsnap_out_gsnap_deduped_m8",
-        "refined_gsnap_in_gsnap_reassigned_m8": "refined_gsnap_out_assembly_gsnap_reassigned_m8",
-        "refined_gsnap_in_gsnap_hitsummary2_tab": "refined_gsnap_out_assembly_gsnap_hitsummary2_tab",
-        "refined_gsnap_in_gsnap_blast_top_m8": "refined_gsnap_out_assembly_gsnap_blast_top_m8",
-        "contig_in_contig_coverage_json": "coverage_out_assembly_contig_coverage_json",
-        "contig_in_contig_stats_json": "assembly_out_assembly_contig_stats_json",
-        "contig_in_contigs_fasta": "assembly_out_assembly_contigs_fasta",
-        "fastqs_0": ["HostFilter", "fastqs_0"],
-        "fastqs_1": ["HostFilter", "fastqs_1"],
-        "nonhost_fasta_refined_taxid_annot_fasta": "refined_taxid_fasta_out_assembly_refined_taxid_annot_fasta",
-        "duplicate_clusters_csv": "idseq_dedup_out_duplicate_clusters_csv",
-    },
-}
 
 
 def get_input_uri_key(stage):
@@ -110,13 +70,31 @@ def get_workflow_name(sfn_state):
             return os.path.splitext(os.path.basename(s3_object(v).key))[0]
 
 
+def get_stage_io_dict(stages_wdl_uri: str):
+    stages_wdl_document = s3_object(stages_wdl_uri).get()["Body"].read().decode()
+    tree = WDL.parse_document(stages_wdl_document)
+    stage_io_dict = {}
+
+    for stage in tree.workflow.body:
+        if isinstance(stage, WDL.Call):
+            stage_inputs = {}
+            for name, value in stage.inputs.items():
+                path = str(value)
+                if "." in path:
+                    stage_inputs[name] = path.split(".")[1]
+                stage_io_dict[stage.name] = stage_inputs
+    return stage_io_dict
+
+
 def link_outputs(sfn_state):
     if len(list(sfn_state["Input"])) == 0:
         return
+    stages_wdl_uri = sfn_state.get("StagesWDLURI")
+    stage_io_dict = get_stage_io_dict(stages_wdl_uri) if stages_wdl_uri else {}
 
     for stage in sfn_state["Input"].keys():
         stage_input = sfn_state["Input"][stage]
-        for input_name, source in mappy_map.get(stage, {}).items():
+        for input_name, source in stage_io_dict.get(stage, {}).items():
             if isinstance(source, list):
                 stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
             elif source in sfn_state["Result"]:
