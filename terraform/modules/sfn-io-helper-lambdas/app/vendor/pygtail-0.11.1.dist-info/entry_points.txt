@@ -1,0 +1,3 @@
+[console_scripts]
+pygtail = pygtail.core:main
+

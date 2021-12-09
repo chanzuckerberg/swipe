@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: bullet
+Version: 2.2.0
+Summary: Beautiful Python prompts made simple.
+Home-page: https://github.com/Mckinsey666/bullets
+Author: Mckinsey666
+Author-email: UNKNOWN
+License: MIT
+Keywords: cli list prompt customize colors
+Platform: UNKNOWN
+
+Extensive support for Python list prompts             formatting and colors
+
+
