@@ -1,19 +1,3 @@
-data "archive_file" "lambda_archive" {
-  type             = "zip"
-  source_dir       = "${path.module}/vendor"
-  output_file_mode = "0666"
-  output_path      = "${path.module}/deployment.zip"
-
-  dynamic "source" {
-    for_each = fileset(path.module, "app/**")
-
-    content {
-      content  = file("${path.module}/${source.key}")
-      filename = replace(source.key, "/^app\\//", "")
-    }
-  }
-}
-
 locals {
   lambda_names = toset([
     "preprocess_input",
@@ -128,8 +112,8 @@ resource "aws_lambda_function" "lambda" {
   handler          = "app.${each.key}"
   memory_size      = 256
   timeout          = 600
-  source_code_hash = data.archive_file.lambda_archive.output_sha
-  filename         = data.archive_file.lambda_archive.output_path
+  source_code_hash = file("${path.module}/package-hash")
+  filename         = "${path.module}/deployment.zip"
 
   role = aws_iam_role.iam_role[each.key].arn
   tags = var.tags

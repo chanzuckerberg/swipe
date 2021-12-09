@@ -22,4 +22,18 @@ test:
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(app_name)
 
+sfn-io-helper-lambdas:
+	git add terraform/modules/sfn-io-helper-lambdas/app
+	git commit -m "lambda commit"
+	rm -r sfn-io-helper-lambdas-tmp || true
+	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
+	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
+	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
+	zip -r terraform/modules/sfn-io-helper-lambdas/deployment.zip sfn-io-helper-lambdas-tmp
+	rm -r sfn-io-helper-lambdas-tmp
+
+check-sfn-io-helper-lambdas:
+	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
+	git diff --exit-code || (echo 'Uncomitted changes to sfn-io-helper-lambdas page, please run: `make sfn-io-helper-lambdas` and commit the result' && exit 1)
+
 .PHONY: deploy init-tf lint format test
