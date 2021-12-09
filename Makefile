@@ -11,7 +11,7 @@ lint:
 	flake8 .
 	yq . terraform/modules/swipe-sfn/default-wdl.yml > single-wdl.json
 	statelint single-wdl.json
-	mypy --check-untyped-defs --no-strict-optional --exclude .venv --exclude vendor .
+	mypy --check-untyped-defs --no-strict-optional --exclude .venv .
 
 format:
 	terraform fmt --recursive .
