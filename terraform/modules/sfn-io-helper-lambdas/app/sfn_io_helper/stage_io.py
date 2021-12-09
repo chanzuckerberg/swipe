@@ -73,8 +73,8 @@ def get_workflow_name(sfn_state):
 def get_stage_io_dict(stages_wdl_uri: str):
     stages_wdl_document = s3_object(stages_wdl_uri).get()["Body"].read().decode()
     tree = WDL.parse_document(stages_wdl_document)
-    stage_io_dict = {}
 
+    stage_io_dict = {}
     for stage in tree.workflow.body:
         if isinstance(stage, WDL.Call):
             stage_inputs = {}
