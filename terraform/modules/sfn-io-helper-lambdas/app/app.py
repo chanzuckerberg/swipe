@@ -62,6 +62,7 @@ def handle_success(sfn_data, _):
     return sfn_state
 
 
+# foo
 def handle_failure(sfn_data, _):
     # This Lambda MUST raise an exception with the details of the error that caused the failure.
     sfn_state = sfn_data["Input"]
