@@ -35,3 +35,4 @@ variable "stage_memory_defaults" {
     spot      = number,
   }))
 }
+

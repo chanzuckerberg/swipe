@@ -11,7 +11,7 @@ lint:
 	flake8 .
 	yq . terraform/modules/swipe-sfn/default-wdl.yml > single-wdl.json
 	statelint single-wdl.json
-	mypy --check-untyped-defs --no-strict-optional --exclude .venv .
+	mypy --check-untyped-defs --no-strict-optional .
 
 format:
 	terraform fmt --recursive .
@@ -21,22 +21,5 @@ test:
 
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(app_name)
-
-sfn-io-helper-lambdas:
-	git add terraform/modules/sfn-io-helper-lambdas/app
-	git commit -m "lambda commit"
-	rm -r sfn-io-helper-lambdas-tmp || true
-	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
-	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
-	virtualenv sfn-io-helper-lambdas-tmp/.venv
-	source sfn-io-helper-lambdas-tmp/.venv/bin/activate ; pip install -r sfn-io-helper-lambdas-tmp/requirements.txt
-	cp -r sfn-io-helper-lambdas-tmp/.venv/lib/python*/site-packages/* sfn-io-helper-lambdas-tmp
-	rm -rf sfn-io-helper-lambdas-tmp/.venv
-	cd sfn-io-helper-lambdas-tmp ; zip -r ../terraform/modules/sfn-io-helper-lambdas/deployment.zip *
-	rm -r sfn-io-helper-lambdas-tmp
-
-check-sfn-io-helper-lambdas:
-	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
-	git diff --exit-code || (echo 'Uncomitted changes to sfn-io-helper-lambdas page, please run: `make sfn-io-helper-lambdas` and commit the result' && exit 1)
 
 .PHONY: deploy init-tf lint format test

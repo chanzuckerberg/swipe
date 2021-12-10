@@ -21,7 +21,7 @@ sudo unzip -o terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/local/bin
 virtualenv --python=python3 .venv
 source .venv/bin/activate
 if [[ -d ~/.cache ]]; then sudo chown -R $(whoami) ~/.cache; fi
-pip install -r requirements-dev.txt -r terraform/modules/sfn-io-helper-lambdas/app/requirements.txt
+pip install -r requirements-dev.txt
 
 set -x
 
