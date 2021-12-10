@@ -75,7 +75,7 @@ def link_outputs(sfn_state):
     stages_json_uri = sfn_state.get("STAGES_IO_MAP_JSON")
     stage_io_dict = {}
     if stages_json_uri:
-        stage_io_dict = json.loads(s3_object("s3://idseq-workflows/short-read-mngs-v6.8.9/stage_io_map.json").get()["Body"].read().decode())
+        stage_io_dict = json.loads(s3_object(stages_json_uri).get()["Body"].read().decode())
 
     for stage in sfn_state["Input"].keys():
         stage_input = sfn_state["Input"][stage]
