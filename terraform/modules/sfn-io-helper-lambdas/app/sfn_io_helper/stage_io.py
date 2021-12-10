@@ -5,8 +5,6 @@ import logging
 
 from botocore import xform_name
 
-import WDL
-
 from . import s3_object
 
 logger = logging.getLogger()
@@ -70,28 +68,14 @@ def get_workflow_name(sfn_state):
             return os.path.splitext(os.path.basename(s3_object(v).key))[0]
 
 
-def get_stage_io_dict(stages_wdl_uri: str):
-    stages_wdl_document = s3_object(stages_wdl_uri).get()["Body"].read().decode()
-    tree = WDL.parse_document(stages_wdl_document)
-
-    stage_io_dict = {}
-    for stage in tree.workflow.body:
-        if isinstance(stage, WDL.Call):
-            stage_inputs = {}
-            for name, value in stage.inputs.items():
-                path = str(value)
-                if "." in path:
-                    stage_inputs[name] = path.split(".")[1]
-                stage_io_dict[stage.name] = stage_inputs
-    return stage_io_dict
-
-
 def link_outputs(sfn_state):
     if len(list(sfn_state["Input"])) == 0:
         return
 
-    stages_wdl_uri = sfn_state.get("StagesWDLURI")
-    stage_io_dict = get_stage_io_dict(stages_wdl_uri) if stages_wdl_uri else {}
+    stages_wdl_uri = sfn_state.get("STAGES_IO_MAP_JSON")
+    stage_io_dict = {}
+    if stages_wdl_uri:
+        stage_io_dict = json.loads(s3_object(stages_wdl_uri).get()["Body"].read().decode())
 
     for stage in sfn_state["Input"].keys():
         stage_input = sfn_state["Input"][stage]
