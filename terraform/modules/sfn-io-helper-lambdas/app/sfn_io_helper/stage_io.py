@@ -89,6 +89,7 @@ def get_stage_io_dict(stages_wdl_uri: str):
 def link_outputs(sfn_state):
     if len(list(sfn_state["Input"])) == 0:
         return
+
     stages_wdl_uri = sfn_state.get("StagesWDLURI")
     stage_io_dict = get_stage_io_dict(stages_wdl_uri) if stages_wdl_uri else {}
 
