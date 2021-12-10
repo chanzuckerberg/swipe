@@ -28,7 +28,10 @@ sfn-io-helper-lambdas:
 	rm -r sfn-io-helper-lambdas-tmp || true
 	git rev-parse HEAD:terraform/modules/sfn-io-helper-lambdas/app > terraform/modules/sfn-io-helper-lambdas/package-hash
 	cp -r terraform/modules/sfn-io-helper-lambdas/app/ sfn-io-helper-lambdas-tmp
-	pip install --target sfn-io-helper-lambdas-tmp -r sfn-io-helper-lambdas-tmp/requirements.txt
+	virtualenv sfn-io-helper-lambdas-tmp/.venv
+	source sfn-io-helper-lambdas-tmp/.venv/bin/activate ; pip install -r sfn-io-helper-lambdas-tmp/requirements.txt
+	cp -r sfn-io-helper-lambdas-tmp/.venv/lib/python*/site-packages/* sfn-io-helper-lambdas-tmp
+	rm -rf sfn-io-helper-lambdas-tmp/.venv
 	cd sfn-io-helper-lambdas-tmp ; zip -r ../terraform/modules/sfn-io-helper-lambdas/deployment.zip *
 	rm -r sfn-io-helper-lambdas-tmp
 
