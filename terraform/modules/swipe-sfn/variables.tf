@@ -47,6 +47,12 @@ variable "workspace_s3_prefix" {
   default     = ""
 }
 
+variable "wdl_workflow_s3_prefix" {
+  description = "S3 prefix where WDL workflows are stored, read permissions will be granted for this prefix"
+  type        = string
+  default     = ""
+}
+
 variable "job_policy_arns" {
   type        = list(string)
   description = "Policy ARNs to attach to batch jobs"
