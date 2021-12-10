@@ -29,6 +29,12 @@ variable "workspace_s3_prefix" {
   default = ""
 }
 
+variable "wdl_workflow_s3_prefix" {
+  description = "S3 prefix where WDL workflows are stored, read permissions will be granted for this prefix"
+  type        = string
+  default     = ""
+}
+
 variable "stage_memory_defaults" {
   type = map(object({
     on_demand = number,
