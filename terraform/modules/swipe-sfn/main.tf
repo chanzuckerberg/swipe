@@ -38,18 +38,21 @@ module "batch_job" {
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
   workspace_s3_prefix       = var.workspace_s3_prefix
   job_policy_arns           = var.job_policy_arns
+  extra_env_vars            = var.extra_env_vars
   tags                      = var.tags
 }
 
 module "sfn_io_helper" {
-  source              = "../sfn-io-helper-lambdas"
-  app_name            = var.app_name
-  mock                = var.mock
-  aws_region          = data.aws_region.current.name
-  aws_account_id      = data.aws_caller_identity.current.account_id
-  batch_queue_arns    = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
-  workspace_s3_prefix = var.workspace_s3_prefix
-  tags                = var.tags
+  source                 = "../sfn-io-helper-lambdas"
+  app_name               = var.app_name
+  mock                   = var.mock
+  aws_region             = data.aws_region.current.name
+  aws_account_id         = data.aws_caller_identity.current.account_id
+  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
+  workspace_s3_prefix    = var.workspace_s3_prefix
+  wdl_workflow_s3_prefix = var.wdl_workflow_s3_prefix
+  stage_memory_defaults  = var.stage_memory_defaults
+  tags                   = var.tags
 }
 
 resource "aws_sfn_state_machine" "swipe_single_wdl" {

@@ -48,7 +48,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
 
   policy = jsonencode({
     Version : "2012-10-17",
-    Statement : concat(var.workspace_s3_prefix == "" ? [] : [
+    Statement : concat(var.workspace_s3_prefix == "" && var.wdl_workflow_s3_prefix == "" ? [] : [
       {
         Effect : "Allow",
         Action : [
@@ -56,12 +56,13 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "s3:GetObject*",
           "s3:PutObject*"
         ],
-        Resource : [
+        Resource : compact([
+          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
+          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
           "arn:aws:s3:::${var.workspace_s3_prefix}",
           "arn:aws:s3:::${var.workspace_s3_prefix}/*",
-        ]
-      }], [
-      {
+        ]),
+        }], [{
         Effect : "Allow",
         Action : [
           "batch:DescribeComputeEnvironments",
@@ -126,12 +127,15 @@ resource "aws_lambda_function" "lambda" {
   tags = var.tags
 
   environment {
-    variables = {
-      APP_NAME             = var.app_name
-      RunSPOTMemoryDefault = "16000"
-      RunEC2MemoryDefault  = "16000"
-      AWS_ENDPOINT_URL     = var.mock ? "http://host.docker.internal:9000" : null
-    }
+    variables = merge({
+      APP_NAME         = var.app_name
+      AWS_ENDPOINT_URL = var.mock ? "http://host.docker.internal:9000" : null
+      }, {
+      for stage, defaults in var.stage_memory_defaults : "${stage}SPOTMemoryDefault" => "${defaults.spot}"
+      }, {
+      for stage, defaults in var.stage_memory_defaults : "${stage}EC2MemoryDefault" => "${defaults.on_demand}"
+      },
+    )
   }
 }
 

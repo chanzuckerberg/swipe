@@ -75,3 +75,30 @@ variable "sfn_template_files" {
   type    = map(string)
   default = {}
 }
+
+variable "stage_memory_defaults" {
+  type = map(object({
+    on_demand = number,
+    spot      = number,
+  }))
+
+  default = {
+    "Run" : {
+      on_demand = 128000,
+      spot      = 128000,
+    }
+  }
+}
+
+variable "extra_env_vars" {
+  description = "Additional env vars to set on batch task definitions"
+  type        = map(string)
+  default     = {}
+}
+
+variable "tags" {
+  description = "Tags to apply to managed assets"
+  type        = map(string)
+  default     = {}
+}
+
