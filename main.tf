@@ -16,14 +16,14 @@ resource "aws_key_pair" "swipe_batch" {
 module "batch_subnet" {
   source   = "./terraform/modules/swipe-sfn-batch-subnet"
   app_name = var.app_name
-  count    = (var.vpc_id == "" || length(var.batch_subnet_ids) == 0) ? 1 : 0
+  count    = var.network_info ? 1 : 0
 }
 
 module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
   app_name                 = var.app_name
   mock                     = var.mock
-  vpc_id                   = var.vpc_id
+  vpc_id                   = length(module.batch_subnet) > 0 ? module.batch_subnet[0].vpc_id : var.vpc_id
   batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
   batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.batch_subnet_ids
   batch_ec2_instance_types = var.batch_ec2_instance_types

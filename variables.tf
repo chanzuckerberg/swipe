@@ -12,15 +12,13 @@ variable "batch_ssh_public_key" {
   default = ""
 }
 
-variable "vpc_id" {
-  type    = string
-  default = ""
-}
+variable "network_info" {
+  type = map(object({
+    vpc_id           = number,
+    batch_subnet_ids = number,
+  }))
 
-variable "batch_subnet_ids" {
-  description = "EC2 subnet IDs for Batch EC2 compute environment container instances"
-  type        = list(string)
-  default     = []
+  default = null
 }
 
 variable "job_policy_arns" {
