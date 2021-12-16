@@ -16,7 +16,7 @@ resource "aws_key_pair" "swipe_batch" {
 module "batch_subnet" {
   source   = "./terraform/modules/swipe-sfn-batch-subnet"
   app_name = var.app_name
-  count    = var.network_info ? 1 : 0
+  count    = var.network_info == null ? 1 : 0
 }
 
 module "batch_queue" {
