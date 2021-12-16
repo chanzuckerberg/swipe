@@ -13,10 +13,10 @@ variable "batch_ssh_public_key" {
 }
 
 variable "network_info" {
-  type = map(object({
+  type = object({
     vpc_id           = string,
     batch_subnet_ids = list(string),
-  }))
+  })
 
   default = null
 }
