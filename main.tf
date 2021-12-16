@@ -23,9 +23,9 @@ module "batch_queue" {
   source                   = "./terraform/modules/swipe-sfn-batch-queue"
   app_name                 = var.app_name
   mock                     = var.mock
-  vpc_id                   = length(module.batch_subnet) > 0 ? module.batch_subnet[0].vpc_id : var.vpc_id
+  vpc_id                   = length(module.batch_subnet) > 0 ? module.batch_subnet[0].vpc_id : var.network_info.vpc_id
   batch_ssh_key_pair_id    = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
-  batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.batch_subnet_ids
+  batch_subnet_ids         = length(module.batch_subnet) > 0 ? module.batch_subnet[0].batch_subnet_ids : var.network_info.batch_subnet_ids
   batch_ec2_instance_types = var.batch_ec2_instance_types
   min_vcpus                = var.min_vcpus
   max_vcpus                = var.max_vcpus
