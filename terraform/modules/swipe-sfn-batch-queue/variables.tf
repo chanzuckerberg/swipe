@@ -9,7 +9,6 @@ variable "mock" {
   default = false
 }
 
-
 variable "vpc_id" {
   type = string
 }
