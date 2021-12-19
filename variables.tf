@@ -88,6 +88,20 @@ variable "stage_memory_defaults" {
   }
 }
 
+variable "stage_vcpu_defaults" {
+  type = map(object({
+    on_demand = number,
+    spot      = number,
+  }))
+
+  default = {
+    "Run" : {
+      on_demand = 2,
+      spot      = 2,
+    }
+  }
+}
+
 variable "extra_env_vars" {
   description = "Additional env vars to set on batch task definitions"
   type        = map(string)

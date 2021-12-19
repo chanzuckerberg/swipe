@@ -99,5 +99,7 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
         for compute_env in "SPOT", "EC2":
             memory_key = stage + compute_env + "Memory"
             sfn_state.setdefault(memory_key, int(os.environ[memory_key + "Default"]))
+            vcpu_key = stage + compute_env + "Vcpu"
+            sfn_state.setdefault(vcpu_key, int(os.environ[vcpu_key + "Default"]))
 
     return sfn_state

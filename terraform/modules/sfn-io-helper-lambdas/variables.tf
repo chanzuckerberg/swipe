@@ -42,3 +42,10 @@ variable "stage_memory_defaults" {
   }))
 }
 
+variable "stage_vcpu_defaults" {
+  type = map(object({
+    on_demand = number,
+    spot      = number,
+  }))
+}
+
