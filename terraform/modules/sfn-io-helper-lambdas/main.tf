@@ -134,7 +134,12 @@ resource "aws_lambda_function" "lambda" {
       for stage, defaults in var.stage_memory_defaults : "${stage}SPOTMemoryDefault" => "${defaults.spot}"
       }, {
       for stage, defaults in var.stage_memory_defaults : "${stage}EC2MemoryDefault" => "${defaults.on_demand}"
+      }, {
+      for stage, defaults in var.stage_vcpu_defaults : "${stage}SPOTVcpuDefault" => "${defaults.spot}"
+      }, {
+      for stage, defaults in var.stage_vcpu_defaults : "${stage}EC2VcpuDefault" => "${defaults.on_demand}"
       },
+
     )
   }
 }

@@ -52,6 +52,7 @@ module "sfn_io_helper" {
   workspace_s3_prefix    = var.workspace_s3_prefix
   wdl_workflow_s3_prefix = var.wdl_workflow_s3_prefix
   stage_memory_defaults  = var.stage_memory_defaults
+  stage_vcpu_defaults    = var.stage_vcpu_defaults
   tags                   = var.tags
 }
 
