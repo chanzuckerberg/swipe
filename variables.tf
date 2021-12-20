@@ -21,7 +21,7 @@ variable "network_info" {
     vpc_id           = string,
     batch_subnet_ids = list(string),
   })
-  default     = null
+  default = null
 }
 
 variable "batch_ec2_instance_types" {
