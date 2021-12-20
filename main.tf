@@ -33,6 +33,7 @@ module "batch_queue" {
   on_demand_min_vcpus      = var.on_demand_min_vcpus
   spot_max_vcpus           = var.spot_max_vcpus
   on_demand_max_vcpus      = var.on_demand_max_vcpus
+  tags                     = var.tags
 }
 
 locals {
