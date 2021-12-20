@@ -94,4 +94,42 @@ task add_world {
 }
 ```
 
-## Running a WDL workflow
+Let's save this one as `hello.wdl` and upload it:
+
+```bash
+aws s3 cp hello.wdl s3://my-test-app-swipe-wdls/hello.wdl
+```
+
+Let's also make a test input for file for it and upload that:
+
+```bash
+cat hello >> input.txt
+aws s3 cp input.txt s3://my-test-app-swipe-workspace/input.txt
+```
+
+#### Run your wdl
+
+You can run you WDL with inputs and an output path using the AWS API. Here I will use python and boto3 for easy readability:
+
+```python
+import boto3
+import json
+
+client = boto3.client('stepfunctions')
+
+response = client.start_execution(
+    stateMachineArn='DEFAULT_STEP_FUNCTION_ARN',
+    name='my-swipe-run',
+    input=json.dumps({
+      "RUN_WDL_URI": "s3://my-test-app-swipe-wdls/hello.wdl",
+      "OutputPrefix": "s3://my-test-app-swipe-workspace/outputs/",
+      "Input": {
+          "Run": {
+              "hello": "s3://my-test-app-swipe-workspace/input.txt",
+          }
+      }
+    }),
+)
+```
+
+Once your step function is complete your output should be at `s3://my-test-app-swipe-workspace/outputs/out.txt`. Note that `out.txt` came from the WDL workflow.
