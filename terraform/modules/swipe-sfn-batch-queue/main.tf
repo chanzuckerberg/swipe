@@ -74,7 +74,7 @@ resource "aws_launch_template" "swipe_batch_main" {
 
 resource "aws_security_group" "swipe" {
   name   = var.app_name
-  vpc_id = var.vpc_id
+  vpc_id = var.network_info.vpc_id
   egress {
     from_port   = 0
     to_port     = 0
@@ -106,7 +106,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     image_id           = data.aws_ssm_parameter.swipe_batch_ami.value
     ec2_key_pair       = var.batch_ssh_key_pair_id != "" ? var.batch_ssh_key_pair_id : null
     security_group_ids = [aws_security_group.swipe.id]
-    subnets            = var.batch_subnet_ids
+    subnets            = var.network_info.batch_subnet_ids
 
     min_vcpus     = each.value["min_vcpus"]
     desired_vcpus = each.value["min_vcpus"]
