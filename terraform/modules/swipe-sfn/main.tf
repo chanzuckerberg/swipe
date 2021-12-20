@@ -49,7 +49,7 @@ module "sfn_io_helper" {
   mock                   = var.mock
   aws_region             = data.aws_region.current.name
   aws_account_id         = data.aws_caller_identity.current.account_id
-  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_ec2_job_queue_arn]
+  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_on_demand_job_queue_arn]
   workspace_s3_prefix    = var.workspace_s3_prefix
   wdl_workflow_s3_prefix = var.wdl_workflow_s3_prefix
   stage_memory_defaults  = var.stage_memory_defaults
