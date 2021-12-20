@@ -1,24 +1,46 @@
+// Passthrough from root module
+
 variable "app_name" {
-  description = "App name (will appear in managed asset names)"
   type        = string
-  default     = "swipe"
+  description = "The name of your application, to be used as a namespace for all swipe managed assets"
+}
+
+variable "job_policy_arns" {
+  description = "Policy ARNs to attach to batch jobs"
+  type        = list(string)
+}
+
+
+variable "workspace_s3_prefix" {
+  description = "S3 prefix where input, output, and log files will be stored, read and write permissions will be granted for this prefix"
+  type        = string
+}
+
+variable "wdl_workflow_s3_prefix" {
+  description = "S3 prefix where WDL workflows are stored, read permissions will be granted for this prefix"
+  type        = string
 }
 
 variable "extra_env_vars" {
   description = "Additional env vars to set on batch task definitions"
   type        = map(string)
-  default     = {}
 }
 
+variable "tags" {
+  description = "Tags to apply to managed assets"
+  type        = map(string)
+}
+
+// Module Specific
+
 variable "batch_job_docker_image" {
-  description = "Docker image (name or name:tag) that will be used for Batch jobs"
+  description = "Docker image (name or name:tag) that will be used for AWS Batch Jobs running WDL workflows"
   type        = string
 }
 
 variable "batch_job_timeout_seconds" {
   description = "Timeout after which Batch will terminate jobs (Step Functions has a separate timeout for the SFN execution)"
   type        = number
-  default     = 86400
 }
 
 variable "batch_job_retry_attempts" {
@@ -27,25 +49,3 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
-variable "tags" {
-  description = "Tags to apply to managed assets"
-  type        = map(string)
-  default     = {}
-}
-
-variable "workspace_s3_prefix" {
-  type    = string
-  default = ""
-}
-
-variable "wdl_workflow_s3_prefix" {
-  description = "S3 prefix where WDL workflows are stored, read permissions will be granted for this prefix"
-  type        = string
-  default     = ""
-}
-
-variable "job_policy_arns" {
-  type        = list(string)
-  description = "Policy ARNs to attach to batch jobs"
-  default     = []
-}

@@ -60,7 +60,7 @@ variable "tags" {
 // Module Specific
 
 variable "batch_job_docker_image" {
-  description = "Docker image (name or name:tag) that will be used for Batch jobs (expected to be in the private registry for the host AWS account)"
+  description = "Docker image (name or name:tag) that will be used for AWS Batch Jobs running WDL workflows"
   type        = string
 }
 
