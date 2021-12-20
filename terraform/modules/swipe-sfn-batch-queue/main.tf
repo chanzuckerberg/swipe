@@ -86,13 +86,15 @@ resource "aws_security_group" "swipe" {
 # See https://github.com/hashicorp/terraform-provider-aws/pull/16819 for Batch Fargate CE support
 resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
-    SPOT = {
+    spot = {
       "cr_type" : "SPOT",
-      "desired_vcpus" : var.spot_desired_vcpus,
+      "min_vcpus" : var.spot_min_vcpus,
+      "max_vcpus" : var.spot_max_vcpus,
     }
-    EC2 = {
+    on_demand = {
       "cr_type" : "EC2",
-      "desired_vcpus" : var.on_demand_desired_vcpus,
+      "min_vcpus" : var.on_demand_min_vcpus,
+      "max_vcpus" : var.on_demand_max_vcpus,
     }
   }
 
@@ -106,9 +108,9 @@ resource "aws_batch_compute_environment" "swipe_main" {
     security_group_ids = [aws_security_group.swipe.id]
     subnets            = var.batch_subnet_ids
 
-    min_vcpus     = var.min_vcpus
-    desired_vcpus = each.value["desired_vcpus"]
-    max_vcpus     = var.max_vcpus
+    min_vcpus     = each.value["min_vcpus"]
+    desired_vcpus = each.value["min_vcpus"]
+    max_vcpus     = each.value["max_vcpus"]
 
     # TODO: remove this once CZID monorepo updates moto
     type                = var.mock ? "EC2" : each.value["cr_type"]
@@ -139,7 +141,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 }
 
 resource "aws_batch_job_queue" "swipe_main" {
-  for_each = toset(["SPOT", "EC2"])
+  for_each = toset(["spot", "on_demand"])
   name     = "${var.app_name}-main-${each.key}"
   state    = "ENABLED"
   priority = 10
