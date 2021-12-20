@@ -1,62 +1,55 @@
+// Passthrough from root module
+
 variable "app_name" {
-  description = "App name (will appear in managed asset names)"
+  description = "The name of your application, to be used as a namespace for all swipe managed assets"
   type        = string
-  default     = "swipe"
 }
 
 variable "mock" {
-  type    = bool
-  default = false
+  description = "Set to true if applying to mock cloud environemnts for testing"
+  type        = bool
 }
 
-variable "vpc_id" {
-  type = string
+variable "batch_ssh_key_pair_id" {
+  description = "EC2 SSH key pair to use for AWS Batch EC2 container instances"
+  type        = string
+}
+
+variable "network_info" {
+  description = "VPC ID and subnet IDs within that VPC to use for AWS batch instances"
+  type = object({
+    vpc_id           = string,
+    batch_subnet_ids = list(string),
+  })
 }
 
 variable "batch_ec2_instance_types" {
-  description = "EC2 instance types to use for Batch EC2 compute environments"
+  description = "EC2 instance types to use for AWS Batch compute environments"
   type        = list(string)
   default     = ["r5d"]
 }
 
-variable "batch_subnet_ids" {
-  description = "EC2 subnet IDs for Batch EC2 compute environment container instances"
-  type        = list(string)
-  default     = []
-}
-
-variable "batch_ssh_key_pair_id" {
-  description = "EC2 SSH key pair to use for Batch EC2 container instances"
-  type        = string
-  default     = ""
-}
-
-variable "min_vcpus" {
+variable "spot_min_vcpus" {
+  description = "Minimum VCPUs for spot AWS Batch compute environment"
   type        = number
-  description = "Minimum CPUs for this cluster"
-  default     = 8
 }
 
-variable "max_vcpus" {
+variable "on_demand_min_vcpus" {
+  description = "Minimum VCPUs for on demand AWS Batch compute environment"
   type        = number
-  description = "Maximum CPUs for this cluster"
-  default     = 16
 }
 
-variable "spot_desired_vcpus" {
+variable "spot_max_vcpus" {
+  description = "Maximum VCPUs for spot AWS Batch compute environment"
   type        = number
-  description = "Desired Spot CPUs for this cluster"
-  default     = 0
 }
 
-variable "on_demand_desired_vcpus" {
+variable "on_demand_max_vcpus" {
+  description = "Maximum VCPUs for on demand AWS Batch compute environment"
   type        = number
-  description = "Desired on demand CPUs for this cluster"
-  default     = 0
 }
 
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
-  default     = {}
 }

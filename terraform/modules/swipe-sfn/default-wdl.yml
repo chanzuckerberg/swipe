@@ -63,7 +63,7 @@ States:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
     Parameters:
-      JobQueue: "${batch_ec2_job_queue_arn}"
+      JobQueue: "${batch_on_demand_job_queue_arn}"
       JobName.$: $$.Execution.Name
       JobDefinition: *JobDefinition
       Timeout: *RunBatchTimeout
