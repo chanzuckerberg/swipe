@@ -1,7 +1,6 @@
 variable "app_name" {
-  description = "App name (will appear in managed asset names)"
+  description = "The name of your application, to be used as a namespace for all swipe managed assets"
   type        = string
-  default     = "swipe"
 }
 
 variable "cidr_block" {
@@ -13,5 +12,4 @@ variable "cidr_block" {
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
-  default     = {}
 }

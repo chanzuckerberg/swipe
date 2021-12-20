@@ -43,6 +43,7 @@ locals {
 module "sfn" {
   source                        = "./terraform/modules/swipe-sfn"
   app_name                      = var.app_name
+  mock                          = var.mock
   batch_job_docker_image        = "ghcr.io/chanzuckerberg/swipe:${chomp(local.version)}"
   batch_spot_job_queue_arn      = module.batch_queue.batch_spot_job_queue_arn
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
