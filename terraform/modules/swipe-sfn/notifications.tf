@@ -65,10 +65,10 @@ resource "aws_sqs_queue" "sfn_notifications_queue" {
   visibility_timeout_seconds = lookup(each.value, "visibility_timeout_seconds", "120")
 
   // Sent to dead-letter queue after maxReceiveCount tries
-  redrive_policy = lookup(each.value, "dead_letter", "true") == "true" ? null : jsonencode({
+  redrive_policy = lookup(each.value, "dead_letter", "true") == "true" ? jsonencode({
     deadLetterTargetArn = aws_sqs_queue.sfn_notifications_queue_dead_letter[each.key].arn
     maxReceiveCount     = 3
-  })
+  }) : null
 
   tags = var.tags
 }
