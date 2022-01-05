@@ -7,5 +7,5 @@ output "sfn_notification_queue_arns" {
 }
 
 output "sfn_notification_dead_letter_queue_arns" {
-  value = { for name, queue in aws_sqs_queue.sfn_notification_dead_letter_queue : name => queue.arn }
+  value = { for name, queue in aws_sqs_queue.sfn_notifications_queue_dead_letter : name => queue.arn }
 }

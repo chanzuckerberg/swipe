@@ -109,7 +109,7 @@ data "aws_iam_policy_document" "sfn_notifications_queue_policy_document" {
 }
 
 resource "aws_sqs_queue" "sfn_notifications_queue_dead_letter" {
-  for_each = { for name, opts in var.sqs_queues : name => values if lookup(opts, "dead_letter", "true") == "true" }
+  for_each = { for name, opts in var.sqs_queues : name => opts if lookup(opts, "dead_letter", "true") == "true" }
 
   name = "${var.app_name}-${each.key}-sfn-notifications-queue-dead-letter"
 
