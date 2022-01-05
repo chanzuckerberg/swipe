@@ -52,6 +52,11 @@ variable "extra_env_vars" {
   type        = map(string)
 }
 
+variable "sqs_queues" {
+  description = "A dictionary of sqs queue names to a map of options: visibility_timeout_seconds (default: '120'), dead_letter ('true'/'false' default: 'true')"
+  type        = map(map(string))
+}
+
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
