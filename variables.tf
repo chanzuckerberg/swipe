@@ -120,7 +120,6 @@ variable "sqs_queues" {
   default     = {}
 }
 
-
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
