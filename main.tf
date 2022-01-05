@@ -55,9 +55,18 @@ module "sfn" {
   stage_memory_defaults         = var.stage_memory_defaults
   stage_vcpu_defaults           = var.stage_vcpu_defaults
   extra_env_vars                = var.extra_env_vars
+  sqs_queues                    = var.sqs_queues
   tags                          = var.tags
 }
 
 output "sfn_arns" {
   value = module.sfn.sfn_arns
+}
+
+output "sfn_notification_queue_arns" {
+  value = module.sfn.sfn_notification_queue_arns
+}
+
+output "sfn_notification_dead_letter_queue_arns" {
+  value = module.sfn.sfn_notification_dead_letter_queue_arns
 }
