@@ -61,10 +61,6 @@ resource "aws_sqs_queue" "sfn_notifications_queue" {
 
   name = "${var.app_name}-${each.key}-sfn-notifications-queue"
 
-  // We have different settings for dev below b/c multiple dev machines may view
-  // and ignore the messages, which drives up the receiveCount. Timeout is lower
-  // so that the intended machine may see it faster:
-
   // Upper-bound for handling any notification
   visibility_timeout_seconds = lookup(each.value, "visibility_timeout_seconds", "120")
 
