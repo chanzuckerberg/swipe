@@ -129,7 +129,7 @@ resource "aws_lambda_function" "lambda" {
   environment {
     variables = merge({
       APP_NAME         = var.app_name
-      AWS_ENDPOINT_URL = var.mock ? "http://motoserver:5000" : null
+      AWS_ENDPOINT_URL = var.mock ? "http://host.docker.internal:9000" : null
       }, {
       for stage, defaults in var.stage_memory_defaults : "${stage}SPOTMemoryDefault" => "${defaults.spot}"
       }, {
