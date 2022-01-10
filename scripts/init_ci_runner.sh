@@ -28,3 +28,6 @@ set -x
 mkdir ~/.aws
 touch ~/.aws/credentials
 
+git clone https://github.com/morsecodist/moto.git
+cd moto
+docker build -t moto_local .

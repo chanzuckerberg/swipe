@@ -3,7 +3,7 @@ version: "3.8"
 services:
   motoserver:
     container_name: motoserver
-    image: motoserver/moto
+    image: moto_local
     ports:
       - "9000:5000"
     volumes:
