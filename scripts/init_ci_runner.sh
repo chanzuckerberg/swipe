@@ -32,3 +32,4 @@ git clone https://github.com/morsecodist/moto.git
 cd moto
 git checkout tmorse-s3-host
 docker build -t moto_local .
+cd ..
