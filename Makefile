@@ -1,11 +1,9 @@
 SHELL=/bin/bash -o pipefail
 
 deploy-mock:
-	aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
-	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' terraform apply --auto-approve
-
-$(TFSTATE_FILE):
-	terraform state pull > $(TFSTATE_FILE)
+	rm terraform.tfstate || true
+	AWS_REGION=us-east-1 aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
+	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; AWS_REGION=us-east-1 TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' terraform apply --auto-approve
 
 lint:
 	flake8 .
@@ -17,7 +15,7 @@ format:
 	terraform fmt --recursive .
 
 test:
-	python -m unittest discover .
+	AWS_REGION=us-east-1 python -m unittest discover .
 
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(app_name)

@@ -25,7 +25,15 @@ locals {
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),
   })
-  container_env_vars     = { "environment" : [for k, v in local.batch_env_vars : { "name" : k, "value" : v }] }
+  mock_env_vars = var.mock ? {
+    "AWS_ACCESS_KEY_ID" : "role-account-id",
+    "AWS_SECRET_ACCESS_KEY" : "role-secret-key",
+    "AWS_SESSION_TOKEN" : "session-token",
+    "AWS_ENDPOINT_URL" : "http://host.docker.internal:9000"
+    "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri"
+    "S3PARCP_S3_URL" : "http://host.docker.internal:9000"
+  } : {}
+  container_env_vars     = { "environment" : [for k, v in merge(local.batch_env_vars, local.mock_env_vars) : { "name" : k, "value" : v }] }
   final_container_config = merge(local.container_config, local.container_env_vars)
 }
 

@@ -34,6 +34,7 @@ resource "aws_iam_role_policy_attachment" "swipe_sfn_service" {
 module "batch_job" {
   source                    = "../swipe-sfn-batch-job"
   app_name                  = var.app_name
+  mock                      = var.mock
   batch_job_docker_image    = var.batch_job_docker_image
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
   workspace_s3_prefix       = var.workspace_s3_prefix

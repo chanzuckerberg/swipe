@@ -57,5 +57,7 @@ venv/
 
 /.terraform*
 
-
 sfn-io-helper-lambdas-tmp/
+
+mock.tf
+terraform.tfstate

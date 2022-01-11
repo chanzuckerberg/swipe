@@ -12,7 +12,7 @@ test_wdl = """
 version 1.0
 workflow swipe_test {
   input {
-    File hello
+    String hello
     String docker_image_id
   }
 
@@ -29,17 +29,17 @@ workflow swipe_test {
 
 task add_world {
   input {
-    File hello
+    String hello
     String docker_image_id
   }
 
   command <<<
-    echo {hello} > out.txt
-    cat world >> out.txt
+    echo ~{hello} > out.txt
+    echo world >> out.txt
   >>>
 
   output {
-    File out = out.txt
+    File out = "out.txt"
   }
 
   runtime {
@@ -71,7 +71,9 @@ class TestSFNWDL(unittest.TestCase):
           "OutputPrefix": f"s3://{input_obj.bucket_name}/{output_prefix}",
           "Input": {
               "Run": {
-                  "hello": f"s3://{input_obj.bucket_name}/{input_obj.key}",
+                  # TODO: re-enable once we can mock the downloads
+                  # "hello": f"s3://{input_obj.bucket_name}/{input_obj.key}",
+                  "hello": "hello",
                   "docker_image_id": "ubuntu",
               }
           }
@@ -96,8 +98,9 @@ class TestSFNWDL(unittest.TestCase):
             print(event, file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/output.txt")
-        assert outputs_obj.get()['Body'].read() == "hello\nworld"
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        output_text = outputs_obj.get()['Body'].read().decode()
+        assert output_text == "hello\nworld\n", output_text
 
 
 if __name__ == "__main__":

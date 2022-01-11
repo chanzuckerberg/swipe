@@ -4,7 +4,6 @@ on:
   push
 
 env:
-  DEPLOYMENT_ENVIRONMENT: test
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

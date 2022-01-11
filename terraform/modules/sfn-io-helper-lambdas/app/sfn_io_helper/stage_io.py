@@ -102,4 +102,6 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
             vcpu_key = stage + compute_env + "Vcpu"
             sfn_state.setdefault(vcpu_key, int(os.environ[vcpu_key + "Default"]))
 
+    link_outputs(sfn_state)
+
     return sfn_state
