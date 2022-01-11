@@ -43,11 +43,11 @@ jobs:
           #   we must add an entry for it so we can use DNS locally.
           sudo chmod 666 /etc/hosts
           source scripts/init_ci_runner.sh
-          scripts/run_mock_server.sh &
-          for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
           # TODO: remove moto hack once change is merged
           git clone https://github.com/morsecodist/moto.git ; cd moto ; git checkout tmorse-s3-host ; docker build -t moto_local . ; cd .. ; rm -rf moto
           docker build -t docker pull ghcr.io/chanzuckerberg/swipe:$(cat version) .
+          scripts/run_mock_server.sh &
+          for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test
 
   terraform_format:
