@@ -22,5 +22,6 @@ virtualenv --python=python3 .venv
 source .venv/bin/activate
 if [[ -d ~/.cache ]]; then sudo chown -R $(whoami) ~/.cache; fi
 pip install -r requirements-dev.txt
+docker swarm init
 
 set -x
