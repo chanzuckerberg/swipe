@@ -25,7 +25,7 @@ check_for_termination() {
 }
 
 put_metric() {
-    aws cloudwatch put-metric-data --metric-name $1 --namespace $APP_NAME --unit Percent --value $2 --dimensions SFNCurrentState=$SFN_CURRENT_STATE
+    $aws cloudwatch put-metric-data --metric-name $1 --namespace $APP_NAME --unit Percent --value $2 --dimensions SFNCurrentState=$SFN_CURRENT_STATE
 }
 
 put_metrics() {
@@ -65,8 +65,8 @@ PASSTHRU_ARGS=${PASSTHRU_VARS[@]/#/--env }
 set -euo pipefail
 export CURRENT_STATE=$(echo "$SFN_CURRENT_STATE" | sed -e s/SPOT// -e s/EC2//)
 
-aws s3 cp "$WDL_WORKFLOW_URI" .
-aws s3 cp "$WDL_INPUT_URI" wdl_input.json
+$aws s3 cp "$WDL_WORKFLOW_URI" .
+$aws s3 cp "$WDL_INPUT_URI" wdl_input.json
 
 handle_error() {
   OF=wdl_output.json;
@@ -77,7 +77,7 @@ handle_error() {
         tail -n 1 $(jq -r $EP $OF) > $OF;
       fi;
     fi;
-    aws s3 cp $OF "$WDL_OUTPUT_URI";
+    $aws s3 cp $OF "$WDL_OUTPUT_URI";
   fi
 }
 
