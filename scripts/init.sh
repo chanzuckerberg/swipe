@@ -4,6 +4,12 @@ if [ -f /etc/environment ]; then source /etc/environment; fi
 if [ -f /etc/default/locale ]; then source /etc/default/locale; else export LC_ALL=C.UTF-8 LANG=C.UTF-8; fi
 set +a
 
+if [ -n "${AWS_ENDPOINT_URL-}" ]; then
+  export aws="aws --endpoint-url ${AWS_ENDPOINT_URL}"
+else
+  export aws="aws"
+fi
+
 check_for_termination() {
   count=0
   while true; do
@@ -19,11 +25,7 @@ check_for_termination() {
 }
 
 put_metric() {
-  if [[ -z "${AWS_ENDPOINT_URL}" ]]; then
     aws cloudwatch put-metric-data --metric-name $1 --namespace $APP_NAME --unit Percent --value $2 --dimensions SFNCurrentState=$SFN_CURRENT_STATE
-  else
-    aws --endpoint-url $AWS_ENDPOINT_URL cloudwatch put-metric-data --metric-name $1 --namespace $APP_NAME --unit Percent --value $2 --dimensions SFNCurrentState=$SFN_CURRENT_STATE
-  fi
 }
 
 put_metrics() {
@@ -62,13 +64,9 @@ PASSTHRU_ARGS=${PASSTHRU_VARS[@]/#/--env }
 
 set -euo pipefail
 export CURRENT_STATE=$(echo "$SFN_CURRENT_STATE" | sed -e s/SPOT// -e s/EC2//)
-if [[ -z "${AWS_ENDPOINT_URL}" ]]; then
-    aws s3 cp "$WDL_WORKFLOW_URI" .
-    aws s3 cp "$WDL_INPUT_URI" wdl_input.json
-else
-    aws --endpoint-url $AWS_ENDPOINT_URL s3 cp "$WDL_WORKFLOW_URI" .
-    aws --endpoint-url $AWS_ENDPOINT_URL s3 cp "$WDL_INPUT_URI" wdl_input.json
-fi
+
+aws s3 cp "$WDL_WORKFLOW_URI" .
+aws s3 cp "$WDL_INPUT_URI" wdl_input.json
 
 handle_error() {
   OF=wdl_output.json;
@@ -79,11 +77,7 @@ handle_error() {
         tail -n 1 $(jq -r $EP $OF) > $OF;
       fi;
     fi;
-    if [[ -z "${AWS_ENDPOINT_URL}" ]]; then
-        aws s3 cp $OF "$WDL_OUTPUT_URI";
-    else
-        aws --endpoint-url $AWS_ENDPOINT_URL s3 cp $OF "$WDL_OUTPUT_URI";
-    fi
+    aws s3 cp $OF "$WDL_OUTPUT_URI";
   fi
 }
 
