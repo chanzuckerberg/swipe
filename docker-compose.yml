@@ -8,12 +8,25 @@ services:
       - "9000:5000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      awsnet:
+        aliases:
+          - awsnet
   stepfunctions_local:
     container_name: stepfunctions_local
     image: amazon/aws-stepfunctions-local
     environment:
-      - BATCH_ENDPOINT=http://motoserver:5000
-      - LAMBDA_ENDPOINT=http://motoserver:5000
+      - BATCH_ENDPOINT=http://awsnet:5000
+      - LAMBDA_ENDPOINT=http://awsnet:5000
       - AWS_ACCOUNT_ID=123456789012
     ports:
       - "8083:8083"
+    networks:
+      awsnet:
+        aliases:
+          - sfn.awsnet
+networks:
+  awsnet:
+    name: awsnet
+    driver: overlay
+    attachable: true

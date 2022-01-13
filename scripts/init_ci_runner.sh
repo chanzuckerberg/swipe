@@ -12,7 +12,7 @@ set +a
 
 source /etc/profile
 sudo apt-get -qq update
-sudo apt-get -qq install -o=Dpkg::Use-Pty=0 --yes jq moreutils gettext build-essential python3-dev virtualenv zip unzip httpie git shellcheck ruby
+sudo apt-get -qq install -o=Dpkg::Use-Pty=0 --yes jq moreutils gettext build-essential python3-dev virtualenv zip unzip httpie git shellcheck
 sudo gem install --quiet statelint
 curl -OLs https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_linux_amd64.deb
 sudo dpkg -i gh_${GH_CLI_VERSION}_linux_amd64.deb
@@ -24,7 +24,3 @@ if [[ -d ~/.cache ]]; then sudo chown -R $(whoami) ~/.cache; fi
 pip install -r requirements-dev.txt
 
 set -x
-
-mkdir ~/.aws
-touch ~/.aws/credentials
-

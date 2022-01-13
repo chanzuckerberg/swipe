@@ -12,7 +12,7 @@ test_wdl = """
 version 1.0
 workflow swipe_test {
   input {
-    String hello
+    File hello
     String docker_image_id
   }
 
@@ -29,12 +29,12 @@ workflow swipe_test {
 
 task add_world {
   input {
-    String hello
+    File hello
     String docker_image_id
   }
 
   command <<<
-    echo ~{hello} > out.txt
+    cat ~{hello} > out.txt
     echo world >> out.txt
   >>>
 
@@ -48,8 +48,7 @@ task add_world {
 }
 """
 
-test_input = """
-hello
+test_input = """hello
 """
 
 
@@ -64,16 +63,14 @@ class TestSFNWDL(unittest.TestCase):
         wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
         wdl_obj.put(Body=test_wdl.encode())
         input_obj = self.test_bucket.Object("input.txt")
-        input_obj.put(Body=test_wdl.encode())
+        input_obj.put(Body=test_input.encode())
         output_prefix = "out"
         sfn_input: Dict[str, Any] = {
           "RUN_WDL_URI": f"s3://{wdl_obj.bucket_name}/{wdl_obj.key}",
           "OutputPrefix": f"s3://{input_obj.bucket_name}/{output_prefix}",
           "Input": {
               "Run": {
-                  # TODO: re-enable once we can mock the downloads
-                  # "hello": f"s3://{input_obj.bucket_name}/{input_obj.key}",
-                  "hello": "hello",
+                  "hello": f"s3://{input_obj.bucket_name}/{input_obj.key}",
                   "docker_image_id": "ubuntu",
               }
           }
