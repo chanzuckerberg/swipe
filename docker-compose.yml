@@ -4,6 +4,8 @@ services:
   motoserver:
     container_name: motoserver
     image: moto_local
+    environment:
+      - MOTO_DOCKER_NETWORKS=awsnet
     ports:
       - "9000:5000"
     volumes:
