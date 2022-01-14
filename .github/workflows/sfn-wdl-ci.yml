@@ -4,7 +4,6 @@ on:
   push
 
 env:
-  DEPLOYMENT_ENVIRONMENT: test
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -38,12 +37,11 @@ jobs:
           key: ${{runner.os}}-cache
       - name: Run tests
         run: |
-          # This is required so tests can add entries
-          #   Tests need to add entries because we are mocking the s3 api and
-          #   we need to use s3's bucket DNS. When we make a test bucket
-          #   we must add an entry for it so we can use DNS locally.
-          sudo chmod 666 /etc/hosts
           source scripts/init_ci_runner.sh
+          source environment.test
+          # TODO: remove moto hack once change is merged
+          git clone https://github.com/morsecodist/moto.git ; cd moto ; git checkout tmorse-docker-networks ; docker build -t moto_local . ; cd .. ; rm -rf moto
+          docker build -t ghcr.io/chanzuckerberg/swipe:$(cat version) .
           scripts/run_mock_server.sh &
           for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test

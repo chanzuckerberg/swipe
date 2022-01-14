@@ -1,11 +1,9 @@
 SHELL=/bin/bash -o pipefail
 
 deploy-mock:
+	rm terraform.tfstate || true
 	aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
 	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' terraform apply --auto-approve
-
-$(TFSTATE_FILE):
-	terraform state pull > $(TFSTATE_FILE)
 
 lint:
 	flake8 .
