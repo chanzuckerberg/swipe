@@ -56,7 +56,7 @@ Now we need to define a workflow to run. Here is a basic WDL workflow that lever
 
 ```WDL
 version 1.0
-workflow hello_swipe {
+workflow swipe_test {
   input {
     File hello
     String docker_image_id
@@ -80,17 +80,18 @@ task add_world {
   }
 
   command <<<
-    cat {hello} > out.txt
-    cat world >> out.txt
+    cat ~{hello} > out.txt
+    echo world >> out.txt
   >>>
 
   output {
-    File out = out.txt
+    File out = "out.txt"
   }
 
   runtime {
       docker: docker_image_id
   }
+}
 }
 ```
 
@@ -132,4 +133,37 @@ response = client.start_execution(
 )
 ```
 
-Once your step function is complete your output should be at `s3://my-test-app-swipe-workspace/outputs/out.txt`. Note that `out.txt` came from the WDL workflow.
+Once your step function is complete your output should be at `s3://my-test-app-swipe-workspace/outputs/hello/out.txt`. Note that `out.txt` came from the WDL workflow.
+
+## Development
+
+### Requirements
+
+- Terraform
+- Python 3.9
+- Docker + Docker Compose
+
+### Running tests
+
+Setup python dependencies:
+
+```bash
+virtualenv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Bring up mock AWS infrastructure:
+
+```bash
+docker-compose up -d
+source environment.test
+make deploy-mock
+```
+
+Run the tests:
+
+```bash
+make test
+```
+
