@@ -95,7 +95,7 @@ class TestSFNWDL(unittest.TestCase):
             print(event, file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
         assert output_text == "hello\nworld\n", output_text
 
