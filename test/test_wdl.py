@@ -60,7 +60,7 @@ class TestSFNWDL(unittest.TestCase):
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
 
     def test_simple_sfn_wdl_workflow(self):
-        wdl_obj = self.test_bucket.Object("test.wdl")
+        wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
         wdl_obj.put(Body=test_wdl.encode())
         input_obj = self.test_bucket.Object("input.txt")
         input_obj.put(Body=test_input.encode())
@@ -95,7 +95,7 @@ class TestSFNWDL(unittest.TestCase):
             print(event, file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
         assert output_text == "hello\nworld\n", output_text
 
