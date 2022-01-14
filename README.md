@@ -56,7 +56,7 @@ Now we need to define a workflow to run. Here is a basic WDL workflow that lever
 
 ```WDL
 version 1.0
-workflow swipe_test {
+workflow hello_swipe {
   input {
     File hello
     String docker_image_id
