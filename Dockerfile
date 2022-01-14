@@ -43,7 +43,7 @@ RUN apt-get -q install -y \
 RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5 miniwdl-s3upload==0.0.8
 
 # TODO: generalize this plugin
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/4d0ff9e4cbbf9a2219aeb5dd43959e36c4f0291f.zip#subdirectory=sfn-wdl
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/v0.0.6.zip#subdirectory=sfn-wdl
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.3-alpha/s3parcp_1.0.3-alpha_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
