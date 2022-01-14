@@ -92,7 +92,6 @@ task add_world {
       docker: docker_image_id
   }
 }
-}
 ```
 
 Let's save this one as `hello.wdl` and upload it:
