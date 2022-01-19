@@ -59,4 +59,6 @@ RUN cd /usr/bin; curl -O https://amazon-ecr-credential-helper-releases.s3.amazon
 RUN chmod +x /usr/bin/docker-credential-ecr-login
 RUN mkdir -p /root/.docker
 RUN jq -n '.credsStore="ecr-login"' > /root/.docker/config.json
+
+
 ENTRYPOINT ["/usr/local/bin/init.sh"]

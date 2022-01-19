@@ -22,8 +22,14 @@ workflow swipe_test {
       docker_image_id = docker_image_id
   }
 
+  call add_foo {
+    input:
+      hello = add_world.out,
+      docker_image_id = docker_image_id
+  }
+
   output {
-    File out = add_world.out
+    File out = add_foo.foo
   }
 }
 
@@ -40,6 +46,26 @@ task add_world {
 
   output {
     File out = "out.txt"
+  }
+
+  runtime {
+      docker: docker_image_id
+  }
+}
+
+task add_foo {
+  input {
+    File hello
+    String docker_image_id
+  }
+
+  command <<<
+    cat ~{hello} > foo.txt
+    echo foo >> foo.txt
+  >>>
+
+  output {
+    File foo = "foo.txt"
   }
 
   runtime {
@@ -95,9 +121,13 @@ class TestSFNWDL(unittest.TestCase):
             print(event, file=sys.stderr)
 
         assert description["status"] == "SUCCEEDED", description
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/foo.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
-        assert output_text == "hello\nworld\n", output_text
+        assert output_text == "hello\nworld\nfoo\n", output_text
+
+        # foo_obj = self.test_bucket.Object(f"{output_prefix}/test-1/foo.txt")
+        # foo_text = foo_obj.get()['Body'].read().decode()
+        # assert foo_text == "foo\n", foo_text
 
 
 if __name__ == "__main__":
