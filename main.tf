@@ -63,6 +63,11 @@ output "sfn_arns" {
   value = module.sfn.sfn_arns
 }
 
+output "compute_environment_security_group_id" {
+  description = "ID of the security group associated with the batch compute environments"
+  value       = module.batch_queue.compute_environment_security_group_id
+}
+
 output "sfn_notification_queue_arns" {
   value = module.sfn.sfn_notification_queue_arns
 }
