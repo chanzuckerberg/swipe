@@ -64,6 +64,9 @@ class TestSFNWDL(unittest.TestCase):
         self.input_obj.put(Body=test_input.encode())
 
     def tearDown(self) -> None:
+        self.test_bucket.delete_objects(Delete={
+            "Objects": [{ "Key": obj.key} for obj in self.test_bucket.ojects],
+        })
         self.test_bucket.delete()
 
     def _wait_sfn(self, sfn_input) -> None:
