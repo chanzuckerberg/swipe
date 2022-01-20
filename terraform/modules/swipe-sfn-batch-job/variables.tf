@@ -33,7 +33,7 @@ variable "extra_env_vars" {
 
 variable "call_cache" {
   description = "If set to true swipe will cache WDL task results in S3 with the tag swipe_temporary='true' so they can be expired via a lifecycle policy"
-  type          = bool
+  type        = bool
 }
 
 variable "tags" {

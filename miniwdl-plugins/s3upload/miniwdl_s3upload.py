@@ -91,7 +91,7 @@ _uploaded_files_lock = threading.Lock()
 
 
 def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env.Bindings[Value.Base]):
-    if not (cfg["cache"].get_bool("put") and \
+    if not (cfg["cache"].get_bool("put") and
             cfg["call_cache"]["backend"] != "s3_progressive_upload_call_cache_backend"):
         return
 
@@ -145,8 +145,8 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
 
     def upload_file(abs_fn, s3uri, intermediate):
         if intermediate and \
-            not (cfg["cache"].get_bool("put") and \
-                cfg["call_cache"]["backend"] != "s3_progressive_upload_call_cache_backend"):
+            not (cfg["cache"].get_bool("put") and
+                 cfg["call_cache"]["backend"] != "s3_progressive_upload_call_cache_backend"):
             return
         s3cp(logger, abs_fn, s3uri)
         # record in _uploaded_files (keyed by inode, so that it can be found from any
@@ -280,4 +280,3 @@ def s3cp(logger, fn, s3uri):
                 )
             )
             raise WDL.Error.RuntimeError("failed: " + " ".join(cmd))
-
