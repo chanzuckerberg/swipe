@@ -65,7 +65,7 @@ class TestSFNWDL(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.test_bucket.delete_objects(Delete={
-            "Objects": [{ "Key": obj.key} for obj in self.test_bucket.ojects],
+            "Objects": [{"Key": obj.key} for obj in self.test_bucket.objects],
         })
         self.test_bucket.delete()
 
