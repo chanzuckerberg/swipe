@@ -56,6 +56,7 @@ module "sfn" {
   stage_vcpu_defaults           = var.stage_vcpu_defaults
   extra_env_vars                = var.extra_env_vars
   sqs_queues                    = var.sqs_queues
+  call_cache                    = var.call_cache
   tags                          = var.tags
 }
 

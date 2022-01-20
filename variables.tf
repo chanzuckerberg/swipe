@@ -120,6 +120,12 @@ variable "sqs_queues" {
   default     = {}
 }
 
+variable "call_cache" {
+  dedescription = "If set to true swipe will cache WDL task results in S3 with the tag swipe_temporary='true' so they can be expired via a lifecycle policy"
+  type          = bool
+  default       = false
+}
+
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
