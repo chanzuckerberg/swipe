@@ -22,14 +22,8 @@ workflow swipe_test {
       docker_image_id = docker_image_id
   }
 
-  call add_foo {
-    input:
-      hello = add_world.out,
-      docker_image_id = docker_image_id
-  }
-
   output {
-    File out = add_foo.foo
+    File out = add_world.out
   }
 }
 
@@ -46,26 +40,6 @@ task add_world {
 
   output {
     File out = "out.txt"
-  }
-
-  runtime {
-      docker: docker_image_id
-  }
-}
-
-task add_foo {
-  input {
-    File hello
-    String docker_image_id
-  }
-
-  command <<<
-    cat ~{hello} > foo.txt
-    echo foo >> foo.txt
-  >>>
-
-  output {
-    File foo = "foo.txt"
   }
 
   runtime {
@@ -123,9 +97,9 @@ class TestSFNWDL(unittest.TestCase):
           }
         })
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/foo.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
-        assert output_text == "hello\nworld\nfoo\n", output_text
+        assert output_text == "hello\nworld\n", output_text
 
     def test_call_cache(self):
         output_prefix = "out-2"
@@ -141,12 +115,16 @@ class TestSFNWDL(unittest.TestCase):
         }
 
         self._wait_sfn(sfn_input)
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        output_text = outputs_obj.get()['Body'].read().decode()
+        assert output_text == "hello\nworld\n", output_text
+
         self.test_bucket.Object(f"{output_prefix}/test-1/out.txt").put(Body="cache_break\n".encode())
         self._wait_sfn(sfn_input)
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/foo.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
-        assert output_text == "cache_break\nfoo\n", output_text
+        assert output_text == "cache_break\n", output_text
 
 
 if __name__ == "__main__":

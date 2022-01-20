@@ -91,8 +91,8 @@ _uploaded_files_lock = threading.Lock()
 
 
 def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env.Bindings[Value.Base]):
-    if not (cfg["cache"].get_bool("put") and
-            cfg["call_cache"]["backend"] != "s3_progressive_upload_call_cache_backend"):
+    if not (cfg["call_cache"].get_bool("put") and
+            cfg["call_cache"]["backend"] == "s3_progressive_upload_call_cache_backend"):
         return
 
     json_values = values_to_json(outputs)
@@ -115,7 +115,6 @@ class CallCache(cache.CallCache):
         cache_prefix = os.path.join(prefix, "cache")[1:]
         resp = s3_client.list_objects_v2(Bucket=bucket, Prefix=cache_prefix)
         for obj in resp.get("Contents", []):
-            self._logger.info(f"RELPATH {obj['Key']} {prefix}")
             abs_fn = os.path.join(cfg["call_cache"]["dir"], relpath(obj["Key"], cache_prefix))
             Path(abs_fn).parent.mkdir(parents=True, exist_ok=True)
             s3_client.download_file(bucket, obj["Key"], abs_fn)
@@ -145,8 +144,8 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
 
     def upload_file(abs_fn, s3uri, intermediate):
         if intermediate and \
-            not (cfg["cache"].get_bool("put") and
-                 cfg["call_cache"]["backend"] != "s3_progressive_upload_call_cache_backend"):
+            not (cfg["call_cache"].get_bool("put") and
+                 cfg["call_cache"]["backend"] == "s3_progressive_upload_call_cache_backend"):
             return
         s3cp(logger, abs_fn, s3uri)
         # record in _uploaded_files (keyed by inode, so that it can be found from any

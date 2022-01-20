@@ -40,7 +40,7 @@ RUN apt-get -q install -y \
         python3-boto3 \
         awscli
 
-RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
+RUN pip3 install miniwdl miniwdl-s3parcp==0.0.5
 
 COPY miniwdl-plugins/s3upload s3upload
 RUN pip install ./s3upload
