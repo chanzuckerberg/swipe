@@ -63,6 +63,9 @@ class TestSFNWDL(unittest.TestCase):
         self.input_obj = self.test_bucket.Object("input.txt")
         self.input_obj.put(Body=test_input.encode())
 
+    def tearDown(self) -> None:
+        self.test_bucket.delete()
+
     def _wait_sfn(self, sfn_input) -> None:
         execution_name = "swipe-test-{}".format(int(time.time()))
         sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
