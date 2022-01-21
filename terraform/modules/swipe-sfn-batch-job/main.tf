@@ -33,7 +33,8 @@ locals {
     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri",
     "S3PARCP_S3_URL" : "http://awsnet:5000",
   } : {}
-  container_env_vars     = { "environment" : [for k, v in merge(local.batch_env_vars, local.mock_env_vars) : { "name" : k, "value" : v }] }
+  all_env_vars           = merge(local.batch_env_vars, local.mock_env_vars)
+  container_env_vars     = { "environment" : [for k in sort(keys(local.all_env_vars)) : { "name" : k, "value" : local.all_env_vars[k] }] }
   final_container_config = merge(local.container_config, local.container_env_vars)
 }
 
