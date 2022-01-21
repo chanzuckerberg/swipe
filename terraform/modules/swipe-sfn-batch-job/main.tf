@@ -86,7 +86,7 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
 resource "aws_iam_role" "swipe_batch_main_job" {
   name = "${var.app_name}-batch-job"
   assume_role_policy = templatefile("${path.module}/../../iam_policy_templates/trust_policy.json", {
-    trust_services = ["ecs-tasks"]
+    trust_services = ["ecs-tasks", "ec2"]
   })
   tags = var.tags
 }
