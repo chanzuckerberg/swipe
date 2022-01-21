@@ -69,6 +69,7 @@ resource "aws_sfn_state_machine" "swipe_single_wdl" {
     batch_spot_job_queue_arn         = var.batch_spot_job_queue_arn,
     batch_on_demand_job_queue_arn    = var.batch_on_demand_job_queue_arn,
     batch_job_definition_name        = module.batch_job.batch_job_definition_name,
+    batch_job_timeout_seconds        = var.batch_job_timeout_seconds,
     preprocess_input_lambda_name     = module.sfn_io_helper.preprocess_input_lambda_name,
     process_stage_output_lambda_name = module.sfn_io_helper.process_stage_output_lambda_name,
     handle_success_lambda_name       = module.sfn_io_helper.handle_success_lambda_name,
