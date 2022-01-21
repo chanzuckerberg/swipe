@@ -15,6 +15,12 @@ variable "batch_ssh_key_pair_id" {
   type        = string
 }
 
+variable "ami_id" {
+  description = "Override the default AMI image ID (default: latest AL2 ECS batch image)"
+  type        = string
+  default     = ""
+}
+
 variable "network_info" {
   description = "VPC ID and subnet IDs within that VPC to use for AWS batch instances"
   type = object({

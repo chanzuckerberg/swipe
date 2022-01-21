@@ -29,6 +29,7 @@ module "batch_queue" {
     vpc_id           = module.batch_subnet[0].vpc_id
     batch_subnet_ids = module.batch_subnet[0].batch_subnet_ids
   }
+  ami_id                   = var.batch_ami_id
   batch_ec2_instance_types = var.batch_ec2_instance_types
   spot_min_vcpus           = var.spot_min_vcpus
   on_demand_min_vcpus      = var.on_demand_min_vcpus

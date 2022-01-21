@@ -103,7 +103,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
   compute_resources {
     instance_role      = aws_iam_instance_profile.swipe_batch_main.arn
     instance_type      = var.batch_ec2_instance_types
-    image_id           = data.aws_ssm_parameter.swipe_batch_ami.value
+    image_id           = length(var.ami_id) > 0 : var.ami_id : data.aws_ssm_parameter.swipe_batch_ami.value
     ec2_key_pair       = var.batch_ssh_key_pair_id != "" ? var.batch_ssh_key_pair_id : null
     security_group_ids = [aws_security_group.swipe.id]
     subnets            = var.network_info.batch_subnet_ids
