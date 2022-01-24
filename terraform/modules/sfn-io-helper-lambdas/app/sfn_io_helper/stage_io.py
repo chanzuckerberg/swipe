@@ -65,7 +65,7 @@ def trim_batch_job_details(sfn_state):
 
 def segment_path(path: str) -> List[str]:
     _path = path
-    segments = []
+    segments: List[str] = []
     while _path:
         _path, segment = os.path.split(_path)
         segments.insert(0, segment)
