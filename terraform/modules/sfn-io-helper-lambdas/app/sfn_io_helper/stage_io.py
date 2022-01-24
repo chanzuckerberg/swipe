@@ -98,9 +98,13 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
         sfn_state[get_output_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_output.json")
         for compute_env in "SPOT", "EC2":
             memory_key = stage + compute_env + "Memory"
-            sfn_state.setdefault(memory_key, int(os.environ[memory_key + "Default"]))
+            memory_default_key = memory_key + "Default"
+            if memory_default_key in os.environ:
+                sfn_state.setdefault(memory_key, int(os.environ[memory_default_key]))
             vcpu_key = stage + compute_env + "Vcpu"
-            sfn_state.setdefault(vcpu_key, int(os.environ[vcpu_key + "Default"]))
+            vcpu_default_key = vcpu_key + "Default"
+            if vcpu_default_key in os.environ:
+                sfn_state.setdefault(vcpu_key, int(os.environ[vcpu_key + "Default"]))
 
     link_outputs(sfn_state)
 
