@@ -82,7 +82,7 @@ def link_outputs(sfn_state):
         for input_name, source in stage_io_dict.get(stage, {}).items():
             if isinstance(source, list):
                 stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
-            elif source in sfn_state["Result"]:
+            elif source in sfn_state.get("Result", []):
                 stage_input[input_name] = sfn_state["Result"][source]
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
 
