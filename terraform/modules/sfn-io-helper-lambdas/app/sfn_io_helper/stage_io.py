@@ -75,7 +75,7 @@ def segment_path(path: str) -> List[str]:
 def get_workflow_name(sfn_state):
     for k, v in sfn_state.items():
         if k.endswith("_WDL_URI"):
-            segments = [s for s in segment_path(v) if re.match(r"v(\d+)", s)]
+            segments = [s for s in segment_path(v) if re.match(r".*-v(\d+)", s)]
             name = segments[0] if segments else os.path.basename(v)
             return os.path.splitext(name)[0]
 
