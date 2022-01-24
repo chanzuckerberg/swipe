@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+from typing import List
 
 from botocore import xform_name
 
@@ -62,10 +63,21 @@ def trim_batch_job_details(sfn_state):
     return sfn_state
 
 
+def segment_path(path: str) -> List[str]:
+    _path = path
+    segments: List[str] = []
+    while _path:
+        _path, segment = os.path.split(_path)
+        segments.insert(0, segment)
+    return segments
+
+
 def get_workflow_name(sfn_state):
     for k, v in sfn_state.items():
         if k.endswith("_WDL_URI"):
-            return os.path.splitext(os.path.basename(s3_object(v).key))[0]
+            segments = [s for s in segment_path(v) if re.match(r"v(\d+)", s)]
+            name = segments[0] if segments else os.path.basename(v)
+            return os.path.splitext(name)[0]
 
 
 def link_outputs(sfn_state):
