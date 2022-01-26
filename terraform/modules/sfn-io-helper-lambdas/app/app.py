@@ -32,7 +32,7 @@ import os
 import json
 import logging
 
-from sfn_io_helper import batch_events, broadcast_stage_complete, reporting, stage_io
+from sfn_io_helper import batch_events, reporting, stage_io
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -50,7 +50,7 @@ def preprocess_input(sfn_data, _):
 
 def process_stage_output(sfn_data, context):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
-    broadcast_stage_complete(
+    stage_io.broadcast_stage_complete(
         sfn_data["ExecutionId"],
         context.invoked_function_arn.split(":")[4],
         sfn_data["CurrentState"][:-len("ReadOutput")],
