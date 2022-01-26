@@ -125,16 +125,17 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
     return sfn_state
 
 
-def broadcast_stage_complete(execution_id: str, aws_account_id: str, stage: str):
+def broadcast_stage_complete(execution_id: str, stage: str):
     if "SQS_QUEUE_URLS" not in os.environ:
         return
 
     sqs_queue_urls = os.environ["SQS_QUEUE_URLS"].split(",")
 
-    region = os.environ["AWS_REGION"]
-    state_machine_name, execution_name = execution_id.split(":")
-    state_machine_arn = f"arn:aws:states:{region}:{aws_account_id}:stateMachine:{state_machine_name}"
-    execution_arn = f"arn:aws:states:{region}:{aws_account_id}:execution:{execution_id}"
+    assert len(execution_id.split(":")) == 8
+    _, _, _, aws_region, aws_account_id, _, state_machine_name, execution_name = execution_id.split(":")
+
+    state_machine_arn = f"arn:aws:states:{aws_region}:{aws_account_id}:stateMachine:{state_machine_name}"
+    execution_arn = f"arn:aws:states:{aws_region}:{aws_account_id}:execution:{execution_id}"
 
     body = json.dumps({
         "version": "0",
@@ -143,7 +144,7 @@ def broadcast_stage_complete(execution_id: str, aws_account_id: str, stage: str)
         "source": "aws.states",
         "account": aws_account_id,
         "time": datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
-        "region": region,
+        "region": aws_region,
         "resources": [execution_arn],
         "detail": {
             "executionArn": execution_arn,
