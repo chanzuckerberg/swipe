@@ -32,7 +32,7 @@ import os
 import json
 import logging
 
-from sfn_io_helper import batch_events, reporting, stage_io
+from sfn_io_helper import batch_events, broadcast_stage_complete, reporting, stage_io
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -48,8 +48,13 @@ def preprocess_input(sfn_data, _):
                                          state_machine_name=state_machine_name)
 
 
-def process_stage_output(sfn_data, _):
+def process_stage_output(sfn_data, context):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
+    broadcast_stage_complete(
+        sfn_data["ExecutionId"],
+        context.invoked_function_arn.split(":")[4],
+        sfn_data["CurrentState"][:-len("ReadOutput")],
+    )
     sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
     stage_io.link_outputs(sfn_state)
     sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)

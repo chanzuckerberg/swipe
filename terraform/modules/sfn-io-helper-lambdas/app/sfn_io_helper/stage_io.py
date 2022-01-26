@@ -3,10 +3,12 @@ import re
 import json
 import logging
 from typing import List
+from datetime import datetime
+from uuid import uuid4
 
 from botocore import xform_name
 
-from . import s3_object
+from . import s3_object, sqs
 
 logger = logging.getLogger()
 
@@ -121,3 +123,47 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
     link_outputs(sfn_state)
 
     return sfn_state
+
+
+def broadcast_stage_complete(execution_id: str, aws_account_id: str, stage: str):
+    if "SQS_QUEUE_URLS" not in os.environ:
+        return
+
+    sqs_queue_urls = os.environ["SQS_QUEUE_URLS"].split(",")
+
+    region = os.environ["AWS_REGION"]
+    state_machine_name, execution_name = execution_id.split(":")
+    state_machine_arn = f"arn:aws:states:{region}:{aws_account_id}:stateMachine:{state_machine_name}"
+    execution_arn = f"arn:aws:states:{region}:{aws_account_id}:execution:{execution_id}"
+
+    body = json.dumps({
+        "version": "0",
+        "id": str(uuid4()),
+        "detail-type": "Step Functions Execution Status Change",
+        "source": "aws.states",
+        "account": aws_account_id,
+        "time": datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
+        "region": region,
+        "resources": [execution_arn],
+        "detail": {
+            "executionArn": execution_arn,
+            "stateMachineArn": state_machine_arn,
+            "name": execution_name,
+            "status": "RUNNING",
+            "lastCompletedStage": re.sub(r'(?<!^)(?=[A-Z])', '_', stage).lower(),
+            # "startDate": 1551225271984,
+            "stopDate":  None,
+            "input": "{}",
+            "inputDetails": {
+                 "included": None
+            },
+            "output": None,
+            "outputDetails": None
+        }
+    })
+
+    for squs_que_url in sqs_queue_urls:
+        sqs.send_message(
+            QueueUrl=squs_que_url,
+            MessageBody=body,
+        )
