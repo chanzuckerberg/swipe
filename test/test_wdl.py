@@ -100,7 +100,7 @@ class TestSFNWDL(unittest.TestCase):
 
         res = self.sqs.list_queues()
         queue_url = res["QueueUrls"][0]
-        res = self.sqs.receive_message(queue_url)
+        res = self.sqs.receive_message(QueueUrl=queue_url)
         self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "run")
 
 
