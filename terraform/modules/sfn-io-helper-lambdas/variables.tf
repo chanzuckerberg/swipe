@@ -58,3 +58,12 @@ variable "aws_account_id" {
   type        = string
 }
 
+variable "sfn_notification_queue_arns" {
+  description = "ARNs of notification SQS queues"
+  type        = list(string)
+}
+
+variable "sfn_notification_queue_urls" {
+  description = "URLs of notification SQS queues"
+  type        = list(string)
+}

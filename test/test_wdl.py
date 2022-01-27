@@ -58,6 +58,7 @@ class TestSFNWDL(unittest.TestCase):
         self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
+        self.sqs = boto3.client("sqs", endpoint_url="http://localhost:9000")
 
     def test_simple_sfn_wdl_workflow(self):
         wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
@@ -83,8 +84,6 @@ class TestSFNWDL(unittest.TestCase):
                                        input=json.dumps(sfn_input))
 
         arn = res["executionArn"]
-        assert res
-
         start = time.time()
         description = self.sfn.describe_execution(executionArn=arn)
         while description["status"] == "RUNNING" and time.time() < start + 2 * 60:
@@ -94,10 +93,15 @@ class TestSFNWDL(unittest.TestCase):
         for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
             print(event, file=sys.stderr)
 
-        assert description["status"] == "SUCCEEDED", description
+        self.assertEqual(description["status"], "SUCCEEDED")
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
-        assert output_text == "hello\nworld\n", output_text
+        self.assertEqual(output_text, "hello\nworld\n")
+
+        res = self.sqs.list_queues()
+        queue_url = res["QueueUrls"][0]
+        res = self.sqs.receive_message(QueueUrl=queue_url)
+        self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "run")
 
 
 if __name__ == "__main__":

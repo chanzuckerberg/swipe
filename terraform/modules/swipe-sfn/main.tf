@@ -45,17 +45,19 @@ module "batch_job" {
 }
 
 module "sfn_io_helper" {
-  source                 = "../sfn-io-helper-lambdas"
-  app_name               = var.app_name
-  mock                   = var.mock
-  aws_region             = data.aws_region.current.name
-  aws_account_id         = data.aws_caller_identity.current.account_id
-  batch_queue_arns       = [var.batch_spot_job_queue_arn, var.batch_on_demand_job_queue_arn]
-  workspace_s3_prefix    = var.workspace_s3_prefix
-  wdl_workflow_s3_prefix = var.wdl_workflow_s3_prefix
-  stage_memory_defaults  = var.stage_memory_defaults
-  stage_vcpu_defaults    = var.stage_vcpu_defaults
-  tags                   = var.tags
+  source                      = "../sfn-io-helper-lambdas"
+  app_name                    = var.app_name
+  mock                        = var.mock
+  aws_region                  = data.aws_region.current.name
+  aws_account_id              = data.aws_caller_identity.current.account_id
+  batch_queue_arns            = [var.batch_spot_job_queue_arn, var.batch_on_demand_job_queue_arn]
+  workspace_s3_prefix         = var.workspace_s3_prefix
+  wdl_workflow_s3_prefix      = var.wdl_workflow_s3_prefix
+  stage_memory_defaults       = var.stage_memory_defaults
+  stage_vcpu_defaults         = var.stage_vcpu_defaults
+  sfn_notification_queue_arns = [for name, queue in aws_sqs_queue.sfn_notifications_queue : queue.arn]
+  sfn_notification_queue_urls = [for name, queue in aws_sqs_queue.sfn_notifications_queue : queue.url]
+  tags                        = var.tags
 }
 
 resource "aws_sfn_state_machine" "swipe_single_wdl" {
