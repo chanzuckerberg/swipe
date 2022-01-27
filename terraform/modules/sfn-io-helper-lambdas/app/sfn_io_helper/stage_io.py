@@ -152,6 +152,9 @@ def broadcast_stage_complete(execution_id: str, stage: str):
             "name": execution_name,
             "status": "RUNNING",
             "lastCompletedStage": re.sub(r'(?<!^)(?=[A-Z])', '_', stage).lower(),
+            # We don't set this because it isn't used yet and we don't have this
+            #   field in the lambda, but it is part of the schema for these
+            #   messages so we may need to add it.
             # "startDate": 1551225271984,
             "stopDate":  None,
             "input": "{}",
