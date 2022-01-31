@@ -3,7 +3,7 @@ version: "3.8"
 services:
   motoserver:
     container_name: motoserver
-    image: moto_local
+    image: motoserver/moto
     environment:
       - MOTO_DOCKER_NETWORK=awsnet
     ports:
