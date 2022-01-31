@@ -42,7 +42,7 @@ jobs:
           docker pull ghcr.io/chanzuckerberg/swipe:latest
           docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$(cat version) .
           docker-compose pull
-          docker-compose up -d
+          docker-compose up &
           make deploy-mock test
 
   terraform_format:
