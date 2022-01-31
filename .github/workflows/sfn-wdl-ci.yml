@@ -41,6 +41,7 @@ jobs:
           source environment.test
           docker pull ghcr.io/chanzuckerberg/swipe:latest
           docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$(cat version) .
+          docker-compose pull
           scripts/run_mock_server.sh &
           for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
           make deploy-mock test
