@@ -39,6 +39,7 @@ jobs:
         run: |
           source scripts/init_ci_runner.sh
           source environment.test
+          docker pull --cache-from ghcr.io/chanzuckerberg/swipe:latest
           docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$(cat version) .
           scripts/run_mock_server.sh &
           for i in {1..60}; do if timeout 1 bash -c "echo > /dev/tcp/localhost/9000"; then break; elif [[ $i == 60 ]]; then exit 1; else sleep 1; fi; done
