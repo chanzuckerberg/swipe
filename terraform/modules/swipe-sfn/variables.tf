@@ -84,3 +84,9 @@ variable "batch_on_demand_job_queue_arn" {
   description = "ARN of the AWS Batch Queue connected to an on demand compute environment created by this module"
   type        = string
 }
+
+variable "batch_job_host_mount_dir" {
+  description = "Directory to mount from the batch host into the swipe container"
+  type        = string
+  default     = "/mnt"
+}

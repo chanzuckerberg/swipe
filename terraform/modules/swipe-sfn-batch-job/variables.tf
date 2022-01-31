@@ -15,6 +15,11 @@ variable "job_policy_arns" {
   type        = list(string)
 }
 
+variable "host_mount_dir" {
+  description = "Directory to mount from batch host into swipe jobs"
+  type        = string
+  default     = "/mnt"
+}
 
 variable "workspace_s3_prefix" {
   description = "S3 prefix where input, output, and log files will be stored, read and write permissions will be granted for this prefix"

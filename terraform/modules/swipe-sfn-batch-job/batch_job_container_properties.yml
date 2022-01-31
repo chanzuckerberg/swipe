@@ -3,7 +3,7 @@ jobRoleArn: "${batch_job_role_arn}"
 volumes:
   - name: "scratch"
     host:
-      sourcePath: "/mnt"
+      sourcePath: "${host_mount_dir}"
   - name: "docker_sock"
     host:
       sourcePath: "/var/run/docker.sock"

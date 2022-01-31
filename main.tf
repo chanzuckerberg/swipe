@@ -49,6 +49,7 @@ module "sfn" {
   batch_job_docker_image        = "ghcr.io/chanzuckerberg/swipe:${chomp(local.version)}"
   batch_spot_job_queue_arn      = module.batch_queue.batch_spot_job_queue_arn
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
+  batch_job_host_mount_dir      = var.batch_job_host_mount_dir
   workspace_s3_prefix           = var.workspace_s3_prefix
   wdl_workflow_s3_prefix        = var.wdl_workflow_s3_prefix
   job_policy_arns               = var.job_policy_arns

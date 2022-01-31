@@ -21,6 +21,12 @@ variable "batch_ami_id" {
   default     = ""
 }
 
+variable "batch_job_host_mount_dir" {
+  description = "Directory to mount from the batch host into the swipe container"
+  type        = string
+  default     = "/mnt"
+}
+
 variable "network_info" {
   description = "VPC ID and subnet IDs within that VPC to use for AWS batch instances. If none is provided swipe will generate one"
   type = object({

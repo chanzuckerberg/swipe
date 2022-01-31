@@ -5,6 +5,7 @@ data "aws_caller_identity" "current" {}
 locals {
   ecr_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
+    host_mount_dir     = var.host_mount_dir,
     app_name           = var.app_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
     batch_docker_image = var.batch_job_docker_image,
