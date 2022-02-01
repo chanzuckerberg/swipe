@@ -37,7 +37,7 @@ module "batch_job" {
   mock                      = var.mock
   batch_job_docker_image    = var.batch_job_docker_image
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
-  host_mount_dir            = var.batch_job_host_mount_dir
+  miniwdl_dir               = var.miniwdl_dir
   workspace_s3_prefix       = var.workspace_s3_prefix
   wdl_workflow_s3_prefix    = var.wdl_workflow_s3_prefix
   job_policy_arns           = var.job_policy_arns

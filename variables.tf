@@ -21,7 +21,7 @@ variable "batch_ami_id" {
   default     = ""
 }
 
-variable "batch_job_host_mount_dir" {
+variable "miniwdl_dir" {
   description = "Directory to mount from the batch host into the swipe container"
   type        = string
   default     = "/mnt"

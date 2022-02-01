@@ -59,3 +59,9 @@ variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
 }
+
+variable "miniwdl_dir" {
+  description = "Scratch dir for miniwdl to use for cache and I/O"
+  type        = string
+  default     = "/mnt"
+}

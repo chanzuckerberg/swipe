@@ -1,9 +1,19 @@
 SHELL=/bin/bash -o pipefail
 
 deploy-mock:
-	rm terraform.tfstate || true
-	aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
-	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
+	-aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
+	mkdir -p tmp
+	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
+up: start deploy-mock
+
+start:
+	docker build -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+	docker-compose up -d
+
+clean:
+	docker-compose down
+	docker-compose rm
+	rm -f terraform.tfstate terraform.tfstate.backup
 
 lint:
 	flake8 .
@@ -15,7 +25,17 @@ format:
 	terraform fmt --recursive .
 
 test:
-	python -m unittest discover .
+	python3 -m unittest discover .
+
+
+debug:
+	echo "Lambda Logs"
+	for i in $$(aws --endpoint-url http://localhost:9000 logs describe-log-groups | jq -r '.logGroups[].logGroupName'); do \
+		echo; \
+		echo; \
+		echo "Log group: $$i"; \
+		aws --endpoint-url http://localhost:9000 logs tail $$i; \
+	done;
 
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(app_name)

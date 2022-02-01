@@ -85,7 +85,7 @@ variable "batch_on_demand_job_queue_arn" {
   type        = string
 }
 
-variable "batch_job_host_mount_dir" {
+variable "miniwdl_dir" {
   description = "Directory to mount from the batch host into the swipe container"
   type        = string
   default     = "/mnt"

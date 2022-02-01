@@ -5,7 +5,7 @@ data "aws_caller_identity" "current" {}
 locals {
   ecr_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
-    host_mount_dir     = var.host_mount_dir,
+    miniwdl_dir        = var.miniwdl_dir,
     app_name           = var.app_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
     batch_docker_image = var.batch_job_docker_image,
@@ -18,10 +18,11 @@ locals {
     "SFN_CURRENT_STATE"                         = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
     "APP_NAME"                                  = var.app_name
     "AWS_DEFAULT_REGION"                        = data.aws_region.current.name,
+    "SCRATCH_DIR"                               = var.miniwdl_dir
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__GET"              = "true",
-    "MINIWDL__DOWNLOAD_CACHE__DIR"              = "/mnt/download_cache",
+    "MINIWDL__DOWNLOAD_CACHE__DIR"              = "${var.miniwdl_dir}/download_cache",
     "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = "[\"s3://swipe-samples-*/*\"]",
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),

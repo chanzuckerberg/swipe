@@ -30,6 +30,7 @@ module "batch_queue" {
     batch_subnet_ids = module.batch_subnet[0].batch_subnet_ids
   }
   ami_id                   = var.batch_ami_id
+  miniwdl_dir              = var.miniwdl_dir
   batch_ec2_instance_types = var.batch_ec2_instance_types
   spot_min_vcpus           = var.spot_min_vcpus
   on_demand_min_vcpus      = var.on_demand_min_vcpus
@@ -49,7 +50,7 @@ module "sfn" {
   batch_job_docker_image        = "ghcr.io/chanzuckerberg/swipe:${chomp(local.version)}"
   batch_spot_job_queue_arn      = module.batch_queue.batch_spot_job_queue_arn
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
-  batch_job_host_mount_dir      = var.batch_job_host_mount_dir
+  miniwdl_dir                   = var.miniwdl_dir
   workspace_s3_prefix           = var.workspace_s3_prefix
   wdl_workflow_s3_prefix        = var.wdl_workflow_s3_prefix
   job_policy_arns               = var.job_policy_arns

@@ -30,7 +30,7 @@ put_metric() {
 
 put_metrics() {
   while true; do
-    put_metric ScratchSpaceInUse $(df --output=pcent /mnt | tail -n 1 | cut -f 1 -d %)
+    put_metric ScratchSpaceInUse $(df --output=pcent $SCRATCH_DIR | tail -n 1 | cut -f 1 -d %)
     put_metric CPULoad $(cat /proc/loadavg | cut -f 1 -d ' ' | cut -f 2 -d .)
     put_metric MemoryInUse $(python3 -c 'import psutil; m=psutil.virtual_memory(); print(100*(1-m.available/m.total))')
     sleep 60
@@ -40,17 +40,17 @@ put_metrics() {
 check_for_termination &
 put_metrics &
 
-mkdir -p /mnt/download_cache; touch /mnt/download_cache/_miniwdl_flock
+mkdir -p $SCRATCH_DIR/download_cache; touch $SCRATCH_DIR/download_cache/_miniwdl_flock
 
 clean_wd() {
   (shopt -s nullglob;
-  for wf_log in /mnt/20??????_??????_*/workflow.log; do
+  for wf_log in $SCRATCH_DIR/20??????_??????_*/workflow.log; do
     flock -n $wf_log rm -rf $(dirname $wf_log) || true;
   done;
-  flock -x /mnt/download_cache/_miniwdl_flock clean_download_cache.sh /mnt/download_cache $DOWNLOAD_CACHE_MAX_GB)
+  flock -x $SCRATCH_DIR/download_cache/_miniwdl_flock clean_download_cache.sh $SCRATCH_DIR/download_cache $DOWNLOAD_CACHE_MAX_GB)
 }
 clean_wd
-df -h / /mnt
+df -h / $SCRATCH_DIR
 export MINIWDL__S3_PROGRESSIVE_UPLOAD__URI_PREFIX=$(dirname "$WDL_OUTPUT_URI")
 if [ -f /etc/profile ]; then source /etc/profile; fi
 miniwdl --version
@@ -82,5 +82,5 @@ handle_error() {
 }
 
 trap handle_error EXIT
-miniwdl run $PASSTHRU_ARGS --dir /mnt $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json
+miniwdl run $PASSTHRU_ARGS --dir $SCRATCH_DIR $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json
 clean_wd

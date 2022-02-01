@@ -3,13 +3,13 @@ jobRoleArn: "${batch_job_role_arn}"
 volumes:
   - name: "scratch"
     host:
-      sourcePath: "${host_mount_dir}"
+      sourcePath: "${miniwdl_dir}"
   - name: "docker_sock"
     host:
       sourcePath: "/var/run/docker.sock"
 mountPoints:
   - sourceVolume: "scratch"
-    containerPath: "/mnt"
+    containerPath: "${miniwdl_dir}"
     readOnly: false
   - sourceVolume: "docker_sock"
     containerPath: "/var/run/docker.sock"

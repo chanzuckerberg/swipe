@@ -15,7 +15,7 @@ variable "job_policy_arns" {
   type        = list(string)
 }
 
-variable "host_mount_dir" {
+variable "miniwdl_dir" {
   description = "Directory to mount from batch host into swipe jobs"
   type        = string
   default     = "/mnt"
