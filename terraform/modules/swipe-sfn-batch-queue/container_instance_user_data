@@ -19,12 +19,12 @@ then
     mkfs.xfs /dev/md0
 fi
 
-mount /dev/md0 ${miniwdl_dir}
+mount /dev/md0 MINIWDL_DIR
 
 ##############################################
 # Configure Docker to use NVME for scratch space
 ##############################################
 
-cloud-init-per once docker_options echo '{"data-root": "${miniwdl_dir}/docker"}' >> /etc/docker/daemon.json
+cloud-init-per once docker_options echo '{"data-root": "MINIWDL_DIR/docker"}' >> /etc/docker/daemon.json
 
 --==MYBOUNDARY==--

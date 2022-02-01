@@ -1,7 +1,5 @@
 locals {
-  launch_template_user_data = templatefile("${path.module}/container_instance_user_data", {
-    miniwdl_dir = var.miniwdl_dir
-  })
+  launch_template_user_data = replace(file("${path.module}/container_instance_user_data"), "MINIWDL_DIR", var.miniwdl_dir)
   launch_template_user_data_hash = md5(local.launch_template_user_data)
 }
 
@@ -70,7 +68,7 @@ resource "aws_launch_template" "swipe_batch_main" {
   # not recognize this change. We bind the launch template name to user data contents here, so any changes to user data
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
   name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
-  user_data = base64(local.launch_template_user_data)
+  user_data = base64encode(local.launch_template_user_data)
   tags      = var.tags
 }
 
