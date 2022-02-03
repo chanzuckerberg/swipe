@@ -79,11 +79,11 @@ def handle_failure(sfn_data, _):
     raise failure_type(cause)
 
 
-def process_batch_event(event):
+def process_batch_event(event, _):
     reporting.emit_batch_metric_values(event)
 
 
-def process_sfn_event(event):
+def process_sfn_event(event, _):
     execution_arn = event.detail["executionArn"]
     if os.environ["APP_NAME"] in execution_arn:
         batch_events.archive_sfn_history(execution_arn)
@@ -91,9 +91,9 @@ def process_sfn_event(event):
     reporting.emit_sfn_metric_values(event)
 
 
-def report_metrics(event):
+def report_metrics(_, __):
     reporting.emit_periodic_metrics()
 
 
-def report_spot_interruption(event):
+def report_spot_interruption(event, _):
     reporting.emit_spot_interruption_metric(event)
