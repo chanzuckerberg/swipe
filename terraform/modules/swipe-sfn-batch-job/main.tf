@@ -23,6 +23,7 @@ locals {
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__GET"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__DIR"              = "${var.miniwdl_dir}/download_cache",
+    "MINIWDL__S3PARCP__DIR"                     = "${var.miniwdl_dir}",
     "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = "[\"s3://swipe-samples-*/*\"]",
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),

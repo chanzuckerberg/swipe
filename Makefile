@@ -1,13 +1,18 @@
 SHELL=/bin/bash -o pipefail
 
 deploy-mock:
-	-aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
-	mkdir -p tmp
-	cp test/mock.tf .; unset TF_CLI_ARGS_init; terraform init; TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
+	- source environment.test; aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
+	source environment.test; \
+	mkdir -p tmp; \
+	cp test/mock.tf .; \
+	unset TF_CLI_ARGS_init; \
+	terraform init; \
+	TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
 up: start deploy-mock
 
 start:
-	docker build -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+	source environment.test; \
+	docker build -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .; \
 	docker-compose up -d
 
 clean:
@@ -25,6 +30,7 @@ format:
 	terraform fmt --recursive .
 
 test:
+	source environment.test; \
 	python3 -m unittest discover .
 
 
