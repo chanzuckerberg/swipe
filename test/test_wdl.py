@@ -98,6 +98,9 @@ class TestSFNWDL(unittest.TestCase):
         output_text = outputs_obj.get()['Body'].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
+        objects = self.test_bucket.objects.filter(Prefix=f"{output_prefix}/sfn-desc/")
+        self.assertGreater(len(objects), 0)
+
         res = self.sqs.list_queues()
         queue_url = res["QueueUrls"][0]
         res = self.sqs.receive_message(QueueUrl=queue_url)
