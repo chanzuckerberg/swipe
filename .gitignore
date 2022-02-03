@@ -57,7 +57,8 @@ venv/
 
 /.terraform*
 
-sfn-io-helper-lambdas-tmp/
 
 mock.tf
 terraform.tfstate
+
+terraform/modules/sfn-io-helper-lambdas/deployment.zip
