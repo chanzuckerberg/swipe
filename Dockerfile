@@ -40,7 +40,7 @@ RUN apt-get -q install -y \
         python3-boto3 \
         awscli
 
-RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
+RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5 miniwdl-s3upload==0.0.8
 
 # TODO: generalize this plugin
 RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/v0.0.6.zip#subdirectory=sfn-wdl
