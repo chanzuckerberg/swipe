@@ -8,14 +8,20 @@ services:
       - MOTO_DOCKER_NETWORK_NAME=awsnet
       - MOTO_DOCKER_NETWORK_MODE=overlay
       - HOSTNAME_EXTERNAL=awsnet
-      - SERVICES=sts,sns,sqs,lambda,events,ec2,s3,secretsmanager,stepfunctions,ssm,iam,batch,cloudwatch
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_REMOTE_DOCKER=true
+      - SERVICES=sfn,sts,sns,sqs,lambda,events,ec2,s3,secretsmanager,stepfunctions,ssm,iam,batch,cloudwatch
       - DEBUG=1
       - DEFAULT_REGION=us-east-1
-      - LOCALSTACK_API_KEY=NOTHINGTOSEEHERE
+      - LOCALSTACK_API_KEY=$LOCALSTACK_API_KEY
+      - DATA_DIR=/tmp/localstack/data
     ports:
       - "9000:4566"
+      - "8083:8083"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - localstack:/tmp/localstack
+    restart: "no"
     networks:
       awsnet:
         aliases:
@@ -25,3 +31,5 @@ networks:
     name: awsnet
     driver: overlay
     attachable: true
+volumes:
+  localstack:
