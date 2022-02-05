@@ -136,7 +136,7 @@ resource "aws_lambda_function" "lambda" {
   environment {
     variables = merge({
       APP_NAME         = var.app_name
-      AWS_ENDPOINT_URL = var.mock ? "http://awsnet:5000" : null
+      AWS_ENDPOINT_URL = var.mock ? "http://awsnet:4566" : null
       SQS_QUEUE_URLS   = join(",", var.sfn_notification_queue_urls)
       }, {
       for stage, defaults in var.stage_memory_defaults : "${stage}SPOTMemoryDefault" => "${defaults.spot}"
