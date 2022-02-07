@@ -165,8 +165,8 @@ resource "aws_cloudwatch_event_rule" "process_batch_event" {
 }
 
 resource "aws_cloudwatch_event_rule" "process_sfn_event" {
-  name          = "${var.app_name}-process_sfn_event"
-  tags          = var.tags
+  name = "${var.app_name}-process_sfn_event"
+  tags = var.tags
   event_pattern = jsonencode({
     "source" = ["aws.states"],
     "detail" = {
