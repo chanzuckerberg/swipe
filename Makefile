@@ -10,14 +10,18 @@ deploy-mock:
 	TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
 up: start deploy-mock
 
-start:
+build:
 	source environment.test; \
-	docker build -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .; \
+	docker build -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+
+start: build
+	source environment.test; \
 	docker-compose up -d
 
 clean:
 	docker-compose down
 	docker-compose rm
+	-docker volume rm swipe_localstack
 	rm -f terraform.tfstate terraform.tfstate.backup
 
 lint:

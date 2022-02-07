@@ -10,6 +10,7 @@ services:
       - HOSTNAME_EXTERNAL=awsnet
       - LAMBDA_EXECUTOR=docker
       - LAMBDA_REMOTE_DOCKER=true
+      - LAMBDA_DOCKER_NETWORK=awsnet
       - SERVICES=sfn,sts,sns,sqs,lambda,events,ec2,s3,secretsmanager,stepfunctions,ssm,iam,batch,cloudwatch
       - DEBUG=1
       - DEFAULT_REGION=us-east-1
