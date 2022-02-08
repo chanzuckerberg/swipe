@@ -168,10 +168,8 @@ resource "aws_cloudwatch_event_rule" "process_sfn_event" {
   name = "${var.app_name}-process_sfn_event"
   tags = var.tags
   event_pattern = jsonencode({
-    "source" = ["aws.states"],
-    "detail" = {
-      "type" = ["Step Functions Execution Status Change"],
-    },
+    "source"      = ["aws.states"],
+    "detail-type" = "Step Functions Execution Status Change",
   })
 }
 
