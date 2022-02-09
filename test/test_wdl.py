@@ -94,6 +94,11 @@ class TestSFNWDL(unittest.TestCase):
             print(event, file=sys.stderr)
 
         self.assertEqual(description["status"], "SUCCEEDED")
+
+        output = json.loads(description["output"])
+        output_path = f"s3://{input_obj.bucket_name}/{output_prefix}/test-1/out.txt"
+        self.assertEqual(output["Result"], {"swipe_test.out": output_path})
+
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
