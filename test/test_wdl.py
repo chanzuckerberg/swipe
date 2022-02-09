@@ -97,6 +97,7 @@ class TestSFNWDL(unittest.TestCase):
 
         output = json.loads(description["output"])
         self.assertEqual(output["Result"], {"swipe_test.out": f"{output_prefix}/test-1/out.txt"})
+
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
