@@ -79,7 +79,7 @@ task add_smile {
   >>>
 
   output {
-    File out = "happy_message.txt"
+    File happy_message = "happy_message.txt"
   }
 
   runtime {
