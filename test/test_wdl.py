@@ -113,6 +113,9 @@ class TestSFNWDL(unittest.TestCase):
         self.map_obj.put(Body=json.dumps(test_stage_io_map).encode())
         self.input_obj = self.test_bucket.Object("input.txt")
         self.input_obj.put(Body=test_input.encode())
+        state_machines = self.sfn.list_state_machines()["stateMachines"]
+        self.single_sfn_arn = [sfn["stateMachineArn"] for sfn in state_machines if "default" in sfn["name"]][0]
+        self.stage_sfn_arn = [sfn["stateMachineArn"] for sfn in state_machines if "stage-test" in sfn["name"]][0]
 
     def test_simple_sfn_wdl_workflow(self):
         output_prefix = "out-1"
@@ -128,8 +131,7 @@ class TestSFNWDL(unittest.TestCase):
         }
 
         execution_name = "swipe-test-{}".format(int(time.time()))
-        sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
-        res = self.sfn.start_execution(stateMachineArn=sfn_arn,
+        res = self.sfn.start_execution(stateMachineArn=self.single_sfn_arn,
                                        name=execution_name,
                                        input=json.dumps(sfn_input))
 
@@ -177,8 +179,7 @@ class TestSFNWDL(unittest.TestCase):
         }
 
         execution_name = "swipe-test-{}".format(int(time.time()))
-        sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
-        res = self.sfn.start_execution(stateMachineArn=sfn_arn,
+        res = self.sfn.start_execution(stateMachineArn=self.stage_sfn_arn,
                                        name=execution_name,
                                        input=json.dumps(sfn_input))
 
