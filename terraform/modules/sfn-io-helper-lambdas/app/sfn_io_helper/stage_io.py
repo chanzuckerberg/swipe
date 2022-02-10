@@ -89,7 +89,7 @@ def link_outputs(sfn_state):
     if stages_json_uri:
         stage_io_dict = json.loads(s3_object(stages_json_uri).get()["Body"].read().decode())
 
-    stripped_result = {k.split(".")[1]: v for k, v in sfn_state.get("Result", {})]}
+    stripped_result = {k.split(".")[1]: v for k, v in sfn_state.get("Result", {})}
 
     for stage in sfn_state["Input"].keys():
         stage_input = sfn_state["Input"][stage]
