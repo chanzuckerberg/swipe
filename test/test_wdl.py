@@ -90,7 +90,7 @@ task add_smile {
 
 test_stage_io_map = {
     "Two": {
-        "out": "hello",
+        "hello_world": "out",
     },
 }
 
@@ -116,6 +116,7 @@ class TestSFNWDL(unittest.TestCase):
         state_machines = self.sfn.list_state_machines()["stateMachines"]
         self.single_sfn_arn = [sfn["stateMachineArn"] for sfn in state_machines if "default" in sfn["name"]][0]
         self.stage_sfn_arn = [sfn["stateMachineArn"] for sfn in state_machines if "stage-test" in sfn["name"]][0]
+        self.state_change_queue_url = self.sqs.list_queues()["QueueUrls"][0]
 
     def test_simple_sfn_wdl_workflow(self):
         output_prefix = "out-1"
@@ -155,9 +156,7 @@ class TestSFNWDL(unittest.TestCase):
         output_text = outputs_obj.get()['Body'].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
-        res = self.sqs.list_queues()
-        queue_url = res["QueueUrls"][0]
-        res = self.sqs.receive_message(QueueUrl=queue_url)
+        res = self.sqs.receive_message(QueueUrl=self.state_change_queue_url)
         self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "run")
 
     def test_staged_sfn_wdl_workflow(self):
@@ -197,8 +196,11 @@ class TestSFNWDL(unittest.TestCase):
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/happy_message.txt")
         output_text = outputs_obj.get()['Body'].read().decode()
-        self.assertEqual(output_text, "hello\nworld\n")
+        self.assertEqual(output_text, "hello\nworld\n:)\n")
 
+        res = self.sqs.receive_message(QueueUrl=self.state_change_queue_url)
+        self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "one")
+        self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "two")
 
 if __name__ == "__main__":
     unittest.main()
