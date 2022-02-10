@@ -84,7 +84,7 @@ States:
       FunctionName: "${process_stage_output_lambda_name}"
       Payload: *PassthroughStatePayload
     OutputPath: $.Payload
-    Next: TwoSpot
+    Next: TwoSPOT
     Catch:
       - ErrorEquals: ["States.ALL"]
         Next: HandleFailure
