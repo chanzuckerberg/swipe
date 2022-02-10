@@ -200,7 +200,8 @@ class TestSFNWDL(unittest.TestCase):
 
         res = self.sqs.receive_message(QueueUrl=self.state_change_queue_url)
         self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "one")
-        self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "two")
+        self.assertEqual(json.loads(res["Messages"][1]["Body"])["detail"]["lastCompletedStage"], "two")
+
 
 if __name__ == "__main__":
     unittest.main()
