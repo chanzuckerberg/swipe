@@ -1,8 +1,8 @@
 Comment: Test for staged wdls
-StartAt: OnePreprocessInput
+StartAt: PreprocessInput
 TimeoutSeconds: 259200 # 72 hours (total execution run time, including Batch job scheduling delays)
 States:
-  OnePreprocessInput:
+  PreprocessInput:
     Type: Task
     Resource: arn:aws:states:::lambda:invoke
     Parameters:
@@ -84,21 +84,10 @@ States:
       FunctionName: "${process_stage_output_lambda_name}"
       Payload: *PassthroughStatePayload
     OutputPath: $.Payload
-    Next: TwoPreprocessInput
+    Next: TwoSpot
     Catch:
       - ErrorEquals: ["States.ALL"]
         Next: HandleFailure
-  TwoPreprocessInput:
-    Type: Task
-    Resource: arn:aws:states:::lambda:invoke
-    Parameters:
-      FunctionName: "${preprocess_input_lambda_name}"
-      Payload: &PassthroughStatePayload
-        ExecutionId.$: $$.Execution.Id
-        CurrentState.$: $$.State.Name
-        Input.$: $
-    OutputPath: $.Payload
-    Next: TwoSPOT
   TwoSPOT:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
