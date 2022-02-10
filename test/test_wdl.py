@@ -198,7 +198,7 @@ class TestSFNWDL(unittest.TestCase):
         output_text = outputs_obj.get()['Body'].read().decode()
         self.assertEqual(output_text, "hello\nworld\n:)\n")
 
-        res = self.sqs.receive_message(QueueUrl=self.state_change_queue_url)
+        res = self.sqs.receive_message(QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=2)
         self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "one")
         self.assertEqual(json.loads(res["Messages"][1]["Body"])["detail"]["lastCompletedStage"], "two")
 
