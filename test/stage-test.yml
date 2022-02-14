@@ -1,0 +1,183 @@
+Comment: Test for staged wdls
+StartAt: PreprocessInput
+TimeoutSeconds: 259200 # 72 hours (total execution run time, including Batch job scheduling delays)
+States:
+  PreprocessInput:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters:
+      FunctionName: "${preprocess_input_lambda_name}"
+      Payload: &PassthroughStatePayload
+        ExecutionId.$: $$.Execution.Id
+        CurrentState.$: $$.State.Name
+        Input.$: $
+    OutputPath: $.Payload
+    Next: OneSPOT
+  OneSPOT:
+    Type: Task
+    Resource: arn:aws:states:::batch:submitJob.sync
+    Parameters:
+      JobQueue: "${batch_spot_job_queue_arn}"
+      JobName.$: $$.Execution.Name
+      JobDefinition: &JobDefinition "${batch_job_definition_name}"
+      Timeout: &OneBatchTimeout
+        AttemptDurationSeconds: ${batch_job_timeout_seconds}
+      ContainerOverrides:
+        Memory.$: $.OneSPOTMemory
+        Environment: &OneEnvironment
+          - Name: WDL_INPUT_URI
+            Value.$: $.ONE_INPUT_URI
+          - Name: WDL_WORKFLOW_URI
+            Value.$: $.ONE_WDL_URI
+          - Name: WDL_OUTPUT_URI
+            Value.$: $.ONE_OUTPUT_URI
+          - Name: SFN_EXECUTION_ID
+            Value.$: $$.Execution.Id
+          - Name: SFN_CURRENT_STATE
+            Value.$: $$.State.Name
+    ResultPath: $.BatchJobDetails.One
+    Next: OneReadOutput
+    Retry: &BatchRetryConfig
+      - ErrorEquals: ["Batch.AWSBatchException"]
+        IntervalSeconds: 15
+        MaxAttempts: 3
+        BackoffRate: 2.1 # 2.0 triggers the linter because when this is converted to json it becomes 2 which is an int and not a float
+    Catch:
+      - ErrorEquals: ["States.ALL"]
+        ResultPath: $.BatchJobError.OneSPOT
+        Next: OneGetCause
+  OneGetCause:
+    Type: Pass
+    Parameters:
+      "Cause.$": "States.StringToJson($.BatchJobError.OneSPOT.Cause)"
+    ResultPath: "$.BatchJobError.OneSPOT"
+    Next: OneDetectError
+  OneDetectError:
+    Type: Choice
+    Choices:
+      - Variable: "$.BatchJobError.OneSPOT.Cause.StatusReason"
+        StringMatches: "Host EC2 (instance i-*) terminated."
+        Next: OneEC2
+    Default: OneReadOutput
+  OneEC2:
+    Type: Task
+    Resource: arn:aws:states:::batch:submitJob.sync
+    Parameters:
+      JobQueue: "${batch_on_demand_job_queue_arn}"
+      JobName.$: $$.Execution.Name
+      JobDefinition: *JobDefinition
+      Timeout: *OneBatchTimeout
+      ContainerOverrides:
+        Memory.$: $.OneEC2Memory
+        Environment: *OneEnvironment
+    ResultPath: $.BatchJobDetails.One
+    Next: OneReadOutput
+    Retry: *BatchRetryConfig
+    Catch:
+      - ErrorEquals: ["States.ALL"]
+        ResultPath: $.BatchJobError.OneEC2
+        Next: OneReadOutput
+  OneReadOutput:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters: &ReadOutputParameters
+      FunctionName: "${process_stage_output_lambda_name}"
+      Payload: *PassthroughStatePayload
+    OutputPath: $.Payload
+    Next: TwoSPOT
+    Catch:
+      - ErrorEquals: ["States.ALL"]
+        Next: HandleFailure
+  TwoSPOT:
+    Type: Task
+    Resource: arn:aws:states:::batch:submitJob.sync
+    Parameters:
+      JobQueue: "${batch_spot_job_queue_arn}"
+      JobName.$: $$.Execution.Name
+      JobDefinition: &JobDefinition "${batch_job_definition_name}"
+      Timeout: &TwoBatchTimeout
+        AttemptDurationSeconds: ${batch_job_timeout_seconds}
+      ContainerOverrides:
+        Memory.$: $.TwoSPOTMemory
+        Environment: &TwoEnvironment
+          - Name: WDL_INPUT_URI
+            Value.$: $.TWO_INPUT_URI
+          - Name: WDL_WORKFLOW_URI
+            Value.$: $.TWO_WDL_URI
+          - Name: WDL_OUTPUT_URI
+            Value.$: $.TWO_OUTPUT_URI
+          - Name: SFN_EXECUTION_ID
+            Value.$: $$.Execution.Id
+          - Name: SFN_CURRENT_STATE
+            Value.$: $$.State.Name
+    ResultPath: $.BatchJobDetails.Two
+    Next: TwoReadOutput
+    Retry: &BatchRetryConfig
+      - ErrorEquals: ["Batch.AWSBatchException"]
+        IntervalSeconds: 15
+        MaxAttempts: 3
+        BackoffRate: 2.1 # 2.0 triggers the linter because when this is converted to json it becomes 2 which is an int and not a float
+    Catch:
+      - ErrorEquals: ["States.ALL"]
+        ResultPath: $.BatchJobError.TwoSPOT
+        Next: TwoGetCause
+  TwoGetCause:
+    Type: Pass
+    Parameters:
+      "Cause.$": "States.StringToJson($.BatchJobError.TwoSPOT.Cause)"
+    ResultPath: "$.BatchJobError.TwoSPOT"
+    Next: TwoDetectError
+  TwoDetectError:
+    Type: Choice
+    Choices:
+      - Variable: "$.BatchJobError.TwoSPOT.Cause.StatusReason"
+        StringMatches: "Host EC2 (instance i-*) terminated."
+        Next: TwoEC2
+    Default: TwoReadOutput
+  TwoEC2:
+    Type: Task
+    Resource: arn:aws:states:::batch:submitJob.sync
+    Parameters:
+      JobQueue: "${batch_on_demand_job_queue_arn}"
+      JobName.$: $$.Execution.Name
+      JobDefinition: *JobDefinition
+      Timeout: *TwoBatchTimeout
+      ContainerOverrides:
+        Memory.$: $.TwoEC2Memory
+        Environment: *TwoEnvironment
+    ResultPath: $.BatchJobDetails.Two
+    Next: TwoReadOutput
+    Retry: *BatchRetryConfig
+    Catch:
+      - ErrorEquals: ["States.ALL"]
+        ResultPath: $.BatchJobError.TwoEC2
+        Next: TwoReadOutput
+  TwoReadOutput:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters: &ReadOutputParameters
+      FunctionName: "${process_stage_output_lambda_name}"
+      Payload: *PassthroughStatePayload
+    OutputPath: $.Payload
+    Next: HandleSuccess
+    Catch:
+      - ErrorEquals: ["States.ALL"]
+        Next: HandleFailure
+  HandleSuccess:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters:
+      FunctionName: "${handle_success_lambda_name}"
+      Payload: *PassthroughStatePayload
+    OutputPath: $.Payload
+    End: true
+  HandleFailure:
+    # The HandleFailure state is expected to read error details, do any housekeeping necessary, then raise an exception
+    # with the error details (so they can be seen directly in the Step Functions API).
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters:
+      FunctionName: "${handle_failure_lambda_name}"
+      Payload: *PassthroughStatePayload
+    OutputPath: $.Payload
+    End: true
