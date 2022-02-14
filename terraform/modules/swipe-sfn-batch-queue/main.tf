@@ -70,6 +70,13 @@ resource "aws_launch_template" "swipe_batch_main" {
   name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
   user_data = filebase64(local.launch_template_user_data_file)
   tags      = var.tags
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = var.imdsv2_policy
+    http_put_response_hop_limit = 2
+  }
+
 }
 
 resource "aws_security_group" "swipe" {

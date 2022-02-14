@@ -132,3 +132,8 @@ variable "tags" {
   default     = {}
 }
 
+variable "imdsv2_policy" {
+  description = "Whether imdsv2 is 'optional' (default) or 'required'"
+  type        = string
+  default     = "optional"
+}
