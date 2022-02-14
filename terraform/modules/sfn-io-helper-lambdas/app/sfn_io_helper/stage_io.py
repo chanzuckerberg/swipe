@@ -49,7 +49,8 @@ def read_state_from_s3(sfn_state, current_state):
             error_type = type(stage_output["error"], (Exception,), dict())
             raise error_type(stage_output["cause"])
 
-    sfn_state["Result"].update(stage_output)
+    # HACK: don't include list outputs due to the SFN state size limit
+    sfn_state["Result"].update({k: v for k, v in stage_output.items() if not isinstance(v, list)})
 
     return sfn_state
 
