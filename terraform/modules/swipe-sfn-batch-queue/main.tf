@@ -130,6 +130,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 
     launch_template {
       launch_template_name = aws_launch_template.swipe_batch_main.name
+      version = aws_launch_template.swipe_batch_main.latest_version
     }
   }
 
