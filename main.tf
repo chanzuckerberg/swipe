@@ -36,6 +36,7 @@ module "batch_queue" {
   spot_max_vcpus           = var.spot_max_vcpus
   on_demand_max_vcpus      = var.on_demand_max_vcpus
   tags                     = var.tags
+  imdsv2_policy            = var.imdsv2_policy
 }
 
 locals {
