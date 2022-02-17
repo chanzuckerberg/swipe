@@ -136,7 +136,6 @@ def broadcast_stage_complete(execution_id: str, stage: str):
     _, _, _, aws_region, aws_account_id, _, state_machine_name, execution_name = execution_id.split(":")
 
     state_machine_arn = f"arn:aws:states:{aws_region}:{aws_account_id}:stateMachine:{state_machine_name}"
-    execution_arn = f"arn:aws:states:{aws_region}:{aws_account_id}:execution:{execution_id}"
 
     body = json.dumps({
         "version": "0",
@@ -146,9 +145,9 @@ def broadcast_stage_complete(execution_id: str, stage: str):
         "account": aws_account_id,
         "time": datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
         "region": aws_region,
-        "resources": [execution_arn],
+        "resources": [execution_id],
         "detail": {
-            "executionArn": execution_arn,
+            "executionArn": execution_id,
             "stateMachineArn": state_machine_arn,
             "name": execution_name,
             "status": "RUNNING",

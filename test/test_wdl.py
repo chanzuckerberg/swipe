@@ -157,6 +157,7 @@ class TestSFNWDL(unittest.TestCase):
         self.assertEqual(output_text, "hello\nworld\n")
 
         res = self.sqs.receive_message(QueueUrl=self.state_change_queue_url)
+        self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["executionArn"], arn)
         self.assertEqual(json.loads(res["Messages"][0]["Body"])["detail"]["lastCompletedStage"], "run")
 
     def test_staged_sfn_wdl_workflow(self):
