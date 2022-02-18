@@ -124,7 +124,7 @@ class TestSFNWDL(unittest.TestCase):
         })
         self.test_bucket.delete()
 
-    def _wait_sfn(self, sfn_input) -> Tuple[str, str]:
+    def _wait_sfn(self, sfn_input) -> Tuple[str, Dict]:
         execution_name = "swipe-test-{}".format(int(time.time()))
         sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
