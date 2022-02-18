@@ -15,6 +15,12 @@ variable "batch_ssh_public_key" {
   default     = ""
 }
 
+variable "batch_ami_id" {
+  description = "AMI ID to use (leave this empty to dynamically use the latest ECS optimized AMI)"
+  type        = string
+  default     = ""
+}
+
 variable "network_info" {
   description = "VPC ID and subnet IDs within that VPC to use for AWS batch instances. If none is provided swipe will generate one"
   type = object({
@@ -132,3 +138,8 @@ variable "tags" {
   default     = {}
 }
 
+variable "imdsv2_policy" {
+  description = "Whether imdsv2 is 'optional' (default) or 'required'"
+  type        = string
+  default     = "optional"
+}

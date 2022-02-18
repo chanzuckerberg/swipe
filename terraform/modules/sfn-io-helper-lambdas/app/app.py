@@ -50,6 +50,10 @@ def preprocess_input(sfn_data, _):
 
 def process_stage_output(sfn_data, _):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
+    stage_io.broadcast_stage_complete(
+        sfn_data["ExecutionId"],
+        sfn_data["CurrentState"][:-len("ReadOutput")],
+    )
     sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
     stage_io.link_outputs(sfn_state)
     sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)
@@ -75,21 +79,21 @@ def handle_failure(sfn_data, _):
     raise failure_type(cause)
 
 
-def process_batch_event(event):
+def process_batch_event(event, _):
     reporting.emit_batch_metric_values(event)
 
 
-def process_sfn_event(event):
-    execution_arn = event.detail["executionArn"]
+def process_sfn_event(event, _):
+    execution_arn = event["detail"]["executionArn"]
     if os.environ["APP_NAME"] in execution_arn:
         batch_events.archive_sfn_history(execution_arn)
 
     reporting.emit_sfn_metric_values(event)
 
 
-def report_metrics(event):
+def report_metrics(_, __):
     reporting.emit_periodic_metrics()
 
 
-def report_spot_interruption(event):
+def report_spot_interruption(event, _):
     reporting.emit_spot_interruption_metric(event)

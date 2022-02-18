@@ -15,6 +15,12 @@ variable "batch_ssh_key_pair_id" {
   type        = string
 }
 
+variable "ami_id" {
+  description = "Override the default AMI image ID (default: latest AL2 ECS batch image)"
+  type        = string
+  default     = ""
+}
+
 variable "network_info" {
   description = "VPC ID and subnet IDs within that VPC to use for AWS batch instances"
   type = object({
@@ -52,4 +58,10 @@ variable "on_demand_max_vcpus" {
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
+}
+
+variable "imdsv2_policy" {
+  description = "Whether imdsv2 is 'optional' (default) or 'required'"
+  type        = string
+  default     = "optional"
 }

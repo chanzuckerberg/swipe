@@ -3,9 +3,10 @@ version: "3.8"
 services:
   motoserver:
     container_name: motoserver
-    image: moto_local
+    image: motoserver/moto
     environment:
-      - MOTO_DOCKER_NETWORK=awsnet
+      - MOTO_DOCKER_NETWORK_NAME=awsnet
+      - MOTO_DOCKER_NETWORK_MODE=overlay
     ports:
       - "9000:5000"
     volumes:

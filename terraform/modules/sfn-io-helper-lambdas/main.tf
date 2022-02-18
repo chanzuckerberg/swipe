@@ -107,6 +107,13 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "logs:PutLogEvents"
         ],
         Resource : "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect : "Allow",
+        Action : [
+          "sqs:SendMessage",
+        ],
+        Resource : var.sfn_notification_queue_arns
       }
     ])
   })
@@ -130,6 +137,7 @@ resource "aws_lambda_function" "lambda" {
     variables = merge({
       APP_NAME         = var.app_name
       AWS_ENDPOINT_URL = var.mock ? "http://awsnet:5000" : null
+      SQS_QUEUE_URLS   = join(",", var.sfn_notification_queue_urls)
       }, {
       for stage, defaults in var.stage_memory_defaults : "${stage}SPOTMemoryDefault" => "${defaults.spot}"
       }, {
@@ -139,7 +147,6 @@ resource "aws_lambda_function" "lambda" {
       }, {
       for stage, defaults in var.stage_vcpu_defaults : "${stage}EC2VcpuDefault" => "${defaults.on_demand}"
       },
-
     )
   }
 }
@@ -158,9 +165,12 @@ resource "aws_cloudwatch_event_rule" "process_batch_event" {
 }
 
 resource "aws_cloudwatch_event_rule" "process_sfn_event" {
-  name          = "${var.app_name}-process_sfn_event"
-  tags          = var.tags
-  event_pattern = jsonencode({ "source" = ["aws.states"] })
+  name = "${var.app_name}-process_sfn_event"
+  tags = var.tags
+  event_pattern = jsonencode({
+    "source"      = ["aws.states"],
+    "detail-type" = ["Step Functions Execution Status Change"],
+  })
 }
 
 resource "aws_cloudwatch_event_rule" "report_metrics" {
