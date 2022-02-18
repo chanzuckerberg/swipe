@@ -2,7 +2,7 @@ import sys
 import json
 import time
 import unittest
-from typing import Dict, Any
+from typing import Any, Dict, Tuple
 
 
 import boto3
@@ -124,7 +124,7 @@ class TestSFNWDL(unittest.TestCase):
         })
         self.test_bucket.delete()
 
-    def _wait_sfn(self, sfn_input) -> None:
+    def _wait_sfn(self, sfn_input) -> Tuple[str, str]:
         execution_name = "swipe-test-{}".format(int(time.time()))
         sfn_arn = self.sfn.list_state_machines()["stateMachines"][0]["stateMachineArn"]
         res = self.sfn.start_execution(stateMachineArn=sfn_arn,
