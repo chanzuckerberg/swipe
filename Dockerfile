@@ -43,7 +43,7 @@ RUN apt-get -q install -y \
 RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
 
 # TODO: switch to proper release
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/188d981d3697021873ed26c877e484ab54b6d7e9.zip#subdirectory=s3upload
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/b31ffd731783bbc345dc3c6c07b2480d20b52842.zip#subdirectory=s3upload
 
 # TODO: generalize this plugin
 RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/v0.0.6.zip#subdirectory=sfn-wdl
