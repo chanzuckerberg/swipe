@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
-ARG MINIWDL_VERSION=1.2.2
+ARG MINIWDL_VERSION=1.4.3
 
 LABEL maintainer="IDseq Team idseq-tech@chanzuckerberg.com"
 
@@ -40,7 +40,10 @@ RUN apt-get -q install -y \
         python3-boto3 \
         awscli
 
-RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5 miniwdl-s3upload==0.0.8
+RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
+
+# TODO: switch to proper release
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/a579cfd28802ddaf99b63474216fda6eb8278f7a.zip#subdirectory=s3upload
 
 # TODO: generalize this plugin
 RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/v0.0.6.zip#subdirectory=sfn-wdl

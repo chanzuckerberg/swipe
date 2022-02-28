@@ -52,9 +52,9 @@ clean_wd() {
 clean_wd
 df -h / /mnt
 export MINIWDL__S3_PROGRESSIVE_UPLOAD__URI_PREFIX=$(dirname "$WDL_OUTPUT_URI")
+
 if [ -f /etc/profile ]; then source /etc/profile; fi
 miniwdl --version
-
 # Env vars that need to be forwarded to miniwdl's tasks in AWS Batch.
 BATCH_SWIPE_ENVVARS="AWS_DEFAULT_REGION AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"
 # set $WDL_PASSTHRU_ENVVARS to a list of space-separated env var names

@@ -41,6 +41,7 @@ module "batch_job" {
   wdl_workflow_s3_prefix    = var.wdl_workflow_s3_prefix
   job_policy_arns           = var.job_policy_arns
   extra_env_vars            = var.extra_env_vars
+  call_cache                = var.call_cache
   tags                      = var.tags
 }
 
