@@ -8,7 +8,17 @@ deploy-mock:
 	unset TF_CLI_ARGS_init; \
 	terraform init; \
 	TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
-up: start deploy-mock
+up: start wait-for-healthy deploy-mock
+
+wait-for-healthy:
+	while true; do \
+	    curl -s -m 1 http://localhost:9000; \
+	    if [ $$? -eq 0 ]; then \
+	        break; \
+	    fi; \
+	    echo "waiting..."; \
+	    sleep 1; \
+	done
 
 start:
 	source environment.test; \
