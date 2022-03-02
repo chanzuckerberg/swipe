@@ -11,9 +11,11 @@ services:
       - SERVICES=sts,sns,sqs,lambda,events,ec2,s3,secretsmanager,stepfunctions,ssm,iam,batch,cloudwatch
       - DEBUG=1
       - DEFAULT_REGION=us-east-1
-      - LOCALSTACK_API_KEY=NOTHINGTOSEEHERE
+      - EAGER_SERVICE_LOADING=1
+      - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY}
     ports:
       - "9000:4566"
+      - "8083:8083"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
