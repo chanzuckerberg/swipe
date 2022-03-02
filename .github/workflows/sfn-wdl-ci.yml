@@ -39,7 +39,7 @@ jobs:
           docker pull ghcr.io/chanzuckerberg/swipe:latest
           make up
           sleep 1
-          make deploy-mock test
+          make test
 
   terraform_format:
     runs-on: ubuntu-20.04
