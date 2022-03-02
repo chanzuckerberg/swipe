@@ -11,8 +11,12 @@ services:
       - SERVICES=sts,sns,sqs,lambda,events,ec2,s3,secretsmanager,stepfunctions,ssm,iam,batch,cloudwatch
       - DEBUG=1
       - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
       - EAGER_SERVICE_LOADING=1
       - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY}
+      - SYNCHRONOUS_SNS_EVENTS=1
+      - SYNCHRONOUS_SQS_EVENTS=1
+      - LAMBDA_DOCKER_NETWORK=awsnet
     ports:
       - "9000:4566"
       - "8083:8083"
