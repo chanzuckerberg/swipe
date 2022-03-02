@@ -155,9 +155,7 @@ pip install -r requirements.txt
 Bring up mock AWS infrastructure:
 
 ```bash
-docker-compose up -d
-source environment.test
-make deploy-mock
+make up
 ```
 
 Run the tests:
