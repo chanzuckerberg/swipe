@@ -7,7 +7,7 @@ deploy-mock:
 	cp test/mock.tf .; \
 	unset TF_CLI_ARGS_init; \
 	terraform init; \
-	TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' terraform apply --auto-approve
+	TF_VAR_miniwdl_dir=$${PWD}/tmp TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' TF_VAR_call_cache=true TF_VAR_sfn_template_files='{"stage-test":"test/stage-test.yml"}' TF_VAR_stage_memory_defaults='{"Run": {"spot": 12800, "on_demand": 256000}, "One": {"spot": 12800, "on_demand": 256000}, "Two": {"spot": 12800, "on_demand": 256000}}' terraform apply --auto-approve
 up: start deploy-mock
 
 start:

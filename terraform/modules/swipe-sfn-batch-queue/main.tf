@@ -70,6 +70,13 @@ resource "aws_launch_template" "swipe_batch_main" {
   name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
   user_data = base64encode(local.launch_template_user_data)
   tags      = var.tags
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = var.imdsv2_policy
+    http_put_response_hop_limit = 2
+  }
+
 }
 
 resource "aws_security_group" "swipe" {
@@ -123,6 +130,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 
     launch_template {
       launch_template_name = aws_launch_template.swipe_batch_main.name
+      version              = aws_launch_template.swipe_batch_main.latest_version
     }
   }
 

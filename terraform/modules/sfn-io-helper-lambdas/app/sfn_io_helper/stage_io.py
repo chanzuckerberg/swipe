@@ -47,9 +47,10 @@ def read_state_from_s3(sfn_state, current_state):
     if not sfn_state.get("BatchJobDetails", {}).get(stage):
         if batch_job_error and next(iter(batch_job_error)).startswith(stage):
             error_type = type(stage_output["error"], (Exception,), dict())
-            raise error_type(stage_output["cause"])
+            raise error_type(stage_output.get("cause", stage_output.get("message")))
 
-    sfn_state["Result"].update({k.split(".")[1]: v for k, v in stage_output.items()})
+    # HACK: don't include list outputs due to the SFN state size limit
+    sfn_state["Result"].update({k: v for k, v in stage_output.items() if not isinstance(v, list)})
 
     return sfn_state
 
@@ -59,9 +60,7 @@ def trim_batch_job_details(sfn_state):
     Remove large redundant batch job description items from Step Function state to avoid overrunning the Step Functions
     state size limit.
     """
-    for job_details in sfn_state["BatchJobDetails"].values():
-        job_details["Attempts"] = []
-        job_details["Container"] = {}
+    sfn_state["BatchJobDetails"] = {k: {} for k in sfn_state["BatchJobDetails"]}
     return sfn_state
 
 
@@ -91,13 +90,15 @@ def link_outputs(sfn_state):
     if stages_json_uri:
         stage_io_dict = json.loads(s3_object(stages_json_uri).get()["Body"].read().decode())
 
+    stripped_result = {k.split(".")[1]: v for k, v in sfn_state.get("Result", {}).items()}
+
     for stage in sfn_state["Input"].keys():
         stage_input = sfn_state["Input"][stage]
         for input_name, source in stage_io_dict.get(stage, {}).items():
             if isinstance(source, list):
                 stage_input[input_name] = sfn_state["Input"].get(source[0], {}).get(source[1])
-            elif source in sfn_state.get("Result", []):
-                stage_input[input_name] = sfn_state["Result"][source]
+            elif source in stripped_result:
+                stage_input[input_name] = stripped_result[source]
         put_stage_input(sfn_state=sfn_state, stage=stage, stage_input=stage_input)
 
 
@@ -135,7 +136,6 @@ def broadcast_stage_complete(execution_id: str, stage: str):
     _, _, _, aws_region, aws_account_id, _, state_machine_name, execution_name = execution_id.split(":")
 
     state_machine_arn = f"arn:aws:states:{aws_region}:{aws_account_id}:stateMachine:{state_machine_name}"
-    execution_arn = f"arn:aws:states:{aws_region}:{aws_account_id}:execution:{execution_id}"
 
     body = json.dumps({
         "version": "0",
@@ -145,9 +145,9 @@ def broadcast_stage_complete(execution_id: str, stage: str):
         "account": aws_account_id,
         "time": datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
         "region": aws_region,
-        "resources": [execution_arn],
+        "resources": [execution_id],
         "detail": {
-            "executionArn": execution_arn,
+            "executionArn": execution_id,
             "stateMachineArn": state_machine_arn,
             "name": execution_name,
             "status": "RUNNING",

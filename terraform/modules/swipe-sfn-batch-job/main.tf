@@ -10,7 +10,20 @@ locals {
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
     batch_docker_image = var.batch_job_docker_image,
   }))
-  batch_env_vars = merge(var.extra_env_vars, {
+  cache_env_vars = var.call_cache ? {
+    "MINIWDL__CALL_CACHE__PUT" : "true",
+    "MINIWDL__CALL_CACHE__GET" : "true",
+    "MINIWDL__CALL_CACHE__BACKEND" : "s3_progressive_upload_call_cache_backend",
+  } : {}
+  mock_env_vars = var.mock ? {
+    "AWS_ACCESS_KEY_ID" : "role-account-id",
+    "AWS_SECRET_ACCESS_KEY" : "role-secret-key",
+    "AWS_SESSION_TOKEN" : "session-token",
+    "AWS_ENDPOINT_URL" : "http://awsnet:5000",
+    "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri",
+    "S3PARCP_S3_URL" : "http://awsnet:5000",
+  } : {}
+  batch_env_vars = merge(local.cache_env_vars, local.mock_env_vars, var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
     "WDL_WORKFLOW_URI"                          = "Set this variable to the S3 URI of the WDL workflow",
     "WDL_OUTPUT_URI"                            = "Set this variable to the S3 URI where the WDL output JSON will be written",
@@ -28,14 +41,6 @@ locals {
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),
   })
-  mock_env_vars = var.mock ? {
-    "AWS_ACCESS_KEY_ID" : "role-account-id",
-    "AWS_SECRET_ACCESS_KEY" : "role-secret-key",
-    "AWS_SESSION_TOKEN" : "session-token",
-    "AWS_ENDPOINT_URL" : "http://awsnet:5000",
-    "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri",
-    "S3PARCP_S3_URL" : "http://awsnet:5000",
-  } : {}
   all_env_vars           = merge(local.batch_env_vars, local.mock_env_vars)
   container_env_vars     = { "environment" : [for k in sort(keys(local.all_env_vars)) : { "name" : k, "value" : local.all_env_vars[k] }] }
   final_container_config = merge(local.container_config, local.container_env_vars)

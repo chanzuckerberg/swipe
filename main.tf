@@ -37,6 +37,7 @@ module "batch_queue" {
   spot_max_vcpus           = var.spot_max_vcpus
   on_demand_max_vcpus      = var.on_demand_max_vcpus
   tags                     = var.tags
+  imdsv2_policy            = var.imdsv2_policy
 }
 
 locals {
@@ -59,6 +60,7 @@ module "sfn" {
   stage_vcpu_defaults           = var.stage_vcpu_defaults
   extra_env_vars                = var.extra_env_vars
   sqs_queues                    = var.sqs_queues
+  call_cache                    = var.call_cache
   tags                          = var.tags
 }
 
