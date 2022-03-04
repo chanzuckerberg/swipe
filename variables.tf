@@ -3,10 +3,10 @@ variable "app_name" {
   type        = string
 }
 
-variable "mock" {
-  description = "Set to true if applying to mock cloud environemnts for testing"
-  type        = bool
-  default     = false
+variable "cluster_types" {
+  description = "Which Batch cluster types to create. Defaults to SPOT and EC2"
+  type        = list(string)
+  default     = ["SPOT", "EC2"]
 }
 
 variable "batch_ssh_public_key" {
@@ -19,6 +19,18 @@ variable "batch_ami_id" {
   description = "AMI ID to use (leave this empty to dynamically use the latest ECS optimized AMI)"
   type        = string
   default     = ""
+}
+
+variable "ami_ssm_parameter" {
+  description = "The SSM parameter to use to fetch the AMI to use for batch jobs"
+  type        = string
+  default     = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+}
+
+variable "miniwdl_dir" {
+  description = "Directory to mount from the batch host into the swipe container"
+  type        = string
+  default     = "/mnt"
 }
 
 variable "network_info" {
@@ -46,6 +58,12 @@ variable "on_demand_min_vcpus" {
   description = "Minimum VCPUs for on demand AWS Batch compute environment"
   type        = number
   default     = 0
+}
+
+variable "aws_endpoint_url" {
+  type        = string
+  description = "Override the AWS endpoint URL used by lambda functions"
+  default     = null
 }
 
 variable "spot_max_vcpus" {

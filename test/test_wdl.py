@@ -1,12 +1,10 @@
-import sys
 import json
+import sys
 import time
 import unittest
 from typing import Any, Dict, List, Tuple
 
-
 import boto3
-
 
 test_wdl = """
 version 1.0
@@ -114,14 +112,22 @@ class TestSFNWDL(unittest.TestCase):
         self.input_obj = self.test_bucket.Object("input.txt")
         self.input_obj.put(Body=test_input.encode())
         state_machines = self.sfn.list_state_machines()["stateMachines"]
-        self.single_sfn_arn = [sfn["stateMachineArn"] for sfn in state_machines if "default" in sfn["name"]][0]
-        self.stage_sfn_arn = [sfn["stateMachineArn"] for sfn in state_machines if "stage-test" in sfn["name"]][0]
+        self.single_sfn_arn = [
+            sfn["stateMachineArn"] for sfn in state_machines if "default" in sfn["name"]
+        ][0]
+        self.stage_sfn_arn = [
+            sfn["stateMachineArn"]
+            for sfn in state_machines
+            if "stage-test" in sfn["name"]
+        ][0]
         self.state_change_queue_url = self.sqs.list_queues()["QueueUrls"][0]
 
     def tearDown(self) -> None:
-        self.test_bucket.delete_objects(Delete={
-            "Objects": [{"Key": obj.key} for obj in self.test_bucket.objects.all()],
-        })
+        self.test_bucket.delete_objects(
+            Delete={
+                "Objects": [{"Key": obj.key} for obj in self.test_bucket.objects.all()],
+            }
+        )
         self.test_bucket.delete()
 
     def _wait_sfn(
@@ -131,9 +137,9 @@ class TestSFNWDL(unittest.TestCase):
         n_stages: int = 1,
     ) -> Tuple[str, Dict, List[Dict]]:
         execution_name = "swipe-test-{}".format(int(time.time()))
-        res = self.sfn.start_execution(stateMachineArn=sfn_arn,
-                                       name=execution_name,
-                                       input=json.dumps(sfn_input))
+        res = self.sfn.start_execution(
+            stateMachineArn=sfn_arn, name=execution_name, input=json.dumps(sfn_input)
+        )
         arn = res["executionArn"]
         assert res
         start = time.time()
@@ -145,10 +151,12 @@ class TestSFNWDL(unittest.TestCase):
         for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
             print(event, file=sys.stderr)
 
-        messages = self.sqs.receive_message(
+        resp = self.sqs.receive_message(
             QueueUrl=self.state_change_queue_url,
             MaxNumberOfMessages=n_stages,
-        )["Messages"]
+        )
+        print(resp)
+        messages = resp["Messages"]
 
         self.assertEqual(description["status"], "SUCCEEDED", description)
         return arn, description, messages
@@ -156,80 +164,94 @@ class TestSFNWDL(unittest.TestCase):
     def test_simple_sfn_wdl_workflow(self):
         output_prefix = "out-1"
         sfn_input: Dict[str, Any] = {
-          "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
-          "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
-          "Input": {
-              "Run": {
-                  "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
-                  "docker_image_id": "ubuntu",
-              }
-          }
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                }
+            },
         }
 
         arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         output = json.loads(description["output"])
-        output_path = f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt"
+        output_path = (
+            f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt"
+        )
         self.assertEqual(output["Result"], {"swipe_test.out": output_path})
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
-        output_text = outputs_obj.get()['Body'].read().decode()
+        output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
         self.assertEqual(json.loads(messages[0]["Body"])["detail"]["executionArn"], arn)
-        self.assertEqual(json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run")
+        self.assertEqual(
+            json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
+        )
 
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"
         sfn_input: Dict[str, Any] = {
-          "ONE_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
-          "TWO_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_two_obj.key}",
-          "STAGES_IO_MAP_JSON": f"s3://{self.wdl_obj.bucket_name}/{self.map_obj.key}",
-          "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
-          "Input": {
-              "One": {
-                  "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
-                  "docker_image_id": "ubuntu",
-              },
-              "Two": {
-                  "docker_image_id": "ubuntu",
-              }
-          }
+            "ONE_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
+            "TWO_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_two_obj.key}",
+            "STAGES_IO_MAP_JSON": f"s3://{self.wdl_obj.bucket_name}/{self.map_obj.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "One": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                },
+                "Two": {
+                    "docker_image_id": "ubuntu",
+                },
+            },
         }
 
         _, _, messages = self._wait_sfn(sfn_input, self.stage_sfn_arn, 2)
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/happy_message.txt")
-        output_text = outputs_obj.get()['Body'].read().decode()
+        outputs_obj = self.test_bucket.Object(
+            f"{output_prefix}/test-1/happy_message.txt"
+        )
+        output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n:)\n")
 
-        self.assertEqual(json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "one")
-        self.assertEqual(json.loads(messages[1]["Body"])["detail"]["lastCompletedStage"], "two")
+        self.assertEqual(
+            json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "one"
+        )
+        self.assertEqual(
+            json.loads(messages[1]["Body"])["detail"]["lastCompletedStage"], "two"
+        )
 
     def test_call_cache(self):
         output_prefix = "out-3"
         sfn_input: Dict[str, Any] = {
-          "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
-          "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
-          "Input": {
-              "Run": {
-                  "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
-                  "docker_image_id": "ubuntu",
-              }
-          }
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                }
+            },
         }
 
         self._wait_sfn(sfn_input, self.single_sfn_arn)
-        self.sqs.receive_message(QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1)
+        self.sqs.receive_message(
+            QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
+        )
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
-        output_text = outputs_obj.get()['Body'].read().decode()
+        output_text = outputs_obj.get()["Body"].read().decode()
         assert output_text == "hello\nworld\n", output_text
 
-        self.test_bucket.Object(f"{output_prefix}/test-1/out.txt").put(Body="cache_break\n".encode())
+        self.test_bucket.Object(f"{output_prefix}/test-1/out.txt").put(
+            Body="cache_break\n".encode()
+        )
         self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
-        output_text = outputs_obj.get()['Body'].read().decode()
+        output_text = outputs_obj.get()["Body"].read().decode()
         assert output_text == "cache_break\n", output_text
 
 
