@@ -9,11 +9,12 @@ deploy-mock:
 	unset TF_CLI_ARGS_init; \
 	terraform init; \
 	terraform apply --auto-approve
+
 up: start deploy-mock
 
 start:
 	source environment.test; \
-	docker build -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .; \
+	docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .; \
 	docker-compose up -d
 
 clean:
@@ -34,9 +35,9 @@ test:
 	source environment.test; \
 	python3 -m unittest discover .
 
-
 debug:
 	echo "Lambda Logs"
+	source environment.test; \
 	for i in $$(aws --endpoint-url http://localhost:9000 logs describe-log-groups | jq -r '.logGroups[].logGroupName'); do \
 		echo; \
 		echo; \
@@ -47,4 +48,14 @@ debug:
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(app_name)
 
-.PHONY: deploy init-tf lint format test
+debug:
+	echo "Lambda Logs"
+	source environment.test; \
+	for i in $$(aws --endpoint-url http://localhost:9000 logs describe-log-groups | jq -r '.logGroups[].logGroupName'); do \
+		echo; \
+		echo; \
+		echo "Log group: $$i"; \
+		aws --endpoint-url http://localhost:9000 logs tail $$i; \
+	done;
+
+.PHONY: deploy up clean debug start init-tf lint format test
