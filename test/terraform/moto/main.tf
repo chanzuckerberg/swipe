@@ -1,6 +1,7 @@
 module "swipetest" {
   source                   = "../../.."
   mock                     = true
+  call_cache               = true
   miniwdl_dir              = "${path.cwd}/tmp"
   app_name                 = "swipe-test"
   batch_ec2_instance_types = ["optimal"]
