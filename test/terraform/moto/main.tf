@@ -8,7 +8,6 @@ module "swipetest" {
   sqs_queues = {
     "notifications" : { "dead_letter" : false }
   }
-  call_cache = true
   sfn_template_files = {
     "stage-test" : "../../stage-test.yml"
   }
