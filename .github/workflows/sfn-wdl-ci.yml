@@ -8,8 +8,6 @@ env:
   LANG: C.UTF-8
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   # These specific values are mandatory, they are sent to lambda hard coded
-  AWS_ACCESS_KEY_ID: role-account-id
-  AWS_SECRET_ACCESS_KEY: role-secret-key
   AWS_SESSION_TOKEN: session-token
   AWS_DEFAULT_REGION: us-east-1
 
@@ -38,13 +36,10 @@ jobs:
       - name: Run tests
         run: |
           source scripts/init_ci_runner.sh
-          source environment.test
           docker pull ghcr.io/chanzuckerberg/swipe:latest
-          docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$(cat version) .
-          docker-compose pull
-          docker-compose up &
+          make up
           sleep 1
-          make deploy-mock test
+          make test
 
   terraform_format:
     runs-on: ubuntu-20.04
