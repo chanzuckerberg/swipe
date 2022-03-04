@@ -5,7 +5,6 @@ deploy-mock:
 	source environment.test; \
 	cd test/terraform/moto; \
 	mkdir -p tmp; \
-	ls -l; \
 	unset TF_CLI_ARGS_init; \
 	terraform init; \
 	terraform apply --auto-approve
