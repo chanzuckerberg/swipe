@@ -48,14 +48,4 @@ debug:
 get-logs:
 	aegea logs --start-time=-5m --no-export /aws/lambda/$(app_name)
 
-debug:
-	echo "Lambda Logs"
-	source environment.test; \
-	for i in $$(aws --endpoint-url http://localhost:9000 logs describe-log-groups | jq -r '.logGroups[].logGroupName'); do \
-		echo; \
-		echo; \
-		echo "Log group: $$i"; \
-		aws --endpoint-url http://localhost:9000 logs tail $$i; \
-	done;
-
 .PHONY: deploy up clean debug start init-tf lint format test
