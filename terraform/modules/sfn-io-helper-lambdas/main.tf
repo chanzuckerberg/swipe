@@ -174,8 +174,9 @@ resource "aws_cloudwatch_event_rule" "process_sfn_event" {
 }
 
 resource "aws_cloudwatch_event_rule" "report_metrics" {
+  count               = length(var.schedule_expression) > 0 ? 1 : 0
   name                = "report_metrics-event"
-  schedule_expression = "rate(1 minute)"
+  schedule_expression = var.schedule_expression
   tags                = var.tags
 }
 
@@ -204,7 +205,8 @@ resource "aws_cloudwatch_event_target" "process_sfn_event" {
 }
 
 resource "aws_cloudwatch_event_target" "report_metrics" {
-  rule      = aws_cloudwatch_event_rule.report_metrics.name
+  count     = length(var.schedule_expression) > 0 ? 1 : 0
+  rule      = aws_cloudwatch_event_rule.report_metrics[0].name
   target_id = "report_metrics"
   arn       = aws_lambda_function.lambda["report_metrics"].arn
 }
@@ -230,10 +232,11 @@ resource "aws_lambda_permission" "process_sfn_event" {
 }
 
 resource "aws_lambda_permission" "report_metrics" {
+  count         = length(var.schedule_expression) > 0 ? 1 : 0
   function_name = aws_lambda_function.lambda["report_metrics"].arn
   action        = "lambda:InvokeFunction"
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.report_metrics.arn
+  source_arn    = aws_cloudwatch_event_rule.report_metrics[0].arn
 }
 
 resource "aws_lambda_permission" "report_spot_interruption" {
