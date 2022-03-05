@@ -5,9 +5,10 @@ variable "app_name" {
   description = "The name of your application, to be used as a namespace for all swipe managed assets"
 }
 
-variable "mock" {
-  type        = bool
-  description = "Set to true if applying to mock cloud environemnts for testing"
+variable "aws_endpoint_url" {
+  type        = string
+  description = "Override the AWS endpoint URL used by lambda functions"
+  default     = null
 }
 
 variable "sfn_template_files" {
@@ -88,4 +89,10 @@ variable "batch_spot_job_queue_arn" {
 variable "batch_on_demand_job_queue_arn" {
   description = "ARN of the AWS Batch Queue connected to an on demand compute environment created by this module"
   type        = string
+}
+
+variable "miniwdl_dir" {
+  description = "Directory to mount from the batch host into the swipe container"
+  type        = string
+  default     = "/mnt"
 }

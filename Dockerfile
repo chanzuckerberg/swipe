@@ -8,8 +8,8 @@ RUN sed -i s/archive.ubuntu.com/us-west-2.ec2.archive.ubuntu.com/ /etc/apt/sourc
         echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/98idseq; \
         echo 'APT::Install-Suggests "false";' > /etc/apt/apt.conf.d/99idseq
 
-RUN apt-get -q update
-RUN apt-get -q install -y \
+RUN apt-get -q update && apt-get -q install -y \
+        git \
         jq \
         moreutils \
         pigz \
@@ -40,13 +40,18 @@ RUN apt-get -q install -y \
         python3-boto3 \
         awscli
 
+#ADD miniwdl /tmp/miniwdl
+#RUN cd /tmp/miniwdl && pip3 install --upgrade .
+#RUN pip3 install miniwdl-s3parcp==0.0.5
 RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
 
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/a579cfd28802ddaf99b63474216fda6eb8278f7a.zip#subdirectory=s3upload
 # TODO: switch to proper release
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/159b7bb399fa7184d4b96e98319c501332191430.zip#subdirectory=s3upload
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/a579cfd28802ddaf99b63474216fda6eb8278f7a.zip#subdirectory=s3upload
 
-# TODO: generalize this plugin
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/159b7bb399fa7184d4b96e98319c501332191430.zip#subdirectory=sfn-wdl
+ADD miniwdl-plugins /tmp/miniwdl-plugins
+RUN cd /tmp/miniwdl-plugins/s3parcp_download; pip install --upgrade .
+RUN cd /tmp/miniwdl-plugins/sfn-wdl; pip install --upgrade .
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.3-alpha/s3parcp_1.0.3-alpha_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 

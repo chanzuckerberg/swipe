@@ -1,10 +1,10 @@
 locals {
-  launch_template_user_data_file = "${path.module}/container_instance_user_data"
-  launch_template_user_data_hash = filemd5(local.launch_template_user_data_file)
+  launch_template_user_data = replace(file("${path.module}/container_instance_user_data"), "MINIWDL_DIR", var.miniwdl_dir)
+  launch_template_user_data_hash = md5(local.launch_template_user_data)
 }
 
 data "aws_ssm_parameter" "swipe_batch_ami" {
-  name = "/${var.mock ? "mock-aws" : "aws"}/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
+  name = var.ami_ssm_parameter
 }
 
 resource "aws_iam_role" "swipe_batch_service_role" {
@@ -68,7 +68,7 @@ resource "aws_launch_template" "swipe_batch_main" {
   # not recognize this change. We bind the launch template name to user data contents here, so any changes to user data
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
   name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
-  user_data = filebase64(local.launch_template_user_data_file)
+  user_data = base64encode(local.launch_template_user_data)
   tags      = var.tags
 
   metadata_options {
@@ -94,12 +94,12 @@ resource "aws_security_group" "swipe" {
 resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
     spot = {
-      "cr_type" : "SPOT",
+      "cr_type" : var.cluster_types[0],
       "min_vcpus" : var.spot_min_vcpus,
       "max_vcpus" : var.spot_max_vcpus,
     }
     on_demand = {
-      "cr_type" : "EC2",
+      "cr_type" : var.cluster_types[1],
       "min_vcpus" : var.on_demand_min_vcpus,
       "max_vcpus" : var.on_demand_max_vcpus,
     }
@@ -120,7 +120,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
     max_vcpus     = each.value["max_vcpus"]
 
     # TODO: remove this once CZID monorepo updates moto
-    type                = var.mock ? "EC2" : each.value["cr_type"]
+    type                = each.value["cr_type"]
     allocation_strategy = "BEST_FIT"
     bid_percentage      = 100
     spot_iam_fleet_role = aws_iam_role.swipe_batch_spot_fleet_service_role.arn

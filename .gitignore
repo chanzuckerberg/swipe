@@ -55,10 +55,10 @@ npm-debug.log
 .venv/
 venv/
 
-/.terraform*
+.terraform*
 
 
-mock.tf
 terraform.tfstate
+/test/terraform/moto/tmp
 
 terraform/modules/sfn-io-helper-lambdas/deployment.zip

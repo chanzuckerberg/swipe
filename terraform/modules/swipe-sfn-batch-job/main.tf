@@ -5,6 +5,7 @@ data "aws_caller_identity" "current" {}
 locals {
   ecr_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
+    miniwdl_dir        = var.miniwdl_dir,
     app_name           = var.app_name,
     batch_job_role_arn = aws_iam_role.swipe_batch_main_job.arn,
     batch_docker_image = var.batch_job_docker_image,
@@ -14,15 +15,7 @@ locals {
     "MINIWDL__CALL_CACHE__GET" : "true",
     "MINIWDL__CALL_CACHE__BACKEND" : "s3_progressive_upload_call_cache_backend",
   } : {}
-  mock_env_vars = var.mock ? {
-    "AWS_ACCESS_KEY_ID" : "role-account-id",
-    "AWS_SECRET_ACCESS_KEY" : "role-secret-key",
-    "AWS_SESSION_TOKEN" : "session-token",
-    "AWS_ENDPOINT_URL" : "http://awsnet:5000",
-    "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri",
-    "S3PARCP_S3_URL" : "http://awsnet:5000",
-  } : {}
-  batch_env_vars = merge(local.cache_env_vars, local.mock_env_vars, var.extra_env_vars, {
+  batch_env_vars = merge(local.cache_env_vars, var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
     "WDL_WORKFLOW_URI"                          = "Set this variable to the S3 URI of the WDL workflow",
     "WDL_OUTPUT_URI"                            = "Set this variable to the S3 URI where the WDL output JSON will be written",
@@ -30,16 +23,18 @@ locals {
     "SFN_CURRENT_STATE"                         = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
     "APP_NAME"                                  = var.app_name
     "AWS_DEFAULT_REGION"                        = data.aws_region.current.name,
+    "MINIWDL_DIR"                               = var.miniwdl_dir
+    "MINIWDL__TASK_RUNTIME__DEFAULTS"           = jsonencode({"docker_network"="awsnet"})
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__GET"              = "true",
-    "MINIWDL__DOWNLOAD_CACHE__DIR"              = "/mnt/download_cache",
+    "MINIWDL__DOWNLOAD_CACHE__DIR"              = "${var.miniwdl_dir}/download_cache",
+    "MINIWDL__S3PARCP__DIR"                     = "${var.miniwdl_dir}",
     "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = "[\"s3://swipe-samples-*/*\"]",
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),
   })
-  all_env_vars           = merge(local.batch_env_vars, local.mock_env_vars)
-  container_env_vars     = { "environment" : [for k in sort(keys(local.all_env_vars)) : { "name" : k, "value" : local.all_env_vars[k] }] }
+  container_env_vars     = { "environment" : [for k in sort(keys(local.batch_env_vars)) : { "name" : k, "value" : local.batch_env_vars[k] }] }
   final_container_config = merge(local.container_config, local.container_env_vars)
 }
 
