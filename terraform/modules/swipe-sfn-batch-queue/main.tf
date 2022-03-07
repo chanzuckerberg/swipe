@@ -1,5 +1,5 @@
 locals {
-  launch_template_user_data = replace(file("${path.module}/container_instance_user_data"), "MINIWDL_DIR", var.miniwdl_dir)
+  launch_template_user_data      = replace(file("${path.module}/container_instance_user_data"), "MINIWDL_DIR", var.miniwdl_dir)
   launch_template_user_data_hash = md5(local.launch_template_user_data)
 }
 
