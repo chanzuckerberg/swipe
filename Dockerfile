@@ -40,18 +40,21 @@ RUN apt-get -q update && apt-get -q install -y \
         python3-boto3 \
         awscli
 
-#ADD miniwdl /tmp/miniwdl
-#RUN cd /tmp/miniwdl && pip3 install --upgrade .
-#RUN pip3 install miniwdl-s3parcp==0.0.5
-RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
+# Install miniwdl with docker networks support.
+RUN cd /tmp && \
+    mkdir -p miniwdl && \
+    cd miniwdl && \
+    git init && \
+    git remote add origin https://github.com/chanzuckerberg/miniwdl.git && \
+    git fetch origin e686f36cf148c057ecb297ab76b3d291f265edd5 && \
+    git reset --hard FETCH_HEAD && \
+    pip3 install .
 
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/a579cfd28802ddaf99b63474216fda6eb8278f7a.zip#subdirectory=s3upload
 # TODO: switch to proper release
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/a579cfd28802ddaf99b63474216fda6eb8278f7a.zip#subdirectory=s3upload
-
-ADD miniwdl-plugins /tmp/miniwdl-plugins
-RUN cd /tmp/miniwdl-plugins/s3parcp_download; pip install --upgrade .
-RUN cd /tmp/miniwdl-plugins/sfn-wdl; pip install --upgrade .
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/ad47c89d5152d6864f158520810fb2b4fa7eca24.zip#subdirectory=s3upload
+# Install sfn-wdl plugin *without* docker networks & passthrough var support.
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/f2974a47d547469664c69e1d68cb45a72f12a99a.zip#subdirectory=sfn-wdl
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/ad47c89d5152d6864f158520810fb2b4fa7eca24.zip#subdirectory=s3parcp_download
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.3-alpha/s3parcp_1.0.3-alpha_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 

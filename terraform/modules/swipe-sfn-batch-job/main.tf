@@ -26,10 +26,10 @@ locals {
     "MINIWDL_DIR"                               = var.miniwdl_dir
     "MINIWDL__TASK_RUNTIME__DEFAULTS"           = jsonencode({"docker_network"="awsnet"})
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
+    "MINIWDL__S3PARCP__DIR"                     = var.miniwdl_dir
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__GET"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__DIR"              = "${var.miniwdl_dir}/download_cache",
-    "MINIWDL__S3PARCP__DIR"                     = "${var.miniwdl_dir}",
     "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = "[\"s3://swipe-samples-*/*\"]",
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),
