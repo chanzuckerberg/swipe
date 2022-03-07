@@ -38,15 +38,15 @@ wait-for-healthy:
 
 start:
 	source environment.test; \
-	docker-compose up -d
+	docker compose up -d
 
 start-localstack:
 	source environment.test; \
-	docker-compose up -d -f docker-compose.yml.localstack
+	docker compose up -d localstack
 
 clean:
-	docker-compose down
-	docker-compose rm
+	docker compose --profile '*' down
+	docker compose --profile '*' rm
 	rm -rf test/terraform/moto/tmp
 	find test/terraform -name '*tfstate*' | xargs rm -f
 
