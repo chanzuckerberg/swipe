@@ -16,7 +16,7 @@ services:
       - SYNCHRONOUS_SNS_EVENTS=1
       - SYNCHRONOUS_SQS_EVENTS=1
       - LAMBDA_DOCKER_NETWORK=awsnet
-      - BATCH_DOCKER_FLAGS="--network awsnet"
+      - BATCH_DOCKER_FLAGS=--network awsnet
     ports:
       - "9000:4566"
       - "8083:8083"

@@ -96,3 +96,9 @@ variable "miniwdl_dir" {
   type        = string
   default     = "/mnt"
 }
+
+variable "metrics_schedule" {
+  description = "How often to report metrics, as a cloudwatch schedule expression"
+  type        = string
+  default     = "rate(1 minute)"
+}

@@ -56,6 +56,7 @@ module "sfn" {
   aws_endpoint_url              = var.aws_endpoint_url
   wdl_workflow_s3_prefix        = var.wdl_workflow_s3_prefix
   job_policy_arns               = var.job_policy_arns
+  metrics_schedule              = var.metrics_schedule
   sfn_template_files            = var.sfn_template_files
   stage_memory_defaults         = var.stage_memory_defaults
   stage_vcpu_defaults           = var.stage_vcpu_defaults

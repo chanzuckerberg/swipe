@@ -64,6 +64,12 @@ variable "sfn_notification_queue_arns" {
   type        = list(string)
 }
 
+variable "schedule_expression" {
+  description = "How frequently to report metrics"
+  type        = string
+  default     = "rate(1 minute)"
+}
+
 variable "sfn_notification_queue_urls" {
   description = "URLs of notification SQS queues"
   type        = list(string)

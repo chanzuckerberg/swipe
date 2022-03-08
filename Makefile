@@ -48,6 +48,7 @@ clean:
 	docker compose --profile '*' down
 	docker compose --profile '*' rm
 	rm -rf test/terraform/moto/tmp
+	rm -rf test/terraform/localstack/tmp
 	find test/terraform -name '*tfstate*' | xargs rm -f
 
 lint:

@@ -41,6 +41,21 @@ jobs:
           sleep 1
           make test
 
+  localstack_tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Run tests
+        run: |
+          source scripts/init_ci_runner.sh
+          docker pull ghcr.io/chanzuckerberg/swipe:latest
+          make localstack-test
+
   terraform_format:
     runs-on: ubuntu-20.04
     steps:

@@ -175,7 +175,7 @@ resource "aws_cloudwatch_event_rule" "process_sfn_event" {
 
 resource "aws_cloudwatch_event_rule" "report_metrics" {
   name                = "report_metrics-event"
-  schedule_expression = "rate(1 minute)"
+  schedule_expression = var.schedule_expression
   tags                = var.tags
 }
 
