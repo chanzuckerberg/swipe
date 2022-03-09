@@ -68,6 +68,12 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "docker_network" {
+  description = "If miniwdl's task containers should be attached to a specific docker network, set the network name here"
+  type        = string
+  default     = ""
+}
+
 // Module Specific
 
 variable "batch_job_docker_image" {

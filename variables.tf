@@ -156,6 +156,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "docker_network" {
+  description = "If miniwdl's task containers should be attached to a specific docker network, set the network name here"
+  type        = string
+  default     = ""
+}
+
 variable "imdsv2_policy" {
   description = "Whether imdsv2 is 'optional' (default) or 'required'"
   type        = string

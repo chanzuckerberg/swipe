@@ -59,3 +59,8 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
+variable "docker_network" {
+  description = "If miniwdl's task containers should be attached to a specific docker network, set the network name here"
+  type        = string
+  default     = ""
+}
