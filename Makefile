@@ -3,10 +3,10 @@ SHELL=/bin/bash -o pipefail
 deploy-mock:
 	- source environment.test; aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
 	source environment.test; \
-	cp test/mock.tf .; \
+	cd test/terraform/moto; \
 	unset TF_CLI_ARGS_init; \
 	terraform init; \
-	TF_VAR_mock=true TF_VAR_app_name=swipe-test TF_VAR_batch_ec2_instance_types='["optimal"]' TF_VAR_call_cache=true TF_VAR_sqs_queues='{"notifications":{"dead_letter": false}}' TF_VAR_sfn_template_files='{"stage-test":"test/stage-test.yml"}' TF_VAR_stage_memory_defaults='{"Run": {"spot": 12800, "on_demand": 256000}, "One": {"spot": 12800, "on_demand": 256000}, "Two": {"spot": 12800, "on_demand": 256000}}' terraform apply --auto-approve
+	terraform apply --auto-approve
 
 up: start deploy-mock
 
@@ -18,7 +18,7 @@ start:
 clean:
 	docker-compose down
 	docker-compose rm
-	rm -f terraform.tfstate terraform.tfstate.backup
+	find test/terraform -name '*tfstate*' | xargs rm -f
 
 lint:
 	flake8 .
@@ -46,4 +46,4 @@ debug:
 		aws --endpoint-url http://localhost:9000 logs tail $$i; \
 	done;
 
-.PHONY: deploy up clean debug start init-tf lint format test
+.PHONY: deploy up clean debug start init-tf lint format test get-logs

@@ -1,3 +1,12 @@
+terraform {
+  required_version = ">= 0.13.0"
+  required_providers {
+    aws = {
+      version = "~> 3.28"
+    }
+  }
+}
+
 provider "aws" {
   endpoints {
     batch            = "http://localhost:9000"
