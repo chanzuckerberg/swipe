@@ -94,12 +94,12 @@ resource "aws_security_group" "swipe" {
 resource "aws_batch_compute_environment" "swipe_main" {
   for_each = {
     spot = {
-      "cr_type" : var.cluster_types[0],
+      "cr_type" : var.use_spot ? "SPOT" : "EC2"
       "min_vcpus" : var.spot_min_vcpus,
       "max_vcpus" : var.spot_max_vcpus,
     }
     on_demand = {
-      "cr_type" : var.cluster_types[1],
+      "cr_type" : "EC2"
       "min_vcpus" : var.on_demand_min_vcpus,
       "max_vcpus" : var.on_demand_max_vcpus,
     }

@@ -7,7 +7,7 @@ module "swipetest" {
   batch_ec2_instance_types = ["optimal"]
   aws_endpoint_url         = "http://awsnet:5000"
   docker_network           = "awsnet"
-  cluster_types            = ["EC2", "EC2"] # Moto doesn't know how to use SPOT
+  use_spot                 = false # Moto doesn't know how to use SPOT
   extra_env_vars = {
     "AWS_ACCESS_KEY_ID" : "role-account-id",
     "AWS_SECRET_ACCESS_KEY" : "role-secret-key",

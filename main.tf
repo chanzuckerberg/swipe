@@ -34,7 +34,7 @@ module "batch_queue" {
   batch_ec2_instance_types = var.batch_ec2_instance_types
   spot_min_vcpus           = var.spot_min_vcpus
   on_demand_min_vcpus      = var.on_demand_min_vcpus
-  cluster_types            = var.cluster_types
+  use_spot                 = var.use_spot
   spot_max_vcpus           = var.spot_max_vcpus
   on_demand_max_vcpus      = var.on_demand_max_vcpus
   tags                     = var.tags

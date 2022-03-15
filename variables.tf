@@ -3,10 +3,10 @@ variable "app_name" {
   type        = string
 }
 
-variable "cluster_types" {
-  description = "Which Batch cluster types to create. Defaults to SPOT and EC2"
-  type        = list(string)
-  default     = ["SPOT", "EC2"]
+variable "use_spot" {
+  description = "Whether to enable SPOT batch clusters - only disable this for testing!"
+  type        = bool
+  default     = true
 }
 
 variable "batch_ssh_public_key" {
