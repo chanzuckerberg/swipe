@@ -8,8 +8,8 @@ RUN sed -i s/archive.ubuntu.com/us-west-2.ec2.archive.ubuntu.com/ /etc/apt/sourc
         echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/98idseq; \
         echo 'APT::Install-Suggests "false";' > /etc/apt/apt.conf.d/99idseq
 
-RUN apt-get -q update
-RUN apt-get -q install -y \
+RUN apt-get -q update && apt-get -q install -y \
+        git \
         jq \
         moreutils \
         pigz \
@@ -40,13 +40,22 @@ RUN apt-get -q install -y \
         python3-boto3 \
         awscli
 
-RUN pip3 install miniwdl==${MINIWDL_VERSION} miniwdl-s3parcp==0.0.5
+# TODO - update to a miniwdl release branch when the docker network PR is merged
+# Install miniwdl with docker networks support.
+RUN cd /tmp && \
+    mkdir -p miniwdl && \
+    cd miniwdl && \
+    git init && \
+    git remote add origin https://github.com/chanzuckerberg/miniwdl.git && \
+    git fetch origin 129ece8b74820cb812a5004732ec3189fed19f19&& \
+    git reset --hard FETCH_HEAD && \
+    pip3 install .
 
 # TODO: switch to proper release
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/159b7bb399fa7184d4b96e98319c501332191430.zip#subdirectory=s3upload
-
-# TODO: generalize this plugin
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/159b7bb399fa7184d4b96e98319c501332191430.zip#subdirectory=sfn-wdl
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/ad47c89d5152d6864f158520810fb2b4fa7eca24.zip#subdirectory=s3upload
+# Install sfn-wdl plugin *without* docker networks & passthrough var support.
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/f2974a47d547469664c69e1d68cb45a72f12a99a.zip#subdirectory=sfn-wdl
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/ad47c89d5152d6864f158520810fb2b4fa7eca24.zip#subdirectory=s3parcp_download
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.3-alpha/s3parcp_1.0.3-alpha_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 

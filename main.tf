@@ -23,16 +23,18 @@ module "batch_subnet" {
 module "batch_queue" {
   source                = "./terraform/modules/swipe-sfn-batch-queue"
   app_name              = var.app_name
-  mock                  = var.mock
   batch_ssh_key_pair_id = length(aws_key_pair.swipe_batch) > 0 ? aws_key_pair.swipe_batch[0].id : ""
   network_info = length(module.batch_subnet) == 0 ? var.network_info : {
     vpc_id           = module.batch_subnet[0].vpc_id
     batch_subnet_ids = module.batch_subnet[0].batch_subnet_ids
   }
   ami_id                   = var.batch_ami_id
+  ami_ssm_parameter        = var.ami_ssm_parameter
+  miniwdl_dir              = var.miniwdl_dir
   batch_ec2_instance_types = var.batch_ec2_instance_types
   spot_min_vcpus           = var.spot_min_vcpus
   on_demand_min_vcpus      = var.on_demand_min_vcpus
+  use_spot                 = var.use_spot
   spot_max_vcpus           = var.spot_max_vcpus
   on_demand_max_vcpus      = var.on_demand_max_vcpus
   tags                     = var.tags
@@ -46,11 +48,13 @@ locals {
 module "sfn" {
   source                        = "./terraform/modules/swipe-sfn"
   app_name                      = var.app_name
-  mock                          = var.mock
   batch_job_docker_image        = "ghcr.io/chanzuckerberg/swipe:${chomp(local.version)}"
   batch_spot_job_queue_arn      = module.batch_queue.batch_spot_job_queue_arn
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
+  miniwdl_dir                   = var.miniwdl_dir
+  docker_network                = var.docker_network
   workspace_s3_prefix           = var.workspace_s3_prefix
+  aws_endpoint_url              = var.aws_endpoint_url
   wdl_workflow_s3_prefix        = var.wdl_workflow_s3_prefix
   job_policy_arns               = var.job_policy_arns
   sfn_template_files            = var.sfn_template_files

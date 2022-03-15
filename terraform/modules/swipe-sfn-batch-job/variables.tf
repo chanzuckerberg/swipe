@@ -5,16 +5,16 @@ variable "app_name" {
   description = "The name of your application, to be used as a namespace for all swipe managed assets"
 }
 
-variable "mock" {
-  type        = bool
-  description = "Set to true if applying to mock cloud environemnts for testing"
-}
-
 variable "job_policy_arns" {
   description = "Policy ARNs to attach to batch jobs"
   type        = list(string)
 }
 
+variable "miniwdl_dir" {
+  description = "Directory to mount from batch host into swipe jobs"
+  type        = string
+  default     = "/mnt"
+}
 
 variable "workspace_s3_prefix" {
   description = "S3 prefix where input, output, and log files will be stored, read and write permissions will be granted for this prefix"
@@ -59,3 +59,8 @@ variable "batch_job_retry_attempts" {
   default     = 1
 }
 
+variable "docker_network" {
+  description = "If miniwdl's task containers should be attached to a specific docker network, set the network name here"
+  type        = string
+  default     = ""
+}

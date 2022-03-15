@@ -5,11 +5,6 @@ variable "app_name" {
   type        = string
 }
 
-variable "mock" {
-  description = "Set to true if applying to mock cloud environemnts for testing"
-  type        = bool
-}
-
 variable "batch_ssh_key_pair_id" {
   description = "EC2 SSH key pair to use for AWS Batch EC2 container instances"
   type        = string
@@ -19,6 +14,12 @@ variable "ami_id" {
   description = "Override the default AMI image ID (default: latest AL2 ECS batch image)"
   type        = string
   default     = ""
+}
+
+variable "ami_ssm_parameter" {
+  description = "The SSM parameter to use to fetch the AMI to use for batch jobs"
+  type        = string
+  default     = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
 }
 
 variable "network_info" {
@@ -58,6 +59,18 @@ variable "on_demand_max_vcpus" {
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
+}
+
+variable "use_spot" {
+  description = "Whether to enable SPOT batch clusters - only disable this for testing!"
+  type        = bool
+  default     = true
+}
+
+variable "miniwdl_dir" {
+  description = "Directory to mount from the batch host into the swipe container"
+  type        = string
+  default     = "/mnt"
 }
 
 variable "imdsv2_policy" {

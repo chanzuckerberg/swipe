@@ -2,22 +2,28 @@ SHELL=/bin/bash -o pipefail
 
 deploy-mock:
 	- source environment.test; aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
-	source environment.test; \
-	cd test/terraform/moto; \
-	unset TF_CLI_ARGS_init; \
-	terraform init; \
+	source environment.test && \
+	cd test/terraform/moto && \
+	mkdir -p tmp && \
+	unset TF_CLI_ARGS_init && \
+	terraform init && \
 	terraform apply --auto-approve
 
 up: start deploy-mock
 
+image:
+	source environment.test; \
+	docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+
 start:
 	source environment.test; \
-	docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .; \
+	docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) . && \
 	docker-compose up -d
 
 clean:
 	docker-compose down
 	docker-compose rm
+	rm -rf test/terraform/moto/tmp
 	find test/terraform -name '*tfstate*' | xargs rm -f
 
 lint:
