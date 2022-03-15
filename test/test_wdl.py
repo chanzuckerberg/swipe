@@ -122,6 +122,9 @@ class TestSFNWDL(unittest.TestCase):
         ][0]
         self.state_change_queue_url = self.sqs.list_queues()["QueueUrls"][0]
 
+        # Empty the SQS queue before running tests.
+        _ = self.sqs.purge_queue(QueueUrl=self.state_change_queue_url)
+
     def tearDown(self) -> None:
         self.test_bucket.delete_objects(
             Delete={
