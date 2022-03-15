@@ -16,6 +16,7 @@ module "swipetest" {
     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri",
     "S3PARCP_S3_URL" : "http://awsnet:5000",
   }
+
   sqs_queues = {
     "notifications" : { "dead_letter" : false }
   }
