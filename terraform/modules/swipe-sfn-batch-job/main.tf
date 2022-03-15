@@ -27,6 +27,7 @@ locals {
     "MINIWDL__TASK_RUNTIME__DEFAULTS"           = length(var.docker_network) > 0 ? jsonencode({ "docker_network" = var.docker_network }) : "{}"
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
     "MINIWDL__S3PARCP__DIR"                     = var.miniwdl_dir
+    "MINIWDL__DOCKER_SWARM__ALLOW_NETWORKS"     = length(var.docker_network) > 0 ? jsonencode([var.docker_network]) : "[]"
     "MINIWDL__DOWNLOAD_CACHE__PUT"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__GET"              = "true",
     "MINIWDL__DOWNLOAD_CACHE__DIR"              = "${var.miniwdl_dir}/download_cache",

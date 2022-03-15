@@ -40,13 +40,14 @@ RUN apt-get -q update && apt-get -q install -y \
         python3-boto3 \
         awscli
 
+# TODO - update to a miniwdl release branch when the docker network PR is merged
 # Install miniwdl with docker networks support.
 RUN cd /tmp && \
     mkdir -p miniwdl && \
     cd miniwdl && \
     git init && \
     git remote add origin https://github.com/chanzuckerberg/miniwdl.git && \
-    git fetch origin e686f36cf148c057ecb297ab76b3d291f265edd5 && \
+    git fetch origin 129ece8b74820cb812a5004732ec3189fed19f19&& \
     git reset --hard FETCH_HEAD && \
     pip3 install .
 
