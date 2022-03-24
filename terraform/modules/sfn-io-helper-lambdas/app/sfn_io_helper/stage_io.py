@@ -111,6 +111,7 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
     for stage in sfn_state["Input"].keys():
         sfn_state[get_input_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_input.json")
         sfn_state[get_output_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_output.json")
+        sfn_state[f"{xform_name(stage)}_PREVIOUS_OUTPUT_PREFIX"] = sfn_state.get("PreviousOutputPrefix")
         for compute_env in "SPOT", "EC2":
             memory_key = stage + compute_env + "Memory"
             memory_default_key = memory_key + "Default"

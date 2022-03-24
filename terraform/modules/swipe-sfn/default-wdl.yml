@@ -31,8 +31,8 @@ States:
             Value.$: $.RUN_WDL_URI
           - Name: WDL_OUTPUT_URI
             Value.$: $.RUN_OUTPUT_URI
-          - Name: PREVIOUS_WDL_OUTPUT_URI
-            Value.$: $.PREVIOUS_RUN_OUTPUT_URI
+          - Name: PREVIOUS_OUTPUT_PREFIX
+            Value.$: $.RUN_PREVIOUS_OUTPUT_PREFIX
           - Name: SFN_EXECUTION_ID
             Value.$: $$.Execution.Id
           - Name: SFN_CURRENT_STATE
