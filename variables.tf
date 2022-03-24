@@ -167,3 +167,9 @@ variable "imdsv2_policy" {
   type        = string
   default     = "optional"
 }
+
+variable "metrics_schedule" {
+  description = "How often to report metrics, as a cloudwatch schedule expression"
+  type        = string
+  default     = "rate(1 minute)"
+}
