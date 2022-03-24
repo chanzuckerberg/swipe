@@ -9,21 +9,46 @@ deploy-mock:
 	terraform init && \
 	terraform apply --auto-approve
 
-up: start deploy-mock
+deploy-localstack:
+	- source environment.test; aws ssm put-parameter --name /mock-aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id --value ami-12345678 --type String --endpoint-url http://localhost:9000
+	source environment.test && \
+	cd test/terraform/localstack && \
+	mkdir -p tmp && \
+	unset TF_CLI_ARGS_init && \
+	terraform init && \
+	terraform apply --auto-approve
+
+up: image start deploy-mock
+
+localstack-test: image start-localstack wait-for-healthy deploy-localstack test
 
 image:
 	source environment.test; \
-	docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+	docker buildx build --platform linux/amd64 --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+
+wait-for-healthy:
+	while true; do \
+	    curl -s -m 1 http://localhost:9000; \
+	    if [ $$? -eq 0 ]; then \
+	        break; \
+	    fi; \
+	    echo "waiting..."; \
+	    sleep 1; \
+	done
 
 start:
 	source environment.test; \
-	docker build --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) . && \
-	docker-compose up -d
+	docker compose --profile moto up -d
+
+start-localstack:
+	source environment.test; \
+	docker compose --profile localstack up -d
 
 clean:
-	docker-compose down
-	docker-compose rm
+	docker compose --profile '*' down
+	docker compose --profile '*' rm
 	rm -rf test/terraform/moto/tmp
+	rm -rf test/terraform/localstack/tmp
 	find test/terraform -name '*tfstate*' | xargs rm -f
 
 lint:
@@ -52,4 +77,4 @@ debug:
 		aws --endpoint-url http://localhost:9000 logs tail $$i; \
 	done;
 
-.PHONY: deploy up clean debug start init-tf lint format test get-logs
+.PHONY: deploy up clean debug start init-tf lint format test get-logs deploy-localstack wait-for-healthy localstack image start-localstack
