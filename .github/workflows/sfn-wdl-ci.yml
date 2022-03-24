@@ -7,6 +7,7 @@ env:
   LC_ALL: C.UTF-8
   LANG: C.UTF-8
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  LOCALSTACK_API_KEY: ${{secrets.LOCALSTACK_API_KEY}}
   # These specific values are mandatory, they are sent to lambda hard coded
   AWS_SESSION_TOKEN: session-token
   AWS_DEFAULT_REGION: us-east-1
@@ -40,6 +41,21 @@ jobs:
           make up
           sleep 1
           make test
+
+  localstack_tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{runner.os}}-cache
+      - name: Run tests
+        run: |
+          source scripts/init_ci_runner.sh
+          docker pull ghcr.io/chanzuckerberg/swipe:latest
+          make localstack-test
 
   terraform_format:
     runs-on: ubuntu-20.04
