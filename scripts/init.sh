@@ -53,7 +53,7 @@ clean_wd() {
 clean_wd
 df -h / $MINIWDL_DIR
 export MINIWDL__S3_PROGRESSIVE_UPLOAD__URI_PREFIX=$(dirname "$WDL_OUTPUT_URI")
-export MINIWDL__S3_PROGRESSIVE_UPLOAD__CALL_CACHE_GET_URI_PREFIX=$(dirname "$PREVIOUS_WDL_OUTPUT_URI")
+export MINIWDL__S3_PROGRESSIVE_UPLOAD__CALL_CACHE_GET_URI_PREFIX="$PREVIOUS_OUTPUT_PREFIX"
 
 if [ -f /etc/profile ]; then source /etc/profile; fi
 miniwdl --version
