@@ -23,7 +23,7 @@ def get_output_uri_key(stage):
 
 def get_stage_input(sfn_state, stage):
     input_uri = sfn_state[get_input_uri_key(stage)]
-    return json.loads(s3_object(input_uri).get()["Body"].read().decode())
+    return json.loads(s3_object(input_uri).get()["Body"].read().decode().strip() or '{}')
 
 
 def put_stage_input(sfn_state, stage, stage_input):
@@ -33,7 +33,7 @@ def put_stage_input(sfn_state, stage, stage_input):
 
 def get_stage_output(sfn_state, stage):
     output_uri = sfn_state[get_output_uri_key(stage)]
-    return json.loads(s3_object(output_uri).get()["Body"].read().decode())
+    return json.loads(s3_object(output_uri).get()["Body"].read().decode().strip() or '{}')
 
 
 def read_state_from_s3(sfn_state, current_state):
