@@ -206,9 +206,9 @@ class TestSFNWDL(unittest.TestCase):
         print(resp)
         messages = resp["Messages"]
 
-        if expect_success: 
+        if expect_success:
             self.assertEqual(description["status"], "SUCCEEDED", description)
-        else: 
+        else:
             self.assertEqual(description["status"], "FAILED", description)
         return arn, description, messages
 
@@ -241,7 +241,7 @@ class TestSFNWDL(unittest.TestCase):
         self.assertEqual(
             json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
         )
-        
+
     def test_failing_wdl_workflow(self):
         output_prefix = "out-fail-1"
         sfn_input: Dict[str, Any] = {
@@ -256,9 +256,9 @@ class TestSFNWDL(unittest.TestCase):
         }
 
         arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
-        errorType = self.sfn.get_execution_history(executionArn=arn)["events"][-1]["executionFailedEventDetails"]["error"]
+        errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
+                     [-1]["executionFailedEventDetails"]["error"])
         self.assertEqual(errorType, "UncaughtError")
-
 
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"
