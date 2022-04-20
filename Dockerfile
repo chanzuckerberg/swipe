@@ -52,10 +52,10 @@ RUN cd /tmp && \
     pip3 install .
 
 # TODO: switch to proper release
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/40fa0893da610acd15c0416189a9adeda93a70a8.zip#subdirectory=s3upload
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/3f6d7718a38395258b6347e722a270255d8f995b.zip#subdirectory=s3upload
 # Install sfn-wdl plugin *without* docker networks & passthrough var support.
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/40fa0893da610acd15c0416189a9adeda93a70a8.zip#subdirectory=sfn-wdl
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/40fa0893da610acd15c0416189a9adeda93a70a8.zip#subdirectory=s3parcp_download
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/3f6d7718a38395258b6347e722a270255d8f995b.zip#subdirectory=sfn-wdl
+RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/3f6d7718a38395258b6347e722a270255d8f995b.zip#subdirectory=s3parcp_download
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.0/s3parcp_1.0.0_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
