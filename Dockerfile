@@ -57,7 +57,7 @@ RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/5fb30
 RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/5fb303ed13953cb2a3d65cd62a13922712fcb4aa.zip#subdirectory=sfn-wdl
 RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/5fb303ed13953cb2a3d65cd62a13922712fcb4aa.zip#subdirectory=s3parcp_download
 
-RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.3-alpha/s3parcp_1.0.0_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
+RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.0/s3parcp_1.0.0_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
 ADD https://raw.githubusercontent.com/chanzuckerberg/miniwdl/v${MINIWDL_VERSION}/examples/clean_download_cache.sh /usr/local/bin
 ADD scripts/init.sh /usr/local/bin
