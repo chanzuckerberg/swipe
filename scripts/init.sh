@@ -76,6 +76,9 @@ handle_error() {
     if jq -re $EP $OF; then
       if tail -n 1 $(jq -r $EP $OF) | jq -re .wdl_error_message; then
         tail -n 1 $(jq -r $EP $OF) > $OF;
+      else
+        export err_type=UncaughtError err_msg=$(tail -n 1 $(jq -r $EP $OF))
+        jq -nc ".wdl_error_message=true | .error=env.err_type | .cause=env.err_msg" > $OF;
       fi;
     fi;
     $aws s3 cp $OF "$WDL_OUTPUT_URI";
