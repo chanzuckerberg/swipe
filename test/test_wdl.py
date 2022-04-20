@@ -130,7 +130,7 @@ class TestSFNWDL(unittest.TestCase):
             Delete={
                 "Objects": [{"Key": obj.key} for obj in self.test_bucket.objects.all()],
             }
-F        )
+        )
         self.test_bucket.delete()
 
     def _wait_sfn(
