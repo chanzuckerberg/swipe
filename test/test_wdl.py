@@ -46,6 +46,48 @@ task add_world {
 }
 """
 
+test_fail_wdl = """
+version 1.0
+workflow swipe_test {
+  input {
+    File hello
+    String docker_image_id
+  }
+
+  call add_world {
+    input:
+      hello = hello,
+      docker_image_id = docker_image_id
+  }
+
+  output {
+    File out = add_world.out
+  }
+}
+
+task add_world {
+  input {
+    File hello
+    String docker_image_id
+  }
+
+  command <<<
+    set -euxo pipefail
+    cat ~{hello} > out.txt
+    exit 1
+    echo world >> out.txt
+  >>>
+
+  output {
+    File out = "out.txt"
+  }
+
+  runtime {
+      docker: docker_image_id
+  }
+}
+"""
+
 test_two_wdl = """
 version 1.0
 workflow swipe_test_two {
@@ -105,6 +147,8 @@ class TestSFNWDL(unittest.TestCase):
         self.sqs = boto3.client("sqs", endpoint_url="http://localhost:9000")
         self.wdl_obj = self.test_bucket.Object("test-v1.0.0.wdl")
         self.wdl_obj.put(Body=test_wdl.encode())
+        self.wdl_fail_obj = self.test_bucket.Object("test-fail-v1.0.0.wdl")
+        self.wdl_fail_obj.put(Body=test_fail_wdl.encode())
         self.wdl_two_obj = self.test_bucket.Object("test-two-v1.0.0.wdl")
         self.wdl_two_obj.put(Body=test_two_wdl.encode())
         self.map_obj = self.test_bucket.Object("stage_io_map.json")
@@ -138,6 +182,7 @@ class TestSFNWDL(unittest.TestCase):
         sfn_input: Dict,
         sfn_arn: str,
         n_stages: int = 1,
+        expect_success: bool = True
     ) -> Tuple[str, Dict, List[Dict]]:
         execution_name = "swipe-test-{}".format(int(time.time()))
         res = self.sfn.start_execution(
@@ -161,7 +206,10 @@ class TestSFNWDL(unittest.TestCase):
         print(resp)
         messages = resp["Messages"]
 
-        self.assertEqual(description["status"], "SUCCEEDED", description)
+        if expect_success:
+            self.assertEqual(description["status"], "SUCCEEDED", description)
+        else:
+            self.assertEqual(description["status"], "FAILED", description)
         return arn, description, messages
 
     def test_simple_sfn_wdl_workflow(self):
@@ -193,6 +241,24 @@ class TestSFNWDL(unittest.TestCase):
         self.assertEqual(
             json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
         )
+
+    def test_failing_wdl_workflow(self):
+        output_prefix = "out-fail-1"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_fail_obj.bucket_name}/{self.wdl_fail_obj.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
+
+        arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
+        errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
+                     [-1]["executionFailedEventDetails"]["error"])
+        self.assertEqual(errorType, "UncaughtError")
 
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"
