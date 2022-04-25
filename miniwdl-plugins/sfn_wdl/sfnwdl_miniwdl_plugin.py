@@ -135,7 +135,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     if s3_wd_uri:
         status = {
             "status": "uploaded",
-            "end_time": time.time(),
+            "end_time": str(time.time()),
         }
         if "step_description_md" in recv["outputs"]:
             # idseq_dag steps may dynamically generate their description to reflect different

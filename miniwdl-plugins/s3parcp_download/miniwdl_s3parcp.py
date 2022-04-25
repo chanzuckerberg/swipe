@@ -13,12 +13,14 @@ import os
 import tempfile
 import boto3
 
+from typing import Dict
+
 
 def main(cfg, logger, uri, **kwargs):
     # get AWS credentials from boto3
     b3 = boto3.session.Session()
     b3creds = b3.get_credentials()
-    aws_credentials = {
+    aws_credentials: Dict[str, str] = {
         "AWS_ACCESS_KEY_ID": b3creds.access_key,
         "AWS_SECRET_ACCESS_KEY": b3creds.secret_key,
     }
@@ -30,7 +32,7 @@ def main(cfg, logger, uri, **kwargs):
     aws_credentials["AWS_REGION"] = b3.region_name if b3.region_name else "us-west-2"
 
     # format them as env vars to be sourced in the WDL task command
-    aws_credentials = "\n".join(f"export {k}='{v}'" for (k, v) in aws_credentials.items())
+    aws_credentials_str = "\n".join(f"export {k}='{v}'" for (k, v) in aws_credentials.items())
 
     # write them to a temp file that'll self-destruct automatically
     temp_dir = "/mnt"
@@ -39,7 +41,7 @@ def main(cfg, logger, uri, **kwargs):
     with tempfile.NamedTemporaryFile(
         prefix="miniwdl_download_s3parcp_credentials_", delete=True, mode="w", dir=temp_dir
     ) as aws_credentials_file:
-        print(aws_credentials, file=aws_credentials_file, flush=True)
+        print(aws_credentials_str, file=aws_credentials_file, flush=True)
         # make file group-readable to ensure it'll be usable if the docker image runs as non-root
         os.chmod(aws_credentials_file.name, os.stat(aws_credentials_file.name).st_mode | 0o40)
 
