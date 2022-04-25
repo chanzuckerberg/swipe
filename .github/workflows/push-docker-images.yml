@@ -20,21 +20,17 @@ jobs:
       - name: Push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}
-          VERSION=latest # We're only building the main branch
-          if [[ $GITHUB_REF = refs/tags/* ]]
-          then
-            TAG=${GITHUB_REF##*/}
-          else
-            TAG=sha-${GITHUB_SHA:0:8}
-          fi
+          VERSION=$(cat version)
+          SHA_TAG=sha-${GITHUB_SHA:0:8}
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
           docker tag ${{ github.repository }} $IMAGE_ID:latest
-          docker tag ${{ github.repository }} $IMAGE_ID:$TAG
+          docker tag ${{ github.repository }} $IMAGE_ID:$SHA_TAG
+          docker tag ${{ github.repository }} $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$latest
+          docker push $IMAGE_ID:$SHA_TAG
           docker push $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$TAG
       - name: Checkout
         uses: actions/checkout@v2
