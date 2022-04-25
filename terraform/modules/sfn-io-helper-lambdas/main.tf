@@ -108,14 +108,13 @@ resource "aws_iam_role_policy" "iam_role_policy" {
         ],
         Resource : "arn:aws:logs:*:*:*"
       },
-      length(var.sfn_notification_queue_arns) > 0 ? {
+      ], length(var.sfn_notification_queue_arns) > 0 ? [{
         Effect : "Allow",
         Action : [
           "sqs:SendMessage",
         ],
         Resource : var.sfn_notification_queue_arns
-      } : {},
-    ])
+    }] : [])
   })
 }
 
