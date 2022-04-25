@@ -2,19 +2,15 @@
 Plugin for uploading output files to S3 "progressively," meaning to upload each task's output files
 immediately upon task completion, instead of waiting for the whole workflow to finish. (The latter
 technique, which doesn't need a plugin at all, is illustrated in ../upload_output_files.sh)
-
 To enable, install this plugin (`pip3 install .` & confirm listed by `miniwdl --version`) and set
 the environment variable MINIWDL__S3_PROGRESSIVE_UPLOAD__URI_PREFIX to a S3 URI prefix under which
 to store the output files (e.g. "s3://my_bucket/workflow123_outputs"). The prefix should be set
 uniquely for each run, to prevent different runs from overwriting each others' outputs.
-
 Shells out to s3parcp, for which the environment must be set up to authorize upload to the
 specified bucket (without explicit auth-related arguments).
-
 Deposits into each successful task/workflow run directory and S3 folder, an additional file
 outputs.s3.json which copies outputs.json replacing local file paths with the uploaded S3 URIs.
 (The JSON printed to miniwdl standard output keeps local paths.)
-
 Limitations:
 1) All task output files are uploaded, even ones that aren't top-level workflow outputs. (We can't,
    at the moment of task completion, necessarily predict which files the calling workflow will
@@ -60,9 +56,9 @@ def get_s3_put_prefix(cfg: config.Loader) -> str:
 
 
 def get_s3_get_prefix(cfg: config.Loader) -> str:
-    s3prefix = cfg["s3_progressive_upload"].get("call_cache_get_uri_prefix")
-    if not s3prefix:
+    if not cfg.has_option("s3_progressive_upload", "call_cache_get_uri_prefix"):
         return get_s3_put_prefix(cfg)
+    s3prefix = cfg["s3_progressive_upload"].get("call_cache_get_uri_prefix")
     assert s3prefix.startswith("s3://"), "MINIWDL__S3_PROGRESSIVE_UPLOAD__CALL_CACHE_GET_URI_PREFIX invalid"
     return s3prefix
 
@@ -109,7 +105,7 @@ def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env
         return _uploaded_files[inode(str(v.value))]
 
     remapped_outputs = Value.rewrite_env_paths(outputs, cache)
-    if not missing:
+    if not missing and cfg.has_option("s3_progressive_upload", "uri_prefix"):
         uri = os.path.join(get_s3_put_prefix(cfg), "cache", f"{key}.json")
         s3_object(uri).put(Body=json.dumps(values_to_json(remapped_outputs)).encode())
         flag_temporary(uri)
@@ -120,6 +116,8 @@ class CallCache(cache.CallCache):
     def get(
         self, key: str, inputs: Env.Bindings[Value.Base], output_types: Env.Bindings[Type.Base]
     ) -> Optional[Env.Bindings[Value.Base]]:
+        if not self._cfg.has_option("s3_progressive_upload", "uri_prefix"):
+            return super().get(key, inputs, output_types)
         uri = urlparse(get_s3_get_prefix(self._cfg))
         bucket, prefix = uri.hostname, uri.path
 
@@ -276,7 +274,7 @@ _s3parcp_lock = threading.Lock()
 
 def s3cp(logger, fn, s3uri):
     with _s3parcp_lock:
-        cmd = ["s3parcp", fn, s3uri]
+        cmd = ["s3parcp", "--checksum", fn, s3uri]
         logger.debug(" ".join(cmd))
         rslt = subprocess.run(cmd, stderr=subprocess.PIPE)
         if rslt.returncode != 0:
