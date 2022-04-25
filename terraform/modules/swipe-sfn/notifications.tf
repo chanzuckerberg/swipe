@@ -2,7 +2,7 @@
 # Dead-letter queue (possibly).
 
 resource "aws_cloudwatch_event_rule" "sfn_state_change_rule" {
-  count  = length(var.sqs_queues) > 0 ? 1 : 0
+  count = length(var.sqs_queues) > 0 ? 1 : 0
 
   name        = "${var.app_name}-sfn-state-change-rule"
   description = "Monitor SFN for status changes."
@@ -20,7 +20,7 @@ resource "aws_cloudwatch_event_rule" "sfn_state_change_rule" {
 }
 
 resource "aws_cloudwatch_event_target" "sfn_state_change_rule_target" {
-  count  = length(var.sqs_queues) > 0 ? 1 : 0
+  count = length(var.sqs_queues) > 0 ? 1 : 0
 
   rule      = aws_cloudwatch_event_rule.sfn_state_change_rule.name
   target_id = "SendToSNS"
@@ -28,21 +28,21 @@ resource "aws_cloudwatch_event_target" "sfn_state_change_rule_target" {
 }
 
 resource "aws_sns_topic" "sfn_notifications_topic" {
-  count  = length(var.sqs_queues) > 0 ? 1 : 0
+  count = length(var.sqs_queues) > 0 ? 1 : 0
 
   name = "${var.app_name}-sfn-notifications-topic"
   tags = var.tags
 }
 
 resource "aws_sns_topic_policy" "sfn_notifications_topic_policy" {
-  count  = length(var.sqs_queues) > 0 ? 1 : 0
+  count = length(var.sqs_queues) > 0 ? 1 : 0
 
   arn    = aws_sns_topic.sfn_notifications_topic[0].arn
   policy = data.aws_iam_policy_document.sfn_notifications_topic_policy_document[0].json
 }
 
 data "aws_iam_policy_document" "sfn_notifications_topic_policy_document" {
-  count  = length(var.sqs_queues) > 0 ? 1 : 0
+  count = length(var.sqs_queues) > 0 ? 1 : 0
 
   statement {
     effect  = "Allow"
