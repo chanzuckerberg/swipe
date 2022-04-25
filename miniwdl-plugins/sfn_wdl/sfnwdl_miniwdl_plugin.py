@@ -1,22 +1,12 @@
-import os
 import json
-import time
-import threading
+import os
 import re
-import urllib.parse
-from typing import Dict, Any
+import threading
+import time
+from typing import Any, Dict
 
 import boto3
-
 from WDL._util import StructuredLogMessage as _
-
-
-# environment variables to be passed through from miniwdl runner environment to task containers
-PASSTHROUGH_ENV_VARS = (
-    "AWS_DEFAULT_REGION",
-    "DEPLOYMENT_ENVIRONMENT",
-    "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI",
-)
 
 s3 = boto3.resource("s3")
 
@@ -78,17 +68,6 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
 
     recv["container"].stderr_callback = stderr_callback
 
-    # pass through certain environment variables expected by idseq-dag
-    recv["container"].create_service_kwargs = {
-        "env": [f"{var}={os.environ[var]}" for var in PASSTHROUGH_ENV_VARS if var in os.environ],
-    }
-
-    if "AWS_ENDPOINT_URL" in os.environ:
-        network = urllib.parse.urlparse(os.environ["AWS_ENDPOINT_URL"]).hostname
-        recv["container"].create_service_kwargs["networks"] = [network]
-        recv["container"].create_service_kwargs["env"].append(f"AWS_ENDPOINT_URL={os.environ['AWS_ENDPOINT_URL']}")
-        recv["container"].create_service_kwargs["env"].append(f"S3PARCP_S3_URL={os.environ['AWS_ENDPOINT_URL']}")
-
     # inject command to log `aws sts get-caller-identity` to confirm AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
     # is passed through & effective
     if not run_id[-1].startswith("download-"):
@@ -117,25 +96,21 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
             status = dict(status="pipeline_errored")
             msg = str(exn)
             if last_stderr_json and "wdl_error_message" in last_stderr_json:
-                msg = last_stderr_json.get("cause", last_stderr_json["wdl_error_message"])
+                msg = last_stderr_json.get(
+                    "cause", last_stderr_json["wdl_error_message"]
+                )
                 if last_stderr_json.get("error", None) == "InvalidInputFileError":
                     status = dict(status="user_errored")
                 if "step_description_md" in last_stderr_json:
                     status.update(description=last_stderr_json["step_description_md"])
-            status.update(error=msg, end_time=str(time.time()))
-            update_status_json(
-                logger,
-                task,
-                run_id,
-                s3_wd_uri,
-                status
-            )
+            status.update(error=msg, end_time=time.time())
+            update_status_json(logger, task, run_id, s3_wd_uri, status)
         raise
 
     if s3_wd_uri:
         status = {
             "status": "uploaded",
-            "end_time": str(time.time()),
+            "end_time": time.time(),
         }
         if "step_description_md" in recv["outputs"]:
             # idseq_dag steps may dynamically generate their description to reflect different
@@ -198,6 +173,11 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                 s3_object(status_uri).put(Body=json.dumps(_status_json).encode())
     except Exception as exn:
         logger.error(
-            _("update_status_json failed", error=str(exn), s3_wd_uri=s3_wd_uri, run_ids=run_ids)
+            _(
+                "update_status_json failed",
+                error=str(exn),
+                s3_wd_uri=s3_wd_uri,
+                run_ids=run_ids,
+            )
         )
         # Don't allow mere inability to update status to crash the whole workflow.
