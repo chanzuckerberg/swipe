@@ -122,7 +122,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                     status = dict(status="user_errored")
                 if "step_description_md" in last_stderr_json:
                     status.update(description=last_stderr_json["step_description_md"])
-            status.update(error=msg, end_time=time.time())
+            status.update(error=msg, end_time=str(time.time()))
             update_status_json(
                 logger,
                 task,
