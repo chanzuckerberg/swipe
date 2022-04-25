@@ -127,7 +127,7 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
 
 
 def broadcast_stage_complete(execution_id: str, stage: str):
-    if "SQS_QUEUE_URLS" not in os.environ:
+    if not os.environ.get("SQS_QUEUE_URLS"):
         return
 
     sqs_queue_urls = os.environ["SQS_QUEUE_URLS"].split(",")
