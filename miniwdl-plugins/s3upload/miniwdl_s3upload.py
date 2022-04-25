@@ -242,6 +242,9 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
+    # write to outputs.s3.json
+    fn = os.path.join(run_dir, "outputs.s3.json")
+
     # rewrite uploaded files to their S3 URIs
     def rewriter(fd):
         try:
@@ -261,8 +264,6 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     # get json dict of rewritten outputs
     outputs_s3_json = WDL.values_to_json(outputs_s3, namespace=namespace)
 
-    # write to outputs.s3.json
-    fn = os.path.join(run_dir, "outputs.s3.json")
     with open(fn, "w") as outfile:
         json.dump(outputs_s3_json, outfile, indent=2)
         outfile.write("\n")
