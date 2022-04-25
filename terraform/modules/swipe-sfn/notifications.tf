@@ -26,9 +26,9 @@ resource "aws_cloudwatch_event_rule" "sfn_state_change_rule" {
 resource "aws_cloudwatch_event_target" "sfn_state_change_rule_target" {
   count = local.enable_notifications ? 1 : 0
 
-  rule      = aws_cloudwatch_event_rule.sfn_state_change_rule.name
+  rule      = aws_cloudwatch_event_rule.sfn_state_change_rule[0].name
   target_id = "SendToSNS"
-  arn       = aws_sns_topic.sfn_notifications_topic.arn
+  arn       = aws_sns_topic.sfn_notifications_topic[0].arn
 }
 
 resource "aws_sns_topic" "sfn_notifications_topic" {
@@ -64,7 +64,7 @@ data "aws_iam_policy_document" "sfn_notifications_topic_policy_document" {
 resource "aws_sns_topic_subscription" "sfn_notifications_sqs_target" {
   for_each = var.sqs_queues
 
-  topic_arn = aws_sns_topic.sfn_notifications_topic.arn
+  topic_arn = aws_sns_topic.sfn_notifications_topic[0].arn
   protocol  = "sqs"
   endpoint  = aws_sqs_queue.sfn_notifications_queue[each.key].arn
 }
@@ -112,7 +112,7 @@ data "aws_iam_policy_document" "sfn_notifications_queue_policy_document" {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
 
-      values = [aws_sns_topic.sfn_notifications_topic.arn]
+      values = [aws_sns_topic.sfn_notifications_topic[0].arn]
     }
   }
 }
