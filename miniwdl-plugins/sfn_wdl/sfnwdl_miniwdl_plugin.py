@@ -28,7 +28,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
             task,
             run_id,
             s3_wd_uri,
-            {"status": "running", "start_time": time.time()},
+            {"status": "running", "start_time": str(time.time())},
         )
 
     # First yield point -- through which we'll get the task inputs. Also, the 'task' object is a
@@ -103,7 +103,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                     status = dict(status="user_errored")
                 if "step_description_md" in last_stderr_json:
                     status.update(description=last_stderr_json["step_description_md"])
-            status.update(error=msg, end_time=time.time())
+            status.update(error=msg, end_time=str(time.time()))
             update_status_json(logger, task, run_id, s3_wd_uri, status)
         raise
 
