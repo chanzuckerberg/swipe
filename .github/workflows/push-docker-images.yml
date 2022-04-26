@@ -25,7 +25,7 @@ jobs:
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          echo IMAGE_ID=$IMAGE_ID
+          echo $IMAGE_ID:$VERSION
           docker tag ${{ github.repository }} $IMAGE_ID:latest
           docker tag ${{ github.repository }} $IMAGE_ID:$SHA_TAG
           docker tag ${{ github.repository }} $IMAGE_ID:$VERSION
