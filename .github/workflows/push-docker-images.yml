@@ -29,6 +29,5 @@ jobs:
           docker tag ${{ github.repository }} $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$latest
           docker push $IMAGE_ID:$SHA_TAG
-          docker push $IMAGE_ID:$VERSION
       - name: Checkout
         uses: actions/checkout@v2
