@@ -20,6 +20,7 @@ jobs:
           IMAGE_ID=ghcr.io/${{ github.repository }}
           VERSION=$(cat version)
           SHA_TAG=sha-${GITHUB_SHA:0:8}
+          set -x
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
