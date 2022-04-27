@@ -13,6 +13,16 @@ States:
         Input.$: $
     OutputPath: $.Payload
     Next: RunSPOT
+  SpotChoice:
+    Type: Choice
+    Choices:
+      - And:
+          - Variable: "$.DoNotInterrupt"
+            IsPresent: true
+          - Variable: "$.DoNotInterrupt"
+            BooleanEquals: true
+        Next: RunEC2
+    Default: RunSPOT
   RunSPOT:
     Type: Task
     Resource: arn:aws:states:::batch:submitJob.sync
