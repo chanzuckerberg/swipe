@@ -12,7 +12,7 @@ States:
         CurrentState.$: $$.State.Name
         Input.$: $
     OutputPath: $.Payload
-    Next: RunSPOT
+    Next: SpotChoice
   SpotChoice:
     Type: Choice
     Choices:
