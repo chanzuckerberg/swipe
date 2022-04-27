@@ -7,7 +7,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from botocore import xform_name
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError  # type: ignore
 
 from . import s3_object, sqs
 
