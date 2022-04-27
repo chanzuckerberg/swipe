@@ -258,7 +258,7 @@ class TestSFNWDL(unittest.TestCase):
         arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
         errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
                      [-1]["executionFailedEventDetails"]["error"])
-        self.assertEqual(errorType, "UncaughtError")
+        self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
 
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"

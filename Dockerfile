@@ -51,12 +51,6 @@ RUN cd /tmp && \
     git reset --hard FETCH_HEAD && \
     pip3 install .
 
-# TODO: switch to proper release
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/7ecbe9f8ec5a3e2dc420b0a33b4510b57f96461f.zip#subdirectory=s3upload
-# Install sfn-wdl plugin *without* docker networks & passthrough var support.
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/7ecbe9f8ec5a3e2dc420b0a33b4510b57f96461f.zip#subdirectory=sfn-wdl
-RUN pip3 install https://github.com/chanzuckerberg/miniwdl-plugins/archive/7ecbe9f8ec5a3e2dc420b0a33b4510b57f96461f.zip#subdirectory=s3parcp_download
-
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.1/s3parcp_1.0.1_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
 ADD https://raw.githubusercontent.com/chanzuckerberg/miniwdl/v${MINIWDL_VERSION}/examples/clean_download_cache.sh /usr/local/bin
@@ -66,6 +60,12 @@ RUN chmod +x /usr/local/bin/clean_download_cache.sh
 # docker.io is the largest package at 250MB+ / half of all package disk space usage.
 # The docker daemons never run inside the container - removing them saves 150MB+
 RUN rm -f /usr/bin/dockerd /usr/bin/containerd*
+
+ADD miniwdl-plugins miniwdl-plugins
+
+RUN pip install miniwdl-plugins/s3upload
+RUN pip install miniwdl-plugins/sfn_wdl
+RUN pip install miniwdl-plugins/s3parcp_download
 
 RUN cd /usr/bin; curl -O https://amazon-ecr-credential-helper-releases.s3.amazonaws.com/0.4.0/linux-amd64/docker-credential-ecr-login
 RUN chmod +x /usr/bin/docker-credential-ecr-login
