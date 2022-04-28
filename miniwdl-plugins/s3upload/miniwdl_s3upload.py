@@ -228,6 +228,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     # ignore inputs
     recv = yield recv
 
+    logger.info(_("before call ------"))
     if cfg.has_option("s3_progressive_upload", "uri_prefix"):
         # write outputs.s3.json using _uploaded_files
         write_outputs_s3_json(
