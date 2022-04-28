@@ -168,6 +168,7 @@ test_input = """hello
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
+        self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
         self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
@@ -346,7 +347,7 @@ class TestSFNWDL(unittest.TestCase):
         )
         self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt").delete()
 
-        objects = self.s3.list_objects_v2(
+        objects = self.s3_client.list_objects_v2(
           Bucket=self.test_bucket,
           Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
         )["Contents"]
