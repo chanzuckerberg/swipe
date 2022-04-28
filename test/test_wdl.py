@@ -27,7 +27,6 @@ workflow swipe_test {
   }
 
   output {
-    File out = add_world.out
     File out_goodbye = add_goodbye.out_goodbye
   }
 }
