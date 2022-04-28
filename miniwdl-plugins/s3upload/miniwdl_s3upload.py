@@ -238,7 +238,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
             workflow.name,
         )
 
-    # HACK: Because of the way that call caching works a step is call cached it's outputs
+    # HACK: Because of the way that call caching works if a step is call cached its outputs
     #   will be s3 paths. This is fine for inputs to other steps because the downloader
     #   will download them but for the last step of the pipeline, it tries to link
     #   the s3 paths if they are outputs to the global pipeline and this results
