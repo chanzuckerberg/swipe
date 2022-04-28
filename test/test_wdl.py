@@ -228,9 +228,7 @@ class TestSFNWDL(unittest.TestCase):
         print("printing execution history", file=sys.stderr)
 
         seen_events = set()
-        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x.get("id")):
-            if "id" not in event:
-                continue
+        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x["id"]):
             if event["id"] not in seen_events:
                 details = {}
                 for key in event.keys():
@@ -258,8 +256,8 @@ class TestSFNWDL(unittest.TestCase):
                             logGroupName=log_group_name,
                             logStreamName=job_desc["container"]["logStreamName"]
                         )
-                        for event in response["events"]:
-                            print(event["message"], file=sys.stderr)
+                        for log_event in response["events"]:
+                            print(log_event["message"], file=sys.stderr)
                 seen_events.add(event["id"])
 
         resp = self.sqs.receive_message(
