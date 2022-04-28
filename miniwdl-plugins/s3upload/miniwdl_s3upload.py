@@ -239,8 +239,6 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
             workflow.name,
         )
 
-    yield recv
-
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     # write to outputs.s3.json

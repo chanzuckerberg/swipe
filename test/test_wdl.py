@@ -399,7 +399,7 @@ class TestSFNWDL(unittest.TestCase):
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        assert output_text == "cache_break\ngoodbye", output_text
+        assert output_text == "cache_break\ngoodbye\n", output_text
 
 
 if __name__ == "__main__":
