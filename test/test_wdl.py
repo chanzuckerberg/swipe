@@ -169,6 +169,8 @@ class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
         self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
+        self.batch = boto3.client("s3", endpoint_url="http://localhost:9000")
+        self.logs = boto3.client("logs", endpoint_url="http://localhost:9000")
         self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
@@ -224,8 +226,42 @@ class TestSFNWDL(unittest.TestCase):
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
         print("printing execution history", file=sys.stderr)
-        for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
+        for event in ["events"]:
             print(event, file=sys.stderr)
+
+        seen_events = set()
+        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x["id"]):
+            if event["id"] not in seen_events:
+                details = {}
+                for key in event.keys():
+                    if key.endswith("EventDetails") and event[key]:
+                        details = event[key]
+                print(
+                    event["timestamp"],
+                    event["type"],
+                    details.get("resourceType", ""),
+                    details.get("resource", ""),
+                    details.get("name", ""),
+                    json.loads(details.get("parameters", "{}")).get("FunctionName", ""),
+                    file=sys.stderr,
+                  )
+                if "taskSubmittedEventDetails" in event:
+                    if event.get("taskSubmittedEventDetails", {}).get("resourceType") == "batch":
+                        job_id = json.loads(event["taskSubmittedEventDetails"]["output"])["JobId"]
+                        print(f"Batch job ID {job_id}", file=sys.stder)
+                        job_desc = self.batch.describe_jobs(jobs=[job_id])["jobs"][0]
+                        try:
+                            log_group_name = job_desc["container"]["logConfiguration"]["options"]["awslogs-group"]
+                        except KeyError:
+                            log_group_name = "/aws/batch/job"
+                        for attempt in job_desc["attempts"]:
+                            response = self.logs.get_log_events(
+                                logGroupName=log_group_name,
+                                logStreamName=attempt["container"]["logStreamName"]
+                            )
+                            for event in response["events"]:
+                                print(event["message"], file=sys.stderr)
+                seen_events.add(event["id"])
 
         resp = self.sqs.receive_message(
             QueueUrl=self.state_change_queue_url,
