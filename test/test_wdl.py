@@ -383,9 +383,15 @@ class TestSFNWDL(unittest.TestCase):
         )
         self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt").delete()
 
+        # clear cache to simulate getting cut off the step before this one
         objects = self.s3_client.list_objects_v2(
           Bucket=self.test_bucket.name,
           Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
+        )["Contents"]
+        self.test_bucket.Object(objects[0]["Key"]).delete()
+        objects = self.s3_client.list_objects_v2(
+          Bucket=self.test_bucket.name,
+          Prefix=f"{output_prefix}/test-1/cache/swipe_test/",
         )["Contents"]
         self.test_bucket.Object(objects[0]["Key"]).delete()
         self.test_bucket.Object(f"{output_prefix}/test-1/run_output.json").delete()
