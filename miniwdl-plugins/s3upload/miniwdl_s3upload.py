@@ -258,6 +258,8 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
             )
             return fn
 
+    logger.info(_("start write_outputs_s3_json"))
+
     with _uploaded_files_lock:
         outputs_s3 = WDL.Value.rewrite_env_paths(outputs, rewriter)
 
