@@ -20,7 +20,7 @@ workflow swipe_test {
       docker_image_id = docker_image_id
   }
 
-  call out_goodbye {
+  call add_goodbye {
     input:
       hello_world = add_world.out,
       docker_image_id = docker_image_id
