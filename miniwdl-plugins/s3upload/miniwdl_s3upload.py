@@ -238,6 +238,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
             os.path.join(get_s3_put_prefix(cfg), *run_id[1:]),
             workflow.name,
         )
+    exit(0)
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
