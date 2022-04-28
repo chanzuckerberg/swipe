@@ -121,11 +121,11 @@ class CallCache(cache.CallCache):
         uri = urlparse(get_s3_get_prefix(self._cfg))
         bucket, prefix = uri.hostname, uri.path
 
-        key = os.path.join(prefix, "cache", f"{key}.json")[1:]
+        s3_key = os.path.join(prefix, "cache", f"{key}.json")[1:]
         abs_fn = os.path.join(self._cfg["call_cache"]["dir"], f"{key}.json")
         Path(abs_fn).parent.mkdir(parents=True, exist_ok=True)
         try:
-            s3_client.download_file(bucket, key, abs_fn)
+            s3_client.download_file(bucket, s3_key, abs_fn)
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] != "404":
                 raise e

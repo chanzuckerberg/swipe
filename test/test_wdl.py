@@ -20,8 +20,15 @@ workflow swipe_test {
       docker_image_id = docker_image_id
   }
 
+  call out_goodbye {
+    input:
+      hello_world = add_world.out,
+      docker_image_id = docker_image_id
+  }
+
   output {
     File out = add_world.out
+    File out_goodbye = out_goodbye.out_goodbye
   }
 }
 
@@ -38,6 +45,26 @@ task add_world {
 
   output {
     File out = "out.txt"
+  }
+
+  runtime {
+      docker: docker_image_id
+  }
+}
+
+task add_goodbye {
+  input {
+    File hello_world
+    String docker_image_id
+  }
+
+  command <<<
+    cat ~{hello_world} > out_goodbye.txt
+    echo goodbye >> out_goodbye.txt
+  >>>
+
+  output {
+    File out_goodbye = "out_goodbye.txt"
   }
 
   runtime {
@@ -296,7 +323,7 @@ class TestSFNWDL(unittest.TestCase):
     def test_call_cache(self):
         output_prefix = "out-3"
         sfn_input: Dict[str, Any] = {
-            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
+            "RUN_WDL_URI": f"s3://{self.wdl_two_obj.bucket_name}/{self.wdl_two_obj.key}",
             "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
             "Input": {
                 "Run": {
@@ -319,9 +346,9 @@ class TestSFNWDL(unittest.TestCase):
         )
         self._wait_sfn(sfn_input, self.single_sfn_arn)
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        assert output_text == "cache_break\n", output_text
+        assert output_text == "cache_break\ngoodbye", output_text
 
 
 if __name__ == "__main__":
