@@ -349,7 +349,7 @@ class TestSFNWDL(unittest.TestCase):
 
         objects = self.s3_client.list_objects_v2(
           Bucket=self.test_bucket.name,
-          Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
+          Prefix=f"{output_prefix}/test-1/cache/add_goodabye/",
         )["Contents"]
         self.test_bucket.Object(objects[0]["Key"]).delete()
 
