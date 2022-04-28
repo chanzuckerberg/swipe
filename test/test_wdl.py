@@ -323,7 +323,7 @@ class TestSFNWDL(unittest.TestCase):
     def test_call_cache(self):
         output_prefix = "out-3"
         sfn_input: Dict[str, Any] = {
-            "RUN_WDL_URI": f"s3://{self.test_wdl.bucket_name}/{self.test_wdl.key}",
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
             "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
             "Input": {
                 "Run": {
