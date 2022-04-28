@@ -240,6 +240,7 @@ class TestSFNWDL(unittest.TestCase):
             self.assertEqual(description["status"], "FAILED", description)
         return arn, description, messages
 
+    @unittest.skip("temp")
     def test_simple_sfn_wdl_workflow(self):
         output_prefix = "out-1"
         sfn_input: Dict[str, Any] = {
@@ -270,6 +271,7 @@ class TestSFNWDL(unittest.TestCase):
             json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
         )
 
+    @unittest.skip("temp")
     def test_failing_wdl_workflow(self):
         output_prefix = "out-fail-1"
         sfn_input: Dict[str, Any] = {
@@ -288,6 +290,7 @@ class TestSFNWDL(unittest.TestCase):
                      [-1]["executionFailedEventDetails"]["error"])
         self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
 
+    @unittest.skip("temp")
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"
         sfn_input: Dict[str, Any] = {
