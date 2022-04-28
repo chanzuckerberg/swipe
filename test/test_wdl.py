@@ -252,13 +252,12 @@ class TestSFNWDL(unittest.TestCase):
                             log_group_name = job_desc["container"]["logConfiguration"]["options"]["awslogs-group"]
                         except KeyError:
                             log_group_name = "/aws/batch/job"
-                        for attempt in job_desc["attempts"]:
-                            response = self.logs.get_log_events(
-                                logGroupName=log_group_name,
-                                logStreamName=attempt["container"]["logStreamName"]
-                            )
-                            for event in response["events"]:
-                                print(event["message"], file=sys.stderr)
+                        response = self.logs.get_log_events(
+                            logGroupName=log_group_name,
+                            logStreamName=job_desc["container"]["logStreamName"]
+                        )
+                        for event in response["events"]:
+                            print(event["message"], file=sys.stderr)
                 seen_events.add(event["id"])
 
         resp = self.sqs.receive_message(
