@@ -226,8 +226,6 @@ class TestSFNWDL(unittest.TestCase):
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
         print("printing execution history", file=sys.stderr)
-        for event in ["events"]:
-            print(event, file=sys.stderr)
 
         seen_events = set()
         for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x["id"]):
@@ -248,7 +246,7 @@ class TestSFNWDL(unittest.TestCase):
                 if "taskSubmittedEventDetails" in event:
                     if event.get("taskSubmittedEventDetails", {}).get("resourceType") == "batch":
                         job_id = json.loads(event["taskSubmittedEventDetails"]["output"])["JobId"]
-                        print(f"Batch job ID {job_id}", file=sys.stder)
+                        print(f"Batch job ID {job_id}", file=sys.stderr)
                         job_desc = self.batch.describe_jobs(jobs=[job_id])["jobs"][0]
                         try:
                             log_group_name = job_desc["container"]["logConfiguration"]["options"]["awslogs-group"]
