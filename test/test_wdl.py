@@ -228,7 +228,9 @@ class TestSFNWDL(unittest.TestCase):
         print("printing execution history", file=sys.stderr)
 
         seen_events = set()
-        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x["id"]):
+        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x.get("id")):
+            if "id" not in event:
+                continue
             if event["id"] not in seen_events:
                 details = {}
                 for key in event.keys():
