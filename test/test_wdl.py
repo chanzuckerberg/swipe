@@ -169,7 +169,7 @@ class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
         self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
-        self.batch = boto3.client("s3", endpoint_url="http://localhost:9000")
+        self.batch = boto3.client("batch", endpoint_url="http://localhost:9000")
         self.logs = boto3.client("logs", endpoint_url="http://localhost:9000")
         self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
