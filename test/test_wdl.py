@@ -255,10 +255,10 @@ class TestSFNWDL(unittest.TestCase):
         arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         output = json.loads(description["output"])
-        output_path = (
-            f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt"
-        )
-        self.assertEqual(output["Result"], {"swipe_test.out": output_path})
+        self.assertEqual(output["Result"], {
+          "swipe_test.out": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt",
+          "swipe_test.out_goodbye": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_goodbye.txt",
+        })
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
