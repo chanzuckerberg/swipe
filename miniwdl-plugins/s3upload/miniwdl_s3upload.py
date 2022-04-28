@@ -266,23 +266,16 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
             )
             return fn
 
-    logger.info(_("start write_outputs_s3_json"))
-
     with _uploaded_files_lock:
         outputs_s3 = WDL.Value.rewrite_env_paths(outputs, rewriter)
 
-    logger.info(_("rewrote outputs_s3"))
-
     # get json dict of rewritten outputs
     outputs_s3_json = WDL.values_to_json(outputs_s3, namespace=namespace)
-
-    logger.info(_("rewrote outputs_s3_json"))
 
     with open(fn, "w") as outfile:
         json.dump(outputs_s3_json, outfile, indent=2)
         outfile.write("\n")
 
-    logger.info(_("json dumps"))
     s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
 
 
