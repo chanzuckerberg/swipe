@@ -121,11 +121,11 @@ class CallCache(cache.CallCache):
         uri = urlparse(get_s3_get_prefix(self._cfg))
         bucket, prefix = uri.hostname, uri.path
 
-        key = os.path.join(prefix, "cache", f"{key}.json")[1:]
+        s3_key = os.path.join(prefix, "cache", f"{key}.json")[1:]
         abs_fn = os.path.join(self._cfg["call_cache"]["dir"], f"{key}.json")
         Path(abs_fn).parent.mkdir(parents=True, exist_ok=True)
         try:
-            s3_client.download_file(bucket, key, abs_fn)
+            s3_client.download_file(bucket, s3_key, abs_fn)
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] != "404":
                 raise e
@@ -238,7 +238,15 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
             workflow.name,
         )
 
-    yield recv
+    # HACK: Because of the way that call caching works if a step is call cached its outputs
+    #   will be s3 paths. This is fine for inputs to other steps because the downloader
+    #   will download them but for the last step of the pipeline, it tries to link
+    #   the s3 paths if they are outputs to the global pipeline and this results
+    #   in file not found errors. Technically for swipe we don't need linking
+    #   and our whole system works if we just stop here. Once we solve the linking
+    #   problem a bit better we may want to revisit this and return this to:
+    #   yield recv
+    exit(0)
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
@@ -267,6 +275,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     with open(fn, "w") as outfile:
         json.dump(outputs_s3_json, outfile, indent=2)
         outfile.write("\n")
+
     s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
 
 

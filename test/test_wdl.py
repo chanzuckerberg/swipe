@@ -20,8 +20,15 @@ workflow swipe_test {
       docker_image_id = docker_image_id
   }
 
+  call add_goodbye {
+    input:
+      hello_world = add_world.out,
+      docker_image_id = docker_image_id
+  }
+
   output {
     File out = add_world.out
+    File out_goodbye = add_goodbye.out_goodbye
   }
 }
 
@@ -38,6 +45,26 @@ task add_world {
 
   output {
     File out = "out.txt"
+  }
+
+  runtime {
+      docker: docker_image_id
+  }
+}
+
+task add_goodbye {
+  input {
+    File hello_world
+    String docker_image_id
+  }
+
+  command <<<
+    cat ~{hello_world} > out_goodbye.txt
+    echo goodbye >> out_goodbye.txt
+  >>>
+
+  output {
+    File out_goodbye = "out_goodbye.txt"
   }
 
   runtime {
@@ -141,6 +168,9 @@ test_input = """hello
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
+        self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
+        self.batch = boto3.client("batch", endpoint_url="http://localhost:9000")
+        self.logs = boto3.client("logs", endpoint_url="http://localhost:9000")
         self.sfn = boto3.client("stepfunctions", endpoint_url="http://localhost:8083")
         self.test_bucket = self.s3.create_bucket(Bucket="swipe-test")
         self.lamb = boto3.client("lambda", endpoint_url="http://localhost:9000")
@@ -196,8 +226,39 @@ class TestSFNWDL(unittest.TestCase):
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
         print("printing execution history", file=sys.stderr)
-        for event in self.sfn.get_execution_history(executionArn=arn)["events"]:
-            print(event, file=sys.stderr)
+
+        seen_events = set()
+        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x["id"]):
+            if event["id"] not in seen_events:
+                details = {}
+                for key in event.keys():
+                    if key.endswith("EventDetails") and event[key]:
+                        details = event[key]
+                print(
+                    event["timestamp"],
+                    event["type"],
+                    details.get("resourceType", ""),
+                    details.get("resource", ""),
+                    details.get("name", ""),
+                    json.loads(details.get("parameters", "{}")).get("FunctionName", ""),
+                    file=sys.stderr,
+                  )
+                if "taskSubmittedEventDetails" in event:
+                    if event.get("taskSubmittedEventDetails", {}).get("resourceType") == "batch":
+                        job_id = json.loads(event["taskSubmittedEventDetails"]["output"])["JobId"]
+                        print(f"Batch job ID {job_id}", file=sys.stderr)
+                        job_desc = self.batch.describe_jobs(jobs=[job_id])["jobs"][0]
+                        try:
+                            log_group_name = job_desc["container"]["logConfiguration"]["options"]["awslogs-group"]
+                        except KeyError:
+                            log_group_name = "/aws/batch/job"
+                        response = self.logs.get_log_events(
+                            logGroupName=log_group_name,
+                            logStreamName=job_desc["container"]["logStreamName"]
+                        )
+                        for log_event in response["events"]:
+                            print(log_event["message"], file=sys.stderr)
+                seen_events.add(event["id"])
 
         resp = self.sqs.receive_message(
             QueueUrl=self.state_change_queue_url,
@@ -228,10 +289,10 @@ class TestSFNWDL(unittest.TestCase):
         arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         output = json.loads(description["output"])
-        output_path = (
-            f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt"
-        )
-        self.assertEqual(output["Result"], {"swipe_test.out": output_path})
+        self.assertEqual(output["Result"], {
+          "swipe_test.out": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt",
+          "swipe_test.out_goodbye": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_goodbye.txt",
+        })
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
@@ -317,11 +378,21 @@ class TestSFNWDL(unittest.TestCase):
         self.test_bucket.Object(f"{output_prefix}/test-1/out.txt").put(
             Body="cache_break\n".encode()
         )
+        self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt").delete()
+
+        # clear cache to simulate getting cut off the step before this one
+        objects = self.s3_client.list_objects_v2(
+          Bucket=self.test_bucket.name,
+          Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
+        )["Contents"]
+        self.test_bucket.Object(objects[0]["Key"]).delete()
+        self.test_bucket.Object(f"{output_prefix}/test-1/run_output.json").delete()
+
         self._wait_sfn(sfn_input, self.single_sfn_arn)
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        assert output_text == "cache_break\n", output_text
+        assert output_text == "cache_break\ngoodbye\n", output_text
 
 
 if __name__ == "__main__":
