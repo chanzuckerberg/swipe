@@ -346,6 +346,12 @@ class TestSFNWDL(unittest.TestCase):
         )
         self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt").delete()
 
+        objects = self.s3.list_objects_v2(
+          Bucket=self.test_bucket,
+          Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
+        )["Contents"]
+        self.test_bucket.Object(objects[0]["Key"]).delete()
+
         self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
