@@ -7,6 +7,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from botocore import xform_name
+from botocore.exceptions import ClientError  # type: ignore
 
 from . import s3_object, sqs
 
@@ -33,7 +34,13 @@ def put_stage_input(sfn_state, stage, stage_input):
 
 def get_stage_output(sfn_state, stage):
     output_uri = sfn_state[get_output_uri_key(stage)]
-    return json.loads(s3_object(output_uri).get()["Body"].read().decode().strip() or '{}')
+    try:
+        return json.loads(s3_object(output_uri).get()["Body"].read().decode().strip() or '{}')
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "NoSuchKey":
+            return {}
+        else:
+            raise e
 
 
 def read_state_from_s3(sfn_state, current_state):
