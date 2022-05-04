@@ -81,7 +81,7 @@ variable "on_demand_max_vcpus" {
 variable "sfn_template_files" {
   description = "A map of names to YAML AWS Step Function State Machine Definition Templates. Useful for multi-stage workflows or custom compute environments, see documentation on multi-stage workflows for more information"
   type = map(object({
-    path               = string
+    path                = string
     extra_template_vars = map(string)
   }))
 
