@@ -8,12 +8,14 @@ variable "app_name" {
 variable "aws_endpoint_url" {
   type        = string
   description = "Override the AWS endpoint URL used by lambda functions"
-  default     = null
 }
 
 variable "sfn_template_files" {
-  description = "A map of names to YAML AWS Step Function State Machine Definition Templates. To be used with multi-stage workflows, see documentation on multi-stage workflows for more information"
-  type        = map(string)
+  description = "A map of names to YAML AWS Step Function State Machine Definition Templates. Useful for multi-stage workflows or custom compute environments, see documentation on multi-stage workflows for more information"
+  type = map(object({
+    path               = string
+    exta_template_vars = map(string)
+  }))
 }
 
 variable "job_policy_arns" {
@@ -71,7 +73,6 @@ variable "tags" {
 variable "docker_network" {
   description = "If miniwdl's task containers should be attached to a specific docker network, set the network name here"
   type        = string
-  default     = ""
 }
 
 // Module Specific
