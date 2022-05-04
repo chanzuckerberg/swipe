@@ -79,6 +79,6 @@ resource "aws_sfn_state_machine" "swipe_single_wdl" {
     process_stage_output_lambda_name = module.sfn_io_helper.process_stage_output_lambda_name,
     handle_success_lambda_name       = module.sfn_io_helper.handle_success_lambda_name,
     handle_failure_lambda_name       = module.sfn_io_helper.handle_failure_lambda_name,
-  }, var.template_vars))))
+  }, each.value.extra_template_vars))))
   tags = var.tags
 }

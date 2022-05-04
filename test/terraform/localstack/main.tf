@@ -22,8 +22,8 @@ module "swipetest" {
   }
   sfn_template_files = {
     "stage-test" : {
-      path               = "../../stage-test.yml"
-      exta_template_vars = {}
+      path                = "../../stage-test.yml"
+      extra_template_vars = {}
     }
   }
   stage_memory_defaults = {
