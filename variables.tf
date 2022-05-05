@@ -93,10 +93,10 @@ variable "job_policy_arns" {
   default     = []
 }
 
-variable "workspace_s3_prefix" {
-  description = "S3 prefix where input, output, and log files will be stored, read and write permissions will be granted for this prefix"
-  type        = string
-  default     = ""
+variable "workspace_s3_prefixes" {
+  description = "S3 prefixes where input, output, and log files will be stored, read and write permissions will be granted for this prefix"
+  type        = list(string)
+  default     = []
 }
 
 variable "wdl_workflow_s3_prefix" {
