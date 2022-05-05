@@ -21,7 +21,10 @@ module "swipetest" {
     "notifications" : { "dead_letter" : false }
   }
   sfn_template_files = {
-    "stage-test" : "../../stage-test.yml"
+    "stage-test" : {
+      path                = "../../stage-test.yml"
+      extra_template_vars = {}
+    }
   }
   stage_memory_defaults = {
     "Run" : { "spot" : 12800, "on_demand" : 256000 },
