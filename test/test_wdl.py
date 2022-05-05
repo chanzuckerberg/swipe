@@ -394,7 +394,7 @@ class TestSFNWDL(unittest.TestCase):
 
         outputs = json.loads(self.test_bucket.Object(out_json_path).get()["Body"].read().decode())
         for v in outputs.values():
-            assert v.startswith("s3://")
+            assert v.startswith("s3://"), f"{v} does not start with 's3://'"
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
