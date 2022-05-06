@@ -31,4 +31,6 @@ module "swipetest" {
     "One" : { "spot" : 12800, "on_demand" : 256000 },
     "Two" : { "spot" : 12800, "on_demand" : 256000 },
   }
+
+  workspace_s3_prefixes = ["swipe-test"]
 }
