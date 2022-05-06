@@ -246,7 +246,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     #   and our whole system works if we just stop here. Once we solve the linking
     #   problem a bit better we may want to revisit this and return this to:
     #   yield recv
-    exit(0)
+    #  exit(0)
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
