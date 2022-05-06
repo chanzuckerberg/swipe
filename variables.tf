@@ -98,7 +98,7 @@ variable "workspace_s3_prefixes" {
   type        = list(string)
   validation {
     condition     = length(var.workspace_s3_prefixes) > 0
-    error_message = "At least one workspace_s3_prefix is required"
+    error_message = "At least one workspace_s3_prefix is required."
   }
 }
 
