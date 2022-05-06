@@ -247,6 +247,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     #   problem a bit better we may want to revisit this and return this to:
     #   yield recv
     #  exit(0)
+    yield recv
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
