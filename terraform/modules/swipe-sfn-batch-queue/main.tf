@@ -68,8 +68,13 @@ resource "aws_launch_template" "swipe_batch_main" {
   # not recognize this change. We bind the launch template name to user data contents here, so any changes to user data
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
   name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
-  user_data = base64encode(local.launch_template_user_data)
   tags      = var.tags
+  user_data = base64encode(concat(var.user-data-parts,
+      {
+        filename = local.launch_template_user_data_file,
+        content_type = "multipart/mixed",
+        content = file(local.launch_template_user_data_file)
+      }))
 
   metadata_options {
     http_endpoint               = "enabled"

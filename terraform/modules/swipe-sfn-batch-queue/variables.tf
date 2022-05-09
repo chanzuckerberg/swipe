@@ -78,3 +78,11 @@ variable "imdsv2_policy" {
   type        = string
   default     = "optional"
 }
+
+variable "user-data-parts" {
+  type = list(object({
+    filename     = string
+    content_type = string
+    content      = string
+  }))
+}
