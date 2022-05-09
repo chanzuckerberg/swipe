@@ -229,6 +229,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     recv = yield recv
 
     if cfg.has_option("s3_progressive_upload", "uri_prefix"):
+        logger.info(_("uploading outputs json", path=os.path.join(get_s3_put_prefix(cfg), *run_id[1:])))
         # write outputs.s3.json using _uploaded_files
         write_outputs_s3_json(
             logger,
@@ -251,6 +252,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
+    logger.info(_("writing outputs json", path=os.path.join(get_s3_put_prefix(cfg), *run_id[1:])))
     # write to outputs.s3.json
     fn = os.path.join(run_dir, "outputs.s3.json")
 
@@ -269,13 +271,16 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
 
     with _uploaded_files_lock:
         outputs_s3 = WDL.Value.rewrite_env_paths(outputs, rewriter)
+    logger.info(_("rewrote outputs json", path=os.path.join(get_s3_put_prefix(cfg), *run_id[1:])))
 
     # get json dict of rewritten outputs
     outputs_s3_json = WDL.values_to_json(outputs_s3, namespace=namespace)
+    logger.info(_("built outputs json", path=os.path.join(get_s3_put_prefix(cfg), *run_id[1:])))
 
     with open(fn, "w") as outfile:
         json.dump(outputs_s3_json, outfile, indent=2)
         outfile.write("\n")
+    logger.info(_("wrote outputs json to disk", path=os.path.join(get_s3_put_prefix(cfg), *run_id[1:])))
 
     s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
 
