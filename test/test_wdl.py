@@ -391,6 +391,11 @@ class TestSFNWDL(unittest.TestCase):
           Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
         )["Contents"]
         self.test_bucket.Object(objects[0]["Key"]).delete()
+        objects = self.s3_client.list_objects_v2(
+          Bucket=self.test_bucket.name,
+          Prefix=f"{output_prefix}/test-1/cache/swipe_test/",
+        )["Contents"]
+        self.test_bucket.Object(objects[0]["Key"]).delete()
         self.test_bucket.Object(out_json_path).delete()
 
         self._wait_sfn(sfn_input, self.single_sfn_arn)
