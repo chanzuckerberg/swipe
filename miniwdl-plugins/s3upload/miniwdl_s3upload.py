@@ -81,6 +81,8 @@ def flag_temporary(s3uri):
 
 
 def inode(link: str):
+    if link.startswith("s3://"):
+        return link
     st = os.stat(os.path.realpath(link))
     return (st.st_dev, st.st_ino)
 
@@ -247,6 +249,9 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
 
     # rewrite uploaded files to their S3 URIs
     def rewriter(fd):
+        if fd.value.startswith("s3://"):
+            return fd.value
+
         try:
             return _uploaded_files[inode(fd.value)]
         except Exception:
