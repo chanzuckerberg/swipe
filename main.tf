@@ -53,7 +53,7 @@ module "sfn" {
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
   miniwdl_dir                   = var.miniwdl_dir
   docker_network                = var.docker_network
-  workspace_s3_prefix           = var.workspace_s3_prefix
+  workspace_s3_prefixes         = var.workspace_s3_prefixes
   aws_endpoint_url              = var.aws_endpoint_url
   wdl_workflow_s3_prefix        = var.wdl_workflow_s3_prefix
   job_policy_arns               = var.job_policy_arns

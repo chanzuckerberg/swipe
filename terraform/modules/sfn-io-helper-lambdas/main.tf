@@ -48,7 +48,7 @@ resource "aws_iam_role_policy" "iam_role_policy" {
 
   policy = jsonencode({
     Version : "2012-10-17",
-    Statement : concat(var.workspace_s3_prefix == "" && var.wdl_workflow_s3_prefix == "" ? [] : [
+    Statement : concat(length(var.workspace_s3_prefixes) == 0 && var.wdl_workflow_s3_prefix == "" ? [] : [
       {
         Effect : "Allow",
         Action : [
@@ -56,12 +56,13 @@ resource "aws_iam_role_policy" "iam_role_policy" {
           "s3:GetObject*",
           "s3:PutObject*"
         ],
-        Resource : compact([
+        Resource : concat(compact([
           var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
           var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
-          "arn:aws:s3:::${var.workspace_s3_prefix}",
-          "arn:aws:s3:::${var.workspace_s3_prefix}/*",
-        ]),
+          ]),
+          [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}"],
+          [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}/*"],
+        ),
         }], [{
         Effect : "Allow",
         Action : [

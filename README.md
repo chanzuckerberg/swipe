@@ -43,7 +43,7 @@ module "swipe" {
     source = "github.com/chanzuckerberg/swipe?ref=v0.7.0-beta"
 
     app_name               = "my-test-app"
-    workspace_s3_prefix    = aws_s3_bucket.workspace.bucket
+    workspace_s3_prefixes  = [aws_s3_bucket.workspace.bucket]
     wdl_workflow_s3_prefix = aws_s3_bucket.workspace.bucket
 }
 ```
