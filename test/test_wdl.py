@@ -219,7 +219,6 @@ class TestSFNWDL(unittest.TestCase):
             stateMachineArn=sfn_arn, name=execution_name, input=json.dumps(sfn_input)
         )
         arn = res["executionArn"]
-        assert res
         start = time.time()
         description = self.sfn.describe_execution(executionArn=arn)
         while description["status"] == "RUNNING" and time.time() < start + 2 * 60:
@@ -375,7 +374,7 @@ class TestSFNWDL(unittest.TestCase):
         )
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        assert output_text == "hello\nworld\n", output_text
+        self.assertEqual(output_text, "hello\nworld\n")
 
         self.test_bucket.Object(f"{output_prefix}/test-1/out.txt").put(
             Body="cache_break\n".encode()
@@ -399,11 +398,11 @@ class TestSFNWDL(unittest.TestCase):
 
         outputs = json.loads(self.test_bucket.Object(out_json_path).get()["Body"].read().decode())
         for v in outputs.values():
-            assert v.startswith("s3://"), f"{v} does not start with 's3://'"
+            self.assert_(v.startswith("s3://"), f"{v} does not start with 's3://'")
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        assert output_text == "cache_break\ngoodbye\n", output_text
+        self.assertEqual(output_text, "cache_break\ngoodbye\n")
 
 
 if __name__ == "__main__":
