@@ -238,7 +238,15 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
             workflow.name,
         )
 
-    yield recv
+    # HACK: Because of the way that call caching works if a step is call cached its outputs
+    #   will be s3 paths. This is fine for inputs to other steps because the downloader
+    #   will download them but for the last step of the pipeline, it tries to link
+    #   the s3 paths if they are outputs to the global pipeline and this results
+    #   in file not found errors. Technically for swipe we don't need linking
+    #   and our whole system works if we just stop here. Once we solve the linking
+    #   problem a bit better we may want to revisit this and return this to:
+    #   yield recv
+    exit(0)
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
