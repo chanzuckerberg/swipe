@@ -53,25 +53,27 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
           "s3:PutObject*",
           "s3:CreateMultipartUpload"
         ],
-        Resource : compact([
+        Resource : concat(compact([
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}/*",
           var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
           var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
-          var.workspace_s3_prefix != "" ? "arn:aws:s3:::${var.workspace_s3_prefix}" : "",
-          var.workspace_s3_prefix != "" ? "arn:aws:s3:::${var.workspace_s3_prefix}/*" : "",
-        ])
+          ]),
+          [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}"],
+          [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}/*"],
+        )
       },
       {
         Effect : "Allow",
         Action : [
           "s3:ListBucket",
         ],
-        Resource : compact([
+        Resource : concat(compact([
           "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
           var.wdl_workflow_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.wdl_workflow_s3_prefix)[0]) : "",
-          var.workspace_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.workspace_s3_prefix)[0]) : "",
-        ])
+          ]),
+          [for workspace_s3_prefix in var.workspace_s3_prefixes : format("arn:aws:s3:::%s", split("/", workspace_s3_prefix)[0])],
+        )
       },
       {
         Effect : "Allow",

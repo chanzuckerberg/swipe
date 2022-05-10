@@ -27,4 +27,17 @@ mount /dev/md0 MINIWDL_DIR
 
 cloud-init-per once docker_options echo '{"data-root": "MINIWDL_DIR/docker"}' >> /etc/docker/daemon.json
 
+##############################################
+# Set up a job to terminate the instance if it becomes full
+##############################################
+
+echo '#!/bin/bash' > /bin/space-check
+echo '[[ $(df MINIWDL_DIR --output=avail |tail -n1) -lt 1000000 ]] && poweroff; echo system terminated due to full drive >> /dev/stderr' >> /bin/space-check
+chmod +x /bin/space-check
+
+crontab -l > /tmp/mycron
+echo "* * * * * /bin/space-check" > /tmp/mycron
+crontab /tmp/mycron
+rm /tmp/mycron
+
 --==MYBOUNDARY==--
