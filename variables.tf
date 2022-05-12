@@ -183,4 +183,5 @@ variable "user_data_parts" {
     content_type = string
     content      = string
   }))
+  default        = []
 }
