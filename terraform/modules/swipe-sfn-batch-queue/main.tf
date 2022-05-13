@@ -1,24 +1,24 @@
 locals {
   launch_template_swipe_user_data_filename = "${path.module}/container_instance_user_data"
   launch_template_swipe_user_data          = replace(file(local.launch_template_swipe_user_data_filename), "MINIWDL_DIR", var.miniwdl_dir)
-  launch_template_swipe_user_data_parts    = [{
-    filename = local.launch_template_swipe_user_data_filename,
+  launch_template_swipe_user_data_parts = [{
+    filename     = local.launch_template_swipe_user_data_filename,
     content_type = "multipart/mixed",
-    content = local.launch_template_swipe_user_data
+    content      = local.launch_template_swipe_user_data
   }]
 
-  launch_template_all_user_data_parts      = concat(local.launch_template_swipe_user_data_parts, var.user_data_parts)
-  launch_template_user_data_hash           = md5(jsonencode(local.launch_template_all_user_data_parts))
+  launch_template_all_user_data_parts = concat(local.launch_template_swipe_user_data_parts, var.user_data_parts)
+  launch_template_user_data_hash      = md5(jsonencode(local.launch_template_all_user_data_parts))
 }
 
 data "template_cloudinit_config" "user_data_merge" {
   dynamic "part" {
     for_each = local.launch_template_all_user_data_parts
     content {
-      filename = part.value["filename"]
+      filename     = part.value["filename"]
       content_type = part.value["content_type"]
-      content = part.value["content"]
-      merge_type = "list(append)+dict(no_replace,recurse_list)"
+      content      = part.value["content"]
+      merge_type   = "list(append)+dict(no_replace,recurse_list)"
     }
   }
 }
