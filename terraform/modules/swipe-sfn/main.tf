@@ -37,7 +37,7 @@ module "batch_job" {
   batch_job_docker_image    = var.batch_job_docker_image
   batch_job_timeout_seconds = var.batch_job_timeout_seconds
   miniwdl_dir               = var.miniwdl_dir
-  workspace_s3_prefix       = var.workspace_s3_prefix
+  workspace_s3_prefixes     = var.workspace_s3_prefixes
   wdl_workflow_s3_prefix    = var.wdl_workflow_s3_prefix
   job_policy_arns           = var.job_policy_arns
   extra_env_vars            = var.extra_env_vars
@@ -53,7 +53,7 @@ module "sfn_io_helper" {
   aws_region                  = data.aws_region.current.name
   aws_account_id              = data.aws_caller_identity.current.account_id
   batch_queue_arns            = [var.batch_spot_job_queue_arn, var.batch_on_demand_job_queue_arn]
-  workspace_s3_prefix         = var.workspace_s3_prefix
+  workspace_s3_prefixes       = var.workspace_s3_prefixes
   wdl_workflow_s3_prefix      = var.wdl_workflow_s3_prefix
   stage_memory_defaults       = var.stage_memory_defaults
   stage_vcpu_defaults         = var.stage_vcpu_defaults
