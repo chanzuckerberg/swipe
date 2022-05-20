@@ -81,6 +81,8 @@ def flag_temporary(s3uri):
 
 
 def inode(link: str):
+    if link.startswith("s3://"):
+        return link
     st = os.stat(os.path.realpath(link))
     return (st.st_dev, st.st_ino)
 
@@ -238,15 +240,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
             workflow.name,
         )
 
-    # HACK: Because of the way that call caching works if a step is call cached its outputs
-    #   will be s3 paths. This is fine for inputs to other steps because the downloader
-    #   will download them but for the last step of the pipeline, it tries to link
-    #   the s3 paths if they are outputs to the global pipeline and this results
-    #   in file not found errors. Technically for swipe we don't need linking
-    #   and our whole system works if we just stop here. Once we solve the linking
-    #   problem a bit better we may want to revisit this and return this to:
-    #   yield recv
-    exit(0)
+    yield recv
 
 
 def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
@@ -255,6 +249,9 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
 
     # rewrite uploaded files to their S3 URIs
     def rewriter(fd):
+        if fd.value.startswith("s3://"):
+            return fd.value
+
         try:
             return _uploaded_files[inode(fd.value)]
         except Exception:
