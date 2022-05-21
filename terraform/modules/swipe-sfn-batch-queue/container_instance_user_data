@@ -1,5 +1,3 @@
-Content-Type: text/cloud-boothook; charset="us-ascii"
-
 #!/bin/bash -ex
 
 ##############################################
