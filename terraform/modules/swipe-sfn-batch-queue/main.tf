@@ -12,6 +12,8 @@ locals {
 }
 
 data "template_cloudinit_config" "user_data_merge" {
+  gzip = false
+
   dynamic "part" {
     for_each = local.launch_template_all_user_data_parts
     content {
