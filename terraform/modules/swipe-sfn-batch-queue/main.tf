@@ -18,7 +18,6 @@ data "template_cloudinit_config" "user_data_merge" {
       filename     = part.value["filename"]
       content_type = part.value["content_type"]
       content      = part.value["content"]
-      merge_type   = "list(append)+dict(no_replace,recurse_list)"
     }
   }
 }
