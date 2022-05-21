@@ -3,7 +3,7 @@ locals {
   launch_template_swipe_user_data          = replace(file(local.launch_template_swipe_user_data_filename), "MINIWDL_DIR", var.miniwdl_dir)
   launch_template_swipe_user_data_parts = [{
     filename     = local.launch_template_swipe_user_data_filename,
-    content_type = "text/cloud-boothook",
+    content_type = "text/cloud-boothook; charset=\"us-ascii\"",
     content      = local.launch_template_swipe_user_data
   }]
 
