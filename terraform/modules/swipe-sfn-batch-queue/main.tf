@@ -1,6 +1,28 @@
 locals {
-  launch_template_user_data      = replace(file("${path.module}/container_instance_user_data"), "MINIWDL_DIR", var.miniwdl_dir)
-  launch_template_user_data_hash = md5(local.launch_template_user_data)
+  launch_template_swipe_user_data_filename = "${path.module}/container_instance_user_data"
+  launch_template_swipe_user_data          = replace(file(local.launch_template_swipe_user_data_filename), "MINIWDL_DIR", var.miniwdl_dir)
+  launch_template_swipe_user_data_parts = [{
+    filename     = local.launch_template_swipe_user_data_filename,
+    content_type = "text/cloud-boothook; charset=\"us-ascii\"",
+    content      = local.launch_template_swipe_user_data
+  }]
+
+  launch_template_all_user_data_parts = concat(local.launch_template_swipe_user_data_parts, var.user_data_parts)
+  launch_template_user_data_hash      = md5(jsonencode(local.launch_template_all_user_data_parts))
+}
+
+data "template_cloudinit_config" "user_data_merge" {
+  gzip = false
+
+  dynamic "part" {
+    for_each = local.launch_template_all_user_data_parts
+    content {
+      filename     = part.value["filename"]
+      content_type = part.value["content_type"]
+      content      = part.value["content"]
+      merge_type   = "list(append)+dict(no_replace,recurse_list)"
+    }
+  }
 }
 
 data "aws_ssm_parameter" "swipe_batch_ami" {
@@ -68,8 +90,8 @@ resource "aws_launch_template" "swipe_batch_main" {
   # not recognize this change. We bind the launch template name to user data contents here, so any changes to user data
   # will cause the whole launch template to be replaced, forcing the compute environment to pick up the changes.
   name      = "${var.app_name}-batch-main-${local.launch_template_user_data_hash}"
-  user_data = base64encode(local.launch_template_user_data)
   tags      = var.tags
+  user_data = data.template_cloudinit_config.user_data_merge.rendered
 
   metadata_options {
     http_endpoint               = "enabled"

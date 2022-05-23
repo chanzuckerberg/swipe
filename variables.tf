@@ -179,3 +179,12 @@ variable "metrics_schedule" {
   type        = string
   default     = "rate(1 minute)"
 }
+
+variable "user_data_parts" {
+  type = list(object({
+    filename     = string
+    content_type = string
+    content      = string
+  }))
+  default = []
+}

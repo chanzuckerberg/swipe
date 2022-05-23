@@ -1,9 +1,3 @@
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
-
---==MYBOUNDARY==
-Content-Type: text/cloud-boothook; charset="us-ascii"
-
 #!/bin/bash -ex
 
 ##############################################
@@ -39,5 +33,3 @@ crontab -l > /tmp/mycron
 echo "* * * * * /bin/space-check" > /tmp/mycron
 crontab /tmp/mycron
 rm /tmp/mycron
-
---==MYBOUNDARY==--
