@@ -281,7 +281,10 @@ _s3parcp_lock = threading.Lock()
 
 def s3cp(logger, fn, s3uri):
     with _s3parcp_lock:
-        cmd = ["s3parcp", "--checksum", fn, s3uri]
+        # when uploading many small outputs from the same pipeline you end up with a
+        #   quick intense burst of load that can bump into the S3 rate limit
+        #   allowing more retries should overcome this
+        cmd = ["s3parcp", "--checksum", "--max-retries", "10", fn, s3uri]
         logger.debug(" ".join(cmd))
         rslt = subprocess.run(cmd, stderr=subprocess.PIPE)
         if rslt.returncode != 0:
