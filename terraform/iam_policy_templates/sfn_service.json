@@ -28,7 +28,7 @@
         "batch:DescribeJobs",
         "batch:TerminateJob"
       ],
-      "Resource": "arn:aws:batch:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:*"
+      "Resource": "arn:aws:batch:${AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:job/*"
     },
     {
       "Effect": "Allow",
