@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
-ARG MINIWDL_VERSION=1.4.3
+ARG MINIWDL_VERSION=1.5.1
 
 LABEL maintainer="IDseq Team idseq-tech@chanzuckerberg.com"
 
@@ -40,16 +40,7 @@ RUN apt-get -q update && apt-get -q install -y \
         python3-boto3 \
         awscli
 
-# TODO - update to a miniwdl release branch when the docker network PR is merged
-# Install miniwdl with docker networks support.
-RUN cd /tmp && \
-    mkdir -p miniwdl && \
-    cd miniwdl && \
-    git init && \
-    git remote add origin https://github.com/chanzuckerberg/miniwdl.git && \
-    git fetch origin 129ece8b74820cb812a5004732ec3189fed19f19&& \
-    git reset --hard FETCH_HEAD && \
-    pip3 install .
+RUN pip3 install miniwdl==${MINIWDL_VERSION}
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.1/s3parcp_1.0.1_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
