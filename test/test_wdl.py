@@ -414,28 +414,28 @@ class TestSFNWDL(unittest.TestCase):
         self.assertEqual(output_text, "cache_break\ngoodbye\n")
 
     def test_zip_wdls(self):
-      output_prefix = "zip-output"
-      sfn_input: Dict[str, Any] = {
-          "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_zip_object.key}",
-          "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
-          "Input": {
-              "Run": {
-                  "starter_string": f"starter",
-                  "docker_image_id": "ubuntu",
-              }
-          },
-      }
+        output_prefix = "zip-output"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_zip_object.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "starter_string": f"starter",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
 
-      out_json_path = f"{output_prefix}/test-1/run_output.json"
+        out_json_path = f"{output_prefix}/test-1/run_output.json"
 
-      self._wait_sfn(sfn_input, self.single_sfn_arn)
-      self.sqs.receive_message(
-        QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
-      )
+        self._wait_sfn(sfn_input, self.single_sfn_arn)
+        self.sqs.receive_message(
+          QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
+        )
 
-      outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_bar.txt")
-      output_text = outputs_obj.get()["Body"].read().decode()
-      self.assertEqual(output_text, "starter\nfoo\nbar\n")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_bar.txt")
+        output_text = outputs_obj.get()["Body"].read().decode()
+        self.assertEqual(output_text, "starter\nfoo\nbar\n")
 
 
 if __name__ == "__main__":
