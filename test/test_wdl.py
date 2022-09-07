@@ -1,10 +1,14 @@
 import json
+import logging
 import sys
+from tempfile import NamedTemporaryFile
 import time
 import unittest
+from os.path import dirname, realpath, join
 from typing import Any, Dict, List, Tuple
 
 import boto3
+from WDL import load, Zip
 
 test_wdl = """
 version 1.0
@@ -167,6 +171,8 @@ test_input = """hello
 
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
+        self.logger = logging.getLogger('test-wdl')
+
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
         self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
         self.batch = boto3.client("batch", endpoint_url="http://localhost:9000")
@@ -181,6 +187,12 @@ class TestSFNWDL(unittest.TestCase):
         self.wdl_fail_obj.put(Body=test_fail_wdl.encode())
         self.wdl_two_obj = self.test_bucket.Object("test-two-v1.0.0.wdl")
         self.wdl_two_obj.put(Body=test_two_wdl.encode())
+
+        with NamedTemporaryFile(suffix=".wdl.zip") as f:
+            Zip.build(load(join(dirname(realpath(__file__)), 'multi_wdl/run.wdl')), f.name, self.logger)
+            self.wdl_zip_object = self.test_bucket.Object("test-v1.0.0.wdl.zip")
+            self.wdl_zip_object.upload_file(f.name)
+
         self.map_obj = self.test_bucket.Object("stage_io_map.json")
         self.map_obj.put(Body=json.dumps(test_stage_io_map).encode())
         self.input_obj = self.test_bucket.Object("input.txt")
@@ -403,6 +415,28 @@ class TestSFNWDL(unittest.TestCase):
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "cache_break\ngoodbye\n")
+
+    def test_zip_wdls(self):
+        output_prefix = "zip-output"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_zip_object.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "starter_string": "starter",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
+
+        self._wait_sfn(sfn_input, self.single_sfn_arn)
+        self.sqs.receive_message(
+          QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
+        )
+
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_bar.txt")
+        output_text = outputs_obj.get()["Body"].read().decode()
+        self.assertEqual(output_text, "starter\nfoo\nbar\n")
 
 
 if __name__ == "__main__":
