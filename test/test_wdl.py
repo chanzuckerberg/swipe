@@ -190,7 +190,8 @@ class TestSFNWDL(unittest.TestCase):
 
         with NamedTemporaryFile(suffix=".wdl.zip") as f:
             Zip.build(load(join(dirname(realpath(__file__)), 'multi_wdl/run.wdl')), f.name, self.logger)
-            self.wdl_zip_object = self.test_bucket.Object("test-v1.0.0.wdl.zip").upload_file(f.name)
+            self.wdl_zip_object = self.test_bucket.Object("test-v1.0.0.wdl.zip")
+            self.wdl_zip_object.upload_file(f.name)
 
         self.map_obj = self.test_bucket.Object("stage_io_map.json")
         self.map_obj.put(Body=json.dumps(test_stage_io_map).encode())
