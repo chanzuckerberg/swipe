@@ -1,5 +1,5 @@
 import json
-from subprocess import run
+import logging
 import sys
 from tempfile import NamedTemporaryFile
 import time
@@ -8,6 +8,7 @@ from os.path import dirname, realpath, join
 from typing import Any, Dict, List, Tuple
 
 import boto3
+from WDL import load, Zip
 
 test_wdl = """
 version 1.0
@@ -170,6 +171,8 @@ test_input = """hello
 
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
+        self.logger = logging.getLogger('test-wdl')
+
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
         self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
         self.batch = boto3.client("batch", endpoint_url="http://localhost:9000")
@@ -186,8 +189,7 @@ class TestSFNWDL(unittest.TestCase):
         self.wdl_two_obj.put(Body=test_two_wdl.encode())
 
         with NamedTemporaryFile(suffix=".wdl.zip") as f:
-            dir = dirname(realpath(__file__))
-            run(['miniwdl', 'zip', '-o', f.name, join(dir, 'multi_wdl/run.wdl')], check=True)
+            Zip.build(load(join(dirname(realpath(__file__)), 'multi_wdl/run.wdl')), f.name, self.logger)
             self.wdl_zip_object = self.test_bucket.Object(f, "test-v1.0.0.wdl.zip").upload_file(f.name)
 
         self.map_obj = self.test_bucket.Object("stage_io_map.json")
