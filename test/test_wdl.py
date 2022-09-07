@@ -420,13 +420,11 @@ class TestSFNWDL(unittest.TestCase):
             "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
             "Input": {
                 "Run": {
-                    "starter_string": f"starter",
+                    "starter_string": "starter",
                     "docker_image_id": "ubuntu",
                 }
             },
         }
-
-        out_json_path = f"{output_prefix}/test-1/run_output.json"
 
         self._wait_sfn(sfn_input, self.single_sfn_arn)
         self.sqs.receive_message(
