@@ -69,15 +69,6 @@ export CURRENT_STATE=$(echo "$SFN_CURRENT_STATE" | sed -e s/SPOT// -e s/EC2//)
 $aws s3 cp "$WDL_WORKFLOW_URI" .
 $aws s3 cp "$WDL_INPUT_URI" wdl_input.json
 
-export LOCAL_WDL_WORKFLOW=$(basename "$WDL_WORKFLOW_URI")
-
-if [ "${LOCAL_WDL_WORKFLOW: -4}" == ".zip" ]
-then
-  export LOCAL_WDL_WORKFLOW=$(echo $LOCAL_WDL_WORKFLOW  | sed 's/\.zip$//g')
-  unzip $LOCAL_WDL_WORKFLOW
-  export LOCAL_WDL_WORKFLOW=$LOCAL_WDL_WORKFLOW/run.wdl
-fi
-
 handle_error() {
   OF=wdl_output.json;
   EP=.cause.stderr_file;
@@ -95,5 +86,5 @@ handle_error() {
 }
 
 trap handle_error EXIT
-miniwdl run $PASSTHRU_ARGS --dir $MINIWDL_DIR $LOCAL_WDL_WORKFLOW --input wdl_input.json --verbose --error-json -o wdl_output.json
+miniwdl run $PASSTHRU_ARGS --dir $MINIWDL_DIR $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json
 clean_wd
