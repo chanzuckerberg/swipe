@@ -143,7 +143,7 @@ resource "aws_batch_compute_environment" "swipe_main" {
 
     # TODO: remove this once CZID monorepo updates moto
     type                = each.value["cr_type"]
-    allocation_strategy = "BEST_FIT"
+    allocation_strategy = var.compute_environment_allocation_strategy
     bid_percentage      = 100
     spot_iam_fleet_role = aws_iam_role.swipe_batch_spot_fleet_service_role.arn
     tags = merge(var.tags, {
