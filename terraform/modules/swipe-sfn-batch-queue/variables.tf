@@ -93,7 +93,7 @@ variable "compute_environment_allocation_strategy" {
   type        = string
 
   validation {
-    condition     = contains(["BEST_FIT_PROGRESSIVE", "SPOT_CAPACITY_OPTIMIZED", "BEST_FIT"], var.allocation_strategy)
+    condition     = contains(["BEST_FIT_PROGRESSIVE", "SPOT_CAPACITY_OPTIMIZED", "BEST_FIT"], var.compute_environment_allocation_strategy)
     error_message = "Allowed values for allocation_strategy are \"BEST_FIT_PROGRESSIVE\", \"SPOT_CAPACITY_OPTIMIZED\", \"BEST_FIT\"."
   }
 }
