@@ -40,7 +40,6 @@ module "batch_queue" {
   tags                                    = var.tags
   imdsv2_policy                           = var.imdsv2_policy
   user_data_parts                         = var.user_data_parts
-  compute_environment_allocation_strategy = var.compute_environment_allocation_strategy
 }
 
 locals {
