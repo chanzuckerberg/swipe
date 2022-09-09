@@ -28,18 +28,18 @@ module "batch_queue" {
     vpc_id           = module.batch_subnet[0].vpc_id
     batch_subnet_ids = module.batch_subnet[0].batch_subnet_ids
   }
-  ami_id                                  = var.batch_ami_id
-  ami_ssm_parameter                       = var.ami_ssm_parameter
-  miniwdl_dir                             = var.miniwdl_dir
-  batch_ec2_instance_types                = var.batch_ec2_instance_types
-  spot_min_vcpus                          = var.spot_min_vcpus
-  on_demand_min_vcpus                     = var.on_demand_min_vcpus
-  use_spot                                = var.use_spot
-  spot_max_vcpus                          = var.spot_max_vcpus
-  on_demand_max_vcpus                     = var.on_demand_max_vcpus
-  tags                                    = var.tags
-  imdsv2_policy                           = var.imdsv2_policy
-  user_data_parts                         = var.user_data_parts
+  ami_id                   = var.batch_ami_id
+  ami_ssm_parameter        = var.ami_ssm_parameter
+  miniwdl_dir              = var.miniwdl_dir
+  batch_ec2_instance_types = var.batch_ec2_instance_types
+  spot_min_vcpus           = var.spot_min_vcpus
+  on_demand_min_vcpus      = var.on_demand_min_vcpus
+  use_spot                 = var.use_spot
+  spot_max_vcpus           = var.spot_max_vcpus
+  on_demand_max_vcpus      = var.on_demand_max_vcpus
+  tags                     = var.tags
+  imdsv2_policy            = var.imdsv2_policy
+  user_data_parts          = var.user_data_parts
 }
 
 locals {
