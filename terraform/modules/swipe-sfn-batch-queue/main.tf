@@ -141,9 +141,8 @@ resource "aws_batch_compute_environment" "swipe_main" {
     desired_vcpus = each.value["min_vcpus"]
     max_vcpus     = each.value["max_vcpus"]
 
-    # TODO: remove this once CZID monorepo updates moto
     type                = each.value["cr_type"]
-    allocation_strategy = "BEST_FIT"
+    allocation_strategy = each.value["cr_type"] == "SPOT" ? "SPOT_CAPACITY_OPTIMIZED" : "BEST_FIT"
     bid_percentage      = 100
     spot_iam_fleet_role = aws_iam_role.swipe_batch_spot_fleet_service_role.arn
     tags = merge(var.tags, {
