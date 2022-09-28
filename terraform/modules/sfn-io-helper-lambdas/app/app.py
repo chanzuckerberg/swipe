@@ -17,10 +17,7 @@ The helper Lambda performs the following functions:
   matching of filenames to map the outputs of one workflow to the inputs of the next. The WDL workflows require the
   mapping to be explicit, so we map the input and output names to resolve the value of the input to the next stage.
 
-- It reacts to events emitted by the AWS Batch API whenever a new job enters RUNNABLE state. For all such events, it
-  examines the state of the compute environment (CE) the job is being dispatched to, and adjusts the desiredVCPUs
-  parameter for that CE to the number of vCPUs that it estimates is necessary. This is done to scale up the CE sooner
-  than the Batch API otherwise would do so.
+- It sends metrics to CloudWatch about the number of job successes/failures whether running on SPOT or On-Demand instances.
 
 - It persists step function execution state to S3 to avoid losing this state after 90 days. To do this, it subscribes to
   events emitted by the AWS Step Functions API whenever a step function enters a RUNNING, SUCCEEDED, FAILED, TIMED_OUT,

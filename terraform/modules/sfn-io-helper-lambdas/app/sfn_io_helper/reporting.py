@@ -14,9 +14,25 @@ def notify_failure(sfn_state):
     """Placeholder for sending a message to a queue for push based result processing"""
 
 
+# TODO - publish job runtime
+# TODO - publish job queue time
+# TODO - publish instance classes launched
+# TODO - publish number of jobs per instance
 def emit_batch_metric_values(event, namespace=os.environ["APP_NAME"]):
     """Emit CloudWatch metrics for a Batch event"""
-
+    environment = event["detail"]["container"]["environment"]
+    wdl_file = None
+    for envvar in environment:
+        if envvar["name"] == "WDL_WORKFLOW_URI":
+            wdl_file = envvar["value"]
+    if not wdl_file:
+        # This isn't a swipe job.
+        return
+    job_created_at = datetime.fromtimestamp(event["detail"]["createdAt"] // 1000)
+    queue = event["detail"]["jobQueue"]
+    status = event["detail"]["status"]
+    event_time = event["time"]
+    if status == 
 
 def emit_sfn_metric_values(event, namespace=os.environ["APP_NAME"]):
     """Emit CloudWatch metrics for a SFN state change event"""

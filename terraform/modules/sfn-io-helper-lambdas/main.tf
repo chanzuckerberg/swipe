@@ -158,7 +158,7 @@ resource "aws_cloudwatch_event_rule" "process_batch_event" {
   event_pattern = jsonencode({
     "source" = ["aws.batch"],
     "detail" = {
-      "status"   = ["RUNNABLE"],
+      "status"   = ["RUNNING", "SUCCEEDED", "FAILED"],
       "jobQueue" = var.batch_queue_arns,
     },
   })
