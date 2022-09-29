@@ -275,7 +275,7 @@ class TestSFNWDL(unittest.TestCase):
             QueueUrl=self.state_change_queue_url,
             MaxNumberOfMessages=n_stages,
         )
-        print(resp)
+        print(resp, file=sys.stderr)
         messages = resp["Messages"]
 
         if expect_success:
