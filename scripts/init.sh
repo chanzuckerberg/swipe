@@ -72,7 +72,7 @@ $aws s3 cp "$WDL_INPUT_URI" wdl_input.json
 handle_error() {
   OF=wdl_output.json;
   EP=.cause.stderr_file;
-  if jq -re .error $OF; then
+  if jq -re .error $OF 2> /dev/null; then
     if jq -re $EP $OF; then
       if tail -n 1 $(jq -r $EP $OF) | jq -re .wdl_error_message; then
         tail -n 1 $(jq -r $EP $OF) > $OF;
