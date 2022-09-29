@@ -70,6 +70,18 @@ $aws s3 cp "$WDL_WORKFLOW_URI" .
 $aws s3 cp "$WDL_INPUT_URI" wdl_input.json
 
 handle_error() {
+  # Add enhanced logging for our most common termination types
+  EXIT_CODE=$?
+  if [[ $EXIT_CODE == 137 ]]; then
+    echo "ERROR: container terminated with SIGKILL, this is most likely because memory usage was above container limits"
+    exit $EXIT_CODE
+  fi
+
+  if [[ $EXIT_CODE == 143 ]]; then
+    echo "ERROR: container terminated with SIGTERM, this is most likely because of a timeout"
+    exit $EXIT_CODE
+  fi
+
   OF=wdl_output.json;
   EP=.cause.stderr_file;
   if jq -re .error $OF 2> /dev/null; then
