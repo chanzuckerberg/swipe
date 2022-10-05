@@ -78,7 +78,7 @@ handle_error() {
   fi
 
   if [[ $EXIT_CODE == 143 ]]; then
-    echo ERROR: container terminated with SIGTERM, this is most likely because of a timeout >> /dev/stderr
+    echo ERROR: container terminated with SIGTERM, this is most likely because of a spot instance termination or a timeout >> /dev/stderr
     exit $EXIT_CODE
   fi
 
