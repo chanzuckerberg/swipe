@@ -24,6 +24,11 @@ The helper Lambda performs the following functions:
   or ABORTED state. The state is saved to the OutputPrefix S3 directory under the `sfn-desc` and `sfn-hist` prefixes.
 
 - It processes failures in the step function, forwarding error information and cleaning up any running Batch jobs.
+
+AWS Batch docs: https://docs.aws.amazon.com/batch/latest/userguide/batch_cwe_events.html
+AWS Step Functions docs: https://docs.aws.amazon.com/step-functions/latest/dg/concepts-events.html
+AWS ECS events: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cloudwatch_events.html
+Spot instance termination events: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-instance-termination-notices.html
 """
 import os
 import json
@@ -38,20 +43,33 @@ def preprocess_input(sfn_data, _):
     assert sfn_data["CurrentState"] == "PreprocessInput"
     assert sfn_data["ExecutionId"].startswith("arn:aws:states:")
     assert len(sfn_data["ExecutionId"].split(":")) == 8
-    _, _, _, aws_region, aws_account_id, _, state_machine_name, execution_name = sfn_data["ExecutionId"].split(":")
-    return stage_io.preprocess_sfn_input(sfn_state=sfn_data["Input"],
-                                         aws_region=aws_region,
-                                         aws_account_id=aws_account_id,
-                                         state_machine_name=state_machine_name)
+    (
+        _,
+        _,
+        _,
+        aws_region,
+        aws_account_id,
+        _,
+        state_machine_name,
+        execution_name,
+    ) = sfn_data["ExecutionId"].split(":")
+    return stage_io.preprocess_sfn_input(
+        sfn_state=sfn_data["Input"],
+        aws_region=aws_region,
+        aws_account_id=aws_account_id,
+        state_machine_name=state_machine_name,
+    )
 
 
 def process_stage_output(sfn_data, _):
     assert sfn_data["CurrentState"].endswith("ReadOutput")
     stage_io.broadcast_stage_complete(
         sfn_data["ExecutionId"],
-        sfn_data["CurrentState"][:-len("ReadOutput")],
+        sfn_data["CurrentState"][: -len("ReadOutput")],
     )
-    sfn_state = stage_io.read_state_from_s3(sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"])
+    sfn_state = stage_io.read_state_from_s3(
+        sfn_state=sfn_data["Input"], current_state=sfn_data["CurrentState"]
+    )
     stage_io.link_outputs(sfn_state)
     sfn_state = stage_io.trim_batch_job_details(sfn_state=sfn_state)
     return sfn_state

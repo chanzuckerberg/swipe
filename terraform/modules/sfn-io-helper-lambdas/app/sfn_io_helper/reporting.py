@@ -1,9 +1,13 @@
 import os
+import os.path
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from sqlite3 import complete_statement
+from sre_constants import FAILURE
 from typing import DefaultDict
+from xmlrpc.server import CGIXMLRPCRequestHandler
 
-from . import batch, cloudwatch, stepfunctions, paginate
+from . import batch, cloudwatch, stepfunctions, paginate, ec2
 
 
 def notify_success(sfn_state):
@@ -14,62 +18,67 @@ def notify_failure(sfn_state):
     """Placeholder for sending a message to a queue for push based result processing"""
 
 
-# TODO - publish job runtime
-# TODO - publish job queue time
-# TODO - publish instance classes launched
-# TODO - publish number of jobs per instance
+# Publish job runtime, queue time, and status/billing type to CloudWatch
 def emit_batch_metric_values(event, namespace=os.environ["APP_NAME"]):
     """Emit CloudWatch metrics for a Batch event"""
+    batch_terminal_states = ["SUCCEEDED", "FAILED"]
+    status = event["detail"]["status"]
+    job_queue = event["detail"]["jobQueue"]
+    # Skip events for job queues that don't belong to this app
+    if f"job_queue/{namespace}-" not in job_queue:
+        return
+
+    # Is this spot or ondemand?
+    billing_type = "spot"
+    if job_queue.endswith("on_demand"):
+        billing_type = "on_demand"
+
+    # How long has it been since the job was created?
+    start_time = event["detail"]["createdAt"] / 1000
+    event_time = event["time"].strftime("%s")
+    runtime = int(event_time) - int(start_time)
+
+    # Which workflow is this?
     environment = event["detail"]["container"]["environment"]
     wdl_file = None
     for envvar in environment:
         if envvar["name"] == "WDL_WORKFLOW_URI":
-            wdl_file = envvar["value"]
+            wdl_file = ".".join(os.path.basename(envvar["value"]).split(".")[:-1])
     if not wdl_file:
         # This isn't a swipe job.
         return
-    job_created_at = datetime.fromtimestamp(event["detail"]["createdAt"] // 1000)
-    queue = event["detail"]["jobQueue"]
-    status = event["detail"]["status"]
-    event_time = event["time"]
-    if status == 
+
+    # Add dimensions to the metric
+    dimensions = [
+        {"Name": "BillingType", "Value": billing_type},
+        {"Name": "JobStatus", "Value": status},
+        {"Name": "Workflow", "Value": wdl_file},
+    ]
+    metric_name = "RunTimeSeconds"
+    if status == "RUNNING":
+        metric_name = "QueueSeconds"
+    elif status not in batch_terminal_states:
+        return
+    metrics = [{"MetricName": metric_name, "Value": runtime, "Dimensions": dimensions}]
+    cloudwatch.put_metric_data(Namespace=namespace, MetricData=metrics)
+
 
 def emit_sfn_metric_values(event, namespace=os.environ["APP_NAME"]):
     """Emit CloudWatch metrics for a SFN state change event"""
-    sfn_terminal_states = ["SUCCEEDED", "FAILED", "TIMED_OUT", "ABORTED"]
-    status = event["detail"]["status"]
-    if status not in sfn_terminal_states:
-        return
-    metrics = [{"MetricName": "SFNExecutionsWithOneBatchJob", "Value": 1}]
-    metric_name = "SwipeSpotStatus"
-    history = stepfunctions.get_execution_history(
-        executionArn=event["detail"]["executionArn"]
-    )
-    num_batch_jobs = 0
-    for event in history:
-        if event["type"] == "TaskSubmitted":
-            details = event["taskSubmittedEventDetails"]
-            if (
-                details["resourceType"] == "batch"
-                and details["resource"] == "submitJob.sync"
-            ):
-                num_batch_jobs += 1
-    # We're assuming that if we submitted more than one batch job, we're using OnDemand instances.
-    if num_batch_jobs >= 1:
-        metric_name = "SwipeOnDemandStatus"
-    metrics = [
-        {
-            "MetricName": metric_name,
-            "Dimensions": [{"Name": metric_name, "Value": status}],
-            "Value": 1,
-        }
-    ]
-    cloudwatch.put_metric_data(Namespace=namespace, MetricData=metrics)
 
 
 def emit_spot_interruption_metric(event, namespace=os.environ["APP_NAME"]):
     """Emit a CloudWatch metric for an EC2 spot instance interruption event"""
-    metrics = [{"MetricName": "SpotInterruptionEvents", "Value": 1}]
+    # Get more information about the instance.
+    instance = ec2.Instance(event["detail"]["instance-id"])
+    instance_type = instance.instance_type
+    dimensions = [
+        {"Name": "InstanceType", "Value": instance_type},
+    ]
+
+    metrics = [
+        {"MetricName": "SpotInterruptionEvents", "Value": 1, "Dimensions": dimensions}
+    ]
     cloudwatch.put_metric_data(Namespace=namespace, MetricData=metrics)
 
 
@@ -158,3 +167,5 @@ def emit_periodic_metrics(
             )
         )
     cloudwatch.put_metric_data(Namespace=namespace, MetricData=metrics)
+    # TODO - write info about how many instances are running in SPOT/ON_DEMAND clusters,
+    # what type they are, and how many jobs are running on them.
