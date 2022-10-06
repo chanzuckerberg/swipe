@@ -23,6 +23,7 @@ Limitations:
 
 import os
 import subprocess
+import sys
 import threading
 import json
 import logging
@@ -247,12 +248,16 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     # write to outputs.s3.json
     fn = os.path.join(run_dir, "outputs.s3.json")
 
+    # TODO: delete me
+    print(_uploaded_files, file=sys.stderr)
     # rewrite uploaded files to their S3 URIs
     def rewriter(fd):
         if fd.value.startswith("s3://"):
             return fd.value
 
         try:
+            # TODO: delete me
+            print("INODE", inode(fd.value), fd.value, file=sys.stderr)
             return _uploaded_files[inode(fd.value)]
         except Exception:
             logger.warning(
