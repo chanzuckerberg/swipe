@@ -40,6 +40,7 @@ RUN apt-get -q update && apt-get -q install -y \
         python3-boto3 \
         awscli
 
+RUN pip3 install importlib-metadata==4.13.0
 RUN pip3 install miniwdl==${MINIWDL_VERSION}
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.1/s3parcp_1.0.1_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
