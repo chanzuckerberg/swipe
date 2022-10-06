@@ -23,7 +23,6 @@ Limitations:
 
 import os
 import subprocess
-import sys
 import threading
 import json
 import logging
