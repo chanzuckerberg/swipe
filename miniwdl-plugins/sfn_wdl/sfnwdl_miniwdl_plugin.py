@@ -139,6 +139,7 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
             "czid_non_host_alignment",
             "czid_postprocess",
             "czid_experimental",
+            "czid_long_read_mngs",
         ):
             workflow_name = "_".join(workflow_name.split("_")[1:])
             # parse --step-name from the task command template. For historical reasons, the status JSON
