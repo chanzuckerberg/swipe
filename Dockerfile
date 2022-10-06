@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
-ARG MINIWDL_VERSION=1.5.3
+# currently, there is an issue in v1.5.3 so we can't upgrade until it is resolved https://github.com/chanzuckerberg/miniwdl/issues/607
+ARG MINIWDL_VERSION=1.5.2
 
 LABEL maintainer="IDseq Team idseq-tech@chanzuckerberg.com"
 
@@ -40,6 +41,9 @@ RUN apt-get -q update && apt-get -q install -y \
         python3-boto3 \
         awscli
 
+# miniwdl requires us to pin importlib-metadata because v5.0.0 is a breaking change
+#   miniwdl v1.7.1 has an update to be compatible with importlib-metadata v5.0.0 but we can't
+#   upgrade because of this issue https://github.com/chanzuckerberg/miniwdl/issues/607 in miniwdl
 RUN pip3 install importlib-metadata==4.13.0
 RUN pip3 install miniwdl==${MINIWDL_VERSION}
 
