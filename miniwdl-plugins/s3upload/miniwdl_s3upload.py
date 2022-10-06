@@ -188,10 +188,14 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     links_dir = os.path.join(run_dir, "out")
     for output in os.listdir(links_dir):
         abs_output = os.path.join(links_dir, output)
+        # TODO: remove me
+        print("UPLOAD_FOW ABSPATH", abs_output, file=sys.stdout)
         assert os.path.isdir(abs_output)
         output_contents = [os.path.join(abs_output, fn) for fn in os.listdir(abs_output) if not fn.startswith(".")]
         assert output_contents
         if len(output_contents) == 1 and os.path.isdir(output_contents[0]) and os.path.islink(output_contents[0]):
+            # TODO: remove me
+            print("UPLOAD_FOW FIRSTIF", abs_output)
             # directory output
             _uploaded_files[inode(output_contents[0])] = (
                 os.path.join(s3prefix, os.path.basename(output_contents[0])) + "/"
@@ -203,15 +207,21 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                     s3uri = os.path.join(s3prefix, os.path.relpath(abs_fn, abs_output))
                     upload_file(abs_fn, s3uri)
         elif len(output_contents) == 1 and os.path.isfile(output_contents[0]):
+            # TODO: remove me
+            print("UPLOAD_FOW SECONDIF", abs_output)
             # file output
             basename = os.path.basename(output_contents[0])
             abs_fn = os.path.join(abs_output, basename)
             s3uri = os.path.join(s3prefix, basename)
             upload_file(abs_fn, s3uri)
         else:
+            # TODO: remove me
+            print("UPLOAD_FOW ELSE", abs_output)
             # file array output
             assert all(os.path.basename(abs_fn).isdigit() for abs_fn in output_contents), output_contents
             for index_dir in output_contents:
+                # TODO: remove me
+                print("UPLOAD_FOW INNERLOOP", abs_output, index_dir)
                 fns = [fn for fn in os.listdir(index_dir) if not fn.startswith(".")]
                 assert len(fns) == 1
                 abs_fn = os.path.join(index_dir, fns[0])
