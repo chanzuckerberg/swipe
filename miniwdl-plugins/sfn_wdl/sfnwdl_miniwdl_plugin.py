@@ -6,6 +6,7 @@ import time
 from typing import Any, Dict
 
 import boto3
+import botocore
 from WDL._util import StructuredLogMessage as _
 
 s3 = boto3.resource("s3")
@@ -154,6 +155,24 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
 
             # Update _status_json which is accumulating over the course of workflow execution.
             with _status_json_lock:
+                status_uri = os.path.join(s3_wd_uri, f"{workflow_name}_status2.json")
+
+                # If the run is being resumed via call caching _status_json will be empty even
+                #   though we should have step statuses. We need to populate it before
+                #   updating or we will overwrite previous steps.
+                #   This check will happen at the beginning of every run, whether or not it is
+                #   resumed. If there was no previous run then the object won't be found and
+                #   we do nothing
+                if not _status_json:
+                    try:
+                        # Populate _status_json with the existing status_json
+                        _status_json = json.loads(s3_object(status_uri).get().get()["Body"])
+                    except botocore.exceptions.ClientError as e:
+                        # If the error is not 404 it was something other than the object
+                        #   not existing, so we want to raise it.
+                        if e.response['Error']['Code'] != "404":
+                            raise e
+
                 status = _status_json.setdefault(step_name, {})
                 for k, v in entries.items():
                     status[k] = v
@@ -162,7 +181,6 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                 logger.verbose(
                     _("update_status_json", step_name=step_name, status=status)
                 )
-                status_uri = os.path.join(s3_wd_uri, f"{workflow_name}_status2.json")
                 s3_object(status_uri).put(Body=json.dumps(_status_json).encode())
     except Exception as exn:
         logger.error(
