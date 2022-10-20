@@ -174,8 +174,6 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                         # Populate _status_json with the existing status_json
                         _status_json = json.loads(s3_object(status_uri).get().get()["Body"])
                     except botocore.exceptions.ClientError as e:
-                        botocore.exc
-                        print("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", e.response['Error'])
                         # If the error is not 404 it was something other than the object
                         #   not existing, so we want to raise it.
                         if e.response['Error']['Code'] != "NoSuchKey":
@@ -189,11 +187,8 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                 logger.verbose(
                     _("update_status_json", step_name=step_name, status=status)
                 )
-                print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", status_uri)
                 s3_object(status_uri).put(Body=json.dumps(_status_json).encode())
-                print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", status_uri)
     except Exception as exn:
-        print("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE", exn)
         logger.error(
             _(
                 "update_status_json failed",
