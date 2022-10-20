@@ -8,8 +8,9 @@ from typing import Any, Dict
 import boto3
 import botocore
 from WDL._util import StructuredLogMessage as _
+from WDL.runtime import config
 
-s3 = boto3.resource("s3")
+s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 
 
 def s3_object(uri):
@@ -18,19 +19,23 @@ def s3_object(uri):
     return s3.Bucket(bucket).Object(key)
 
 
+def get_s3_put_prefix(cfg: config.Loader) -> str:
+    s3prefix = cfg["s3_progressive_upload"]["uri_prefix"]
+    assert s3prefix.startswith("s3://"), "MINIWDL__S3_PROGRESSIVE_UPLOAD__URI_PREFIX invalid"
+    return s3prefix
+
+
 def task(cfg, logger, run_id, run_dir, task, **recv):
     t_0 = time.time()
 
-    s3_wd_uri = recv["inputs"].get("s3_wd_uri", None)
-    if s3_wd_uri and s3_wd_uri.value:
-        s3_wd_uri = s3_wd_uri.value
-        update_status_json(
-            logger,
-            task,
-            run_id,
-            s3_wd_uri,
-            {"status": "running", "start_time": str(time.time())},
-        )
+    s3_wd_uri = get_s3_put_prefix(cfg)
+    update_status_json(
+        logger,
+        task,
+        run_id,
+        s3_wd_uri,
+        {"status": "running", "start_time": str(time.time())},
+    )
 
     # First yield point -- through which we'll get the task inputs. Also, the 'task' object is a
     # WDL.Task through which we have access to the full AST of the task source code.
@@ -141,6 +146,7 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
             "czid_postprocess",
             "czid_experimental",
             "czid_long_read_mngs",
+            "swipe_test",
         ):
             workflow_name = "_".join(workflow_name.split("_")[1:])
             # parse --step-name from the task command template. For historical reasons, the status JSON
@@ -168,9 +174,11 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                         # Populate _status_json with the existing status_json
                         _status_json = json.loads(s3_object(status_uri).get().get()["Body"])
                     except botocore.exceptions.ClientError as e:
+                        botocore.exc
+                        print("PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP", e.response['Error'])
                         # If the error is not 404 it was something other than the object
                         #   not existing, so we want to raise it.
-                        if e.response['Error']['Code'] != "404":
+                        if e.response['Error']['Code'] != "NoSuchKey":
                             raise e
 
                 status = _status_json.setdefault(step_name, {})
@@ -181,8 +189,11 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                 logger.verbose(
                     _("update_status_json", step_name=step_name, status=status)
                 )
+                print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC", status_uri)
                 s3_object(status_uri).put(Body=json.dumps(_status_json).encode())
+                print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD", status_uri)
     except Exception as exn:
+        print("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE", exn)
         logger.error(
             _(
                 "update_status_json failed",
