@@ -438,6 +438,29 @@ class TestSFNWDL(unittest.TestCase):
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "starter\nfoo\nbar\n")
 
+    def test_status_reporting(self):
+        output_prefix = "out-4"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
+
+        self._wait_sfn(sfn_input, self.single_sfn_arn)
+
+        status_json = json.loads(
+            self.test_bucket.Object(
+                f"{output_prefix}/test-1/test_status2.json",
+            ).get()["Body"].read().decode(),
+        )
+        self.assertEqual(status_json["add_world"]["status"], "uploaded")
+        self.assertEqual(status_json["add_goodbye"]["status"], "uploaded")
+
 
 if __name__ == "__main__":
     unittest.main()
