@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from typing import DefaultDict
 
 from . import batch, cloudwatch, stepfunctions, paginate
 
@@ -32,7 +33,7 @@ def emit_periodic_metrics(
     """Emit CloudWatch metrics on a fixed schedule"""
     now = datetime.now(timezone.utc)
     terminal_states = {"SUCCEEDED", "ABORTED", "FAILED"}
-    jobs_by_status: defaultdict[str, int] = defaultdict(int)
+    jobs_by_status: DefaultDict[str, int] = defaultdict(int)
     for queue in paginate(batch.get_paginator("describe_job_queues")):
         if not queue["jobQueueName"].startswith(namespace):
             continue
@@ -49,7 +50,7 @@ def emit_periodic_metrics(
                             Value=100 * jobs_by_status["FAILED"] / sum(jobs_by_status.values())))
     cloudwatch.put_metric_data(Namespace=namespace, MetricData=metrics)
 
-    executions_by_status: defaultdict[str, int] = defaultdict(int)
+    executions_by_status: DefaultDict[str, int] = defaultdict(int)
     for state_machine in paginate(stepfunctions.get_paginator("list_state_machines")):
         state_machine_arn = state_machine["stateMachineArn"]
         if not state_machine_arn.split(":")[-1].startswith(namespace):
