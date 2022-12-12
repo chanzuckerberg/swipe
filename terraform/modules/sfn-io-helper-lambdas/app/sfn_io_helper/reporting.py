@@ -1,7 +1,6 @@
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import DefaultDict
 
 from . import batch, cloudwatch, stepfunctions, paginate
 
