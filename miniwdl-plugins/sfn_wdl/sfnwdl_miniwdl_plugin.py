@@ -139,15 +139,8 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
     try:
         # Figure out workflow and step names:
         # e.g. run_ids = ["host_filter", "call-validate_input"]
-        workflow_name = run_ids[0]
-        if workflow_name in (
-            "czid_host_filter",
-            "czid_non_host_alignment",
-            "czid_postprocess",
-            "czid_experimental",
-            "czid_long_read_mngs",
-            "swipe_test",
-        ):
+        if os.getenv("OUTPUT_STATUS_JSON_FILES") == "true":
+            workflow_name = run_ids[0]
             workflow_name = "_".join(workflow_name.split("_")[1:])
             # parse --step-name from the task command template. For historical reasons, the status JSON
             # keys use this name and it's not the same as the WDL task name.
