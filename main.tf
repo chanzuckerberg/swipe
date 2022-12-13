@@ -65,6 +65,7 @@ module "sfn" {
   extra_env_vars                = var.extra_env_vars
   sqs_queues                    = var.sqs_queues
   call_cache                    = var.call_cache
+  output_status_json_files      = var.output_status_json_files
   tags                          = var.tags
 }
 

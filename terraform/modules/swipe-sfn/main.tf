@@ -43,6 +43,7 @@ module "batch_job" {
   extra_env_vars            = var.extra_env_vars
   docker_network            = var.docker_network
   call_cache                = var.call_cache
+  output_status_json_files  = var.output_status_json_files
   tags                      = var.tags
 }
 

@@ -75,6 +75,13 @@ variable "docker_network" {
   type        = string
 }
 
+variable "output_status_json_files" {
+  description = "If set to true, swipe will upload a JSON file with the status and possible description of each task during execution, useful for progress reporting"
+  type        = bool
+  default     = false
+}
+
+
 // Module Specific
 
 variable "batch_job_docker_image" {

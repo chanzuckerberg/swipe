@@ -33,4 +33,6 @@ module "swipetest" {
   }
 
   workspace_s3_prefixes = ["swipe-test"]
+
+  output_status_json_files = true
 }
