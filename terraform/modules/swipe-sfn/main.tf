@@ -45,7 +45,7 @@ module "batch_job" {
   call_cache                = var.call_cache
   output_status_json_files  = var.output_status_json_files
   tags                      = var.tags
-} 
+}
 
 module "sfn_io_helper" {
   source                      = "../sfn-io-helper-lambdas"
