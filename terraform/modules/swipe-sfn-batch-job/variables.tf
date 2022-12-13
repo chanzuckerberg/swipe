@@ -36,6 +36,12 @@ variable "call_cache" {
   type        = bool
 }
 
+variable "output_status_json_files" {
+  description = "If set to true, swipe will upload a JSON file with the status and possible description of each task during execution, useful for progress reporting"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags to apply to managed assets"
   type        = map(string)
@@ -63,10 +69,4 @@ variable "docker_network" {
   description = "If miniwdl's task containers should be attached to a specific docker network, set the network name here"
   type        = string
   default     = ""
-}
-
-variable "output_status_json_files" {
-  description = "If set to true, swipe will upload a JSON file with the status and possible description of each task during execution, useful for progress reporting"
-  type        = bool
-  default     = false
 }
