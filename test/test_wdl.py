@@ -37,9 +37,9 @@ workflow swipe_test {
   }
 
   output {
-    File out_add_world = add_world.out_world
+    File out_world = add_world.out_world
     File out_goodbye = add_goodbye.out_goodbye
-    File out_farewell = add_farewelle.out_farewell
+    File out_farewell = add_farewell.out_farewell
   }
 }
 
@@ -328,7 +328,7 @@ class TestSFNWDL(unittest.TestCase):
 
         output = json.loads(description["output"])
         self.assertEqual(output["Result"], {
-          "swipe_test.out_add_world": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_world.txt",
+          "swipe_test.out_world": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_world.txt",
           "swipe_test.out_goodbye": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_goodbye.txt",
           "swipe_test.out_farewell": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_farewell.txt",
         })
