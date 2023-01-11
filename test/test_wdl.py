@@ -24,15 +24,15 @@ workflow swipe_test {
       docker_image_id = docker_image_id
   }
 
-  call add_world as add_world_one {
+  call add_world as add_world_two {
     input:
-      hello = hello,
+      hello = add_world_one.out,
       docker_image_id = docker_image_id
   }
 
   call add_goodbye {
     input:
-      hello_world = add_world.out,
+      hello_world = add_world_two.out,
       docker_image_id = docker_image_id
   }
 
