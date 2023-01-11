@@ -95,7 +95,7 @@ task add_farewell {
   >>>
 
   output {
-    File out_goodbye = "out_farewell.txt"
+    File out_farewell = "out_farewell.txt"
   }
 
   runtime {
