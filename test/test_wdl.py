@@ -18,7 +18,13 @@ workflow swipe_test {
     String docker_image_id
   }
 
-  call add_world {
+  call add_world as add_world_one {
+    input:
+      hello = hello,
+      docker_image_id = docker_image_id
+  }
+
+  call add_world as add_world_one {
     input:
       hello = hello,
       docker_image_id = docker_image_id
@@ -31,7 +37,8 @@ workflow swipe_test {
   }
 
   output {
-    File out = add_world.out
+    File out_add_world_one = add_world_one.out
+    File out_add_world_two = add_world_two.out
     File out_goodbye = add_goodbye.out_goodbye
   }
 }
