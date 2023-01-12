@@ -111,7 +111,7 @@ def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env
 
     input_digest = Value.digest_env(
         Value.rewrite_env_paths(
-            _key_inputs[key], lambda v: _uploaded_files.get(inode(str(v.value)), v)
+            _key_inputs[key], lambda v: _uploaded_files.get(inode(str(v.value)), str(v.value))
         )
     )
     key_parts = key.split('/')
