@@ -114,7 +114,9 @@ def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env
             _key_inputs[key], lambda v: _uploaded_files.get(inode(str(v.value)), v)
         )
     )
-    s3_cache_key = f"{task.name}/{task.digest}/{input_digest}"
+    key_parts = key.split('/')
+    key_parts[-1] = input_digest
+    s3_cache_key = "/".join(key_parts)
 
     if not missing and cfg.has_option("s3_progressive_upload", "uri_prefix"):
         uri = os.path.join(get_s3_put_prefix(cfg), "cache", f"{s3_cache_key}.json")
@@ -133,10 +135,8 @@ class CallCache(cache.CallCache):
         #   we need `put` to use a key based on S3 paths instead but put doesn't have access to step
         #   inputs. 'put' should always be run after a `get` is called so here we are storing the
         #   inputs based on the cache key so `put` can get the inputs.
-        cache_key = f"{task.name}/{task.digest}/{Value.digest_env(inputs)}"
         global _key_inputs
-        _key_inputs[cache_key] = inputs
-
+        _key_inputs[key] = inputs
 
         if not self._cfg.has_option("s3_progressive_upload", "uri_prefix"):
             return super().get(key, inputs, output_types)
