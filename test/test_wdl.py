@@ -188,7 +188,7 @@ task add_smile {
 
 test_stage_io_map = {
     "Two": {
-        "hello_world": "out",
+        "hello_world": "out_world",
     },
 }
 
@@ -442,7 +442,7 @@ class TestSFNWDL(unittest.TestCase):
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_farewell.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        self.assertEqual(output_text, "cache_break\farewell\n")
+        self.assertEqual(output_text, "cache_break\nfarewell\n")
 
     def test_zip_wdls(self):
         output_prefix = "zip-output"
