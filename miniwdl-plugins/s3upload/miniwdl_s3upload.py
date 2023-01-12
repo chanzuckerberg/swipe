@@ -89,6 +89,7 @@ def inode(link: str):
 
 _uploaded_files: Dict[Tuple[int, int], str] = {}
 _cached_files: Dict[Tuple[int, int], Tuple[str, Env.Bindings[Value.Base]]] = {}
+_key_inputs: Dict[str, any]
 _uploaded_files_lock = threading.Lock()
 
 
@@ -107,8 +108,16 @@ def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env
         return _uploaded_files[inode(str(v.value))]
 
     remapped_outputs = Value.rewrite_env_paths(outputs, cache)
+
+    input_digest = Value.digest_env(
+        Value.rewrite_env_paths(
+            _key_inputs[key], lambda v: _uploaded_files.get(inode(str(v.value)), v)
+        )
+    )
+    s3_cache_key = f"{task.name}/{task.digest}/{input_digest}"
+
     if not missing and cfg.has_option("s3_progressive_upload", "uri_prefix"):
-        uri = os.path.join(get_s3_put_prefix(cfg), "cache", f"{key}.json")
+        uri = os.path.join(get_s3_put_prefix(cfg), "cache", f"{s3_cache_key}.json")
         s3_object(uri).put(Body=json.dumps(values_to_json(remapped_outputs)).encode())
         flag_temporary(uri)
         logger.info(_("call cache insert", cache_file=uri))
@@ -155,7 +164,12 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     logger = logger.getChild("s3_progressive_upload")
 
     # ignore inputs
-    recv = yield recv
+    inputs = yield recv
+
+    cache_key = f"{task.name}/{task.digest}/{Value.digest_env(inputs)}"
+    global _key_inputs
+    _key_inputs[cache_key] = inputs
+
     # ignore command/runtime/container
     recv = yield recv
 
