@@ -89,7 +89,7 @@ def inode(link: str):
 
 _uploaded_files: Dict[Tuple[int, int], str] = {}
 _cached_files: Dict[Tuple[int, int], Tuple[str, Env.Bindings[Value.Base]]] = {}
-_key_inputs: Dict[str, any]
+_key_inputs: Dict[str, Env.Bindings[Value.Base]] = {}
 _uploaded_files_lock = threading.Lock()
 
 
@@ -127,6 +127,17 @@ class CallCache(cache.CallCache):
     def get(
         self, key: str, inputs: Env.Bindings[Value.Base], output_types: Env.Bindings[Type.Base]
     ) -> Optional[Env.Bindings[Value.Base]]:
+        # HACK: in order to back the call cache in S3 we need to cache the S3 paths to the outputs.
+        #   If we get a cache hit, those S3 paths will be passed to the next step. However,
+        #   the cache key is computed using local inputs so this results in a cache miss.
+        #   we need `put` to use a key based on S3 paths instead but put doesn't have access to step
+        #   inputs. 'put' should always be run after a `get` is called so here we are storing the
+        #   inputs based on the cache key so `put` can get the inputs.
+        cache_key = f"{task.name}/{task.digest}/{Value.digest_env(inputs)}"
+        global _key_inputs
+        _key_inputs[cache_key] = inputs
+
+
         if not self._cfg.has_option("s3_progressive_upload", "uri_prefix"):
             return super().get(key, inputs, output_types)
         uri = urlparse(get_s3_get_prefix(self._cfg))
@@ -164,12 +175,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     logger = logger.getChild("s3_progressive_upload")
 
     # ignore inputs
-    inputs = yield recv
-
-    cache_key = f"{task.name}/{task.digest}/{Value.digest_env(inputs)}"
-    global _key_inputs
-    _key_inputs[cache_key] = inputs
-
+    recv = yield recv
     # ignore command/runtime/container
     recv = yield recv
 
