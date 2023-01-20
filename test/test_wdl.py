@@ -20,35 +20,42 @@ workflow swipe_test {
 
   call add_world {
     input:
-      hello = hello,
+      input_file = hello,
       docker_image_id = docker_image_id
   }
 
   call add_goodbye {
     input:
-      hello_world = add_world.out,
+      input_file = add_world.out_world,
+      docker_image_id = docker_image_id
+  }
+
+  call add_farewell {
+    input:
+      input_file = add_goodbye.out_goodbye,
       docker_image_id = docker_image_id
   }
 
   output {
-    File out = add_world.out
+    File out_world = add_world.out_world
     File out_goodbye = add_goodbye.out_goodbye
+    File out_farewell = add_farewell.out_farewell
   }
 }
 
 task add_world {
   input {
-    File hello
+    File input_file
     String docker_image_id
   }
 
   command <<<
-    cat ~{hello} > out.txt
-    echo world >> out.txt
+    cat ~{input_file} > out_world.txt
+    echo world >> out_world.txt
   >>>
 
   output {
-    File out = "out.txt"
+    File out_world = "out_world.txt"
   }
 
   runtime {
@@ -58,17 +65,37 @@ task add_world {
 
 task add_goodbye {
   input {
-    File hello_world
+    File input_file
     String docker_image_id
   }
 
   command <<<
-    cat ~{hello_world} > out_goodbye.txt
+    cat ~{input_file} > out_goodbye.txt
     echo goodbye >> out_goodbye.txt
   >>>
 
   output {
     File out_goodbye = "out_goodbye.txt"
+  }
+
+  runtime {
+      docker: docker_image_id
+  }
+}
+
+task add_farewell {
+  input {
+    File input_file
+    String docker_image_id
+  }
+
+  command <<<
+    cat ~{input_file} > out_farewell.txt
+    echo farewell >> out_farewell.txt
+  >>>
+
+  output {
+    File out_farewell = "out_farewell.txt"
   }
 
   runtime {
@@ -161,7 +188,7 @@ task add_smile {
 
 test_stage_io_map = {
     "Two": {
-        "hello_world": "out",
+        "hello_world": "out_world",
     },
 }
 
@@ -301,11 +328,12 @@ class TestSFNWDL(unittest.TestCase):
 
         output = json.loads(description["output"])
         self.assertEqual(output["Result"], {
-          "swipe_test.out": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out.txt",
+          "swipe_test.out_world": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_world.txt",
           "swipe_test.out_goodbye": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_goodbye.txt",
+          "swipe_test.out_farewell": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_farewell.txt",
         })
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_world.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
@@ -384,19 +412,19 @@ class TestSFNWDL(unittest.TestCase):
         self.sqs.receive_message(
             QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
         )
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_world.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
-        self.test_bucket.Object(f"{output_prefix}/test-1/out.txt").put(
+        self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt").put(
             Body="cache_break\n".encode()
         )
-        self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt").delete()
+        self.test_bucket.Object(f"{output_prefix}/test-1/out_farewell.txt").delete()
 
         # clear cache to simulate getting cut off the step before this one
         objects = self.s3_client.list_objects_v2(
           Bucket=self.test_bucket.name,
-          Prefix=f"{output_prefix}/test-1/cache/add_goodbye/",
+          Prefix=f"{output_prefix}/test-1/cache/add_farewell/",
         )["Contents"]
         self.test_bucket.Object(objects[0]["Key"]).delete()
         objects = self.s3_client.list_objects_v2(
@@ -412,9 +440,9 @@ class TestSFNWDL(unittest.TestCase):
         for v in outputs.values():
             self.assert_(v.startswith("s3://"), f"{v} does not start with 's3://'")
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_goodbye.txt")
+        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_farewell.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
-        self.assertEqual(output_text, "cache_break\ngoodbye\n")
+        self.assertEqual(output_text, "cache_break\nfarewell\n")
 
     def test_zip_wdls(self):
         output_prefix = "zip-output"
