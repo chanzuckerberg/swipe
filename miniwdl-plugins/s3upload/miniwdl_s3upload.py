@@ -79,6 +79,7 @@ def flag_temporary(s3uri):
         },
     )
 
+
 def remove_temporary_flag(s3uri):
     """ Remove temporary flag from s3 if in outputs.json """
     uri = urlparse(s3uri)
@@ -104,8 +105,6 @@ def remove_temporary_flag(s3uri):
             Bucket=bucket,
             Key=key,
         )
-
-
 
 
 def inode(link: str):
@@ -327,7 +326,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
                 remove_temporary_flag(filename)
         elif output_file and output_file.startswith("s3://"):
             remove_temporary_flag(output_file)
-        
+
     s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
 
 
