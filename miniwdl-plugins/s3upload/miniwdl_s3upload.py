@@ -79,6 +79,34 @@ def flag_temporary(s3uri):
         },
     )
 
+def remove_temporary_flag(s3uri):
+    """ Remove temporary flag from s3 if in outputs.json """
+    uri = urlparse(s3uri)
+    bucket, key = uri.hostname, uri.path[1:]
+    tags = s3_client.get_object_tagging(
+        Bucket=bucket,
+        Key=key,
+    )
+    remaining_tags = []
+    for tag in tags["TagSet"]:
+        if not (tag["Key"] == "swipe_temporary" and tag["Value"] == "true"):
+            remaining_tags.append(tag)
+    if remaining_tags:
+        s3_client.put_object_tagging(
+            Bucket=bucket,
+            Key=key,
+            Tagging={
+                'TagSet': remaining_tags
+            },
+        )
+    else:
+        s3_client.delete_object_tagging(
+            Bucket=bucket,
+            Key=key,
+        )
+
+
+
 
 def inode(link: str):
     if link.startswith("s3://"):
@@ -293,6 +321,13 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
         json.dump(outputs_s3_json, outfile, indent=2)
         outfile.write("\n")
 
+    for output_file in outputs_s3_json.values():
+        if isinstance(output_file, list):
+            for filename in output_file:
+                remove_temporary_flag(filename)
+        elif output_file and output_file.startswith("s3://"):
+            remove_temporary_flag(output_file)
+        
     s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
 
 
@@ -317,3 +352,4 @@ def s3cp(logger, fn, s3uri):
                 )
             )
             raise WDL.Error.RuntimeError("failed: " + " ".join(cmd))
+        flag_temporary(s3uri)
