@@ -108,6 +108,8 @@ def remove_temporary_flag(s3uri, retry=0):
                 Key=key,
             )
     except botocore.exceptions.ClientError as e:
+        if retry > 3:
+            raise e
         print(f"Error deleting tags for object {key} in bucket {bucket}: {e}")
         print("Retrying in 20 seconds...")
         time.sleep(20)
