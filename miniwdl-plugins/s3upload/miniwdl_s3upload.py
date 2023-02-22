@@ -26,6 +26,7 @@ import subprocess
 import threading
 import json
 import logging
+import time
 from pathlib import Path
 from urllib.parse import urlparse
 from typing import Dict, Optional, Tuple, Union
@@ -80,7 +81,7 @@ def flag_temporary(s3uri):
     )
 
 
-def remove_temporary_flag(s3uri):
+def remove_temporary_flag(s3uri, retry=0):
     """ Remove temporary flag from s3 if in outputs.json """
     uri = urlparse(s3uri)
     bucket, key = uri.hostname, uri.path[1:]
@@ -92,19 +93,25 @@ def remove_temporary_flag(s3uri):
     for tag in tags["TagSet"]:
         if not (tag["Key"] == "swipe_temporary" and tag["Value"] == "true"):
             remaining_tags.append(tag)
-    if remaining_tags:
-        s3_client.put_object_tagging(
-            Bucket=bucket,
-            Key=key,
-            Tagging={
-                'TagSet': remaining_tags
-            },
-        )
-    else:
-        s3_client.delete_object_tagging(
-            Bucket=bucket,
-            Key=key,
-        )
+    try:
+        if remaining_tags:
+            s3_client.put_object_tagging(
+                Bucket=bucket,
+                Key=key,
+                Tagging={
+                    'TagSet': remaining_tags
+                },
+            )
+        else:
+            s3_client.delete_object_tagging(
+                Bucket=bucket,
+                Key=key,
+            )
+    except botocore.exceptions.ClientError as e:
+        print(f"Error deleting tags for object {key} in bucket {bucket}: {e}")
+        print("Retrying in 20 seconds...")
+        time.sleep(20)
+        remove_temporary_flag(s3uri, retry+1)
 
 
 def inode(link: str):
