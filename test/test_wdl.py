@@ -405,6 +405,37 @@ class TestSFNWDL(unittest.TestCase):
                      [-1]["executionFailedEventDetails"]["error"])
         self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
 
+    def test_temp_tag(self):
+        output_prefix = "out-temp-tag"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_obj_temp.bucket_name}/{self.wdl_obj_temp.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
+
+        self._wait_sfn(sfn_input, self.single_sfn_arn)
+
+        # test temporary tag is there for intermediate file
+        temporary_tagset = self.s3_client.get_object_tagging(
+          Bucket="swipe-test",
+          Key=f"{output_prefix}/test-temp-1/temporary.txt"
+        ).get("TagSet", [])
+        self.assertEqual(len(temporary_tagset), 1)
+        self.assertEqual(temporary_tagset[0].get("Key"), "swipe_temporary")
+        self.assertEqual(temporary_tagset[0].get("Value"), "true")
+
+        # test temporary tag got removed for output file
+        output_tagset = self.s3_client.get_object_tagging(
+          Bucket="swipe-test",
+          Key=f"{output_prefix}/test-temp-1/out_world.txt"
+        ).get("TagSet", [])
+        self.assertEqual(len(output_tagset), 0)
+
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"
         sfn_input: Dict[str, Any] = {
@@ -488,37 +519,6 @@ class TestSFNWDL(unittest.TestCase):
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_farewell.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "cache_break\nfarewell\n")
-
-    def test_temp_tag(self):
-        output_prefix = "out-temp-tag"
-        sfn_input: Dict[str, Any] = {
-            "RUN_WDL_URI": f"s3://{self.wdl_obj_temp.bucket_name}/{self.wdl_obj_temp.key}",
-            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
-            "Input": {
-                "Run": {
-                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
-                    "docker_image_id": "ubuntu",
-                }
-            },
-        }
-
-        self._wait_sfn(sfn_input, self.single_sfn_arn)
-
-        # test temporary tag is there for intermediate file
-        temporary_tagset = self.s3_client.get_object_tagging(
-          Bucket="swipe-test",
-          Key=f"{output_prefix}/test-temp-1/temporary.txt"
-        ).get("TagSet", [])
-        self.assertEqual(len(temporary_tagset), 1)
-        self.assertEqual(temporary_tagset[0].get("Key"), "swipe_temporary")
-        self.assertEqual(temporary_tagset[0].get("Value"), "true")
-
-        # test temporary tag got removed for output file
-        output_tagset = self.s3_client.get_object_tagging(
-          Bucket="swipe-test",
-          Key=f"{output_prefix}/test-temp-1/out_world.txt"
-        ).get("TagSet", [])
-        self.assertEqual(len(output_tagset), 0)
 
     def test_zip_wdls(self):
         output_prefix = "zip-output"
