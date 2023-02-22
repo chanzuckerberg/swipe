@@ -8,7 +8,7 @@ with open(path.join(path.dirname(__file__), "README.md")) as f:
 
 setup(
     name="miniwdl-s3upload",
-    version="0.0.8",
+    version="0.0.9",
     description="miniwdl plugin for progressive upload of task output files to Amazon S3",
     url="https://github.com/chanzuckerberg/miniwdl-s3upload",
     project_urls={

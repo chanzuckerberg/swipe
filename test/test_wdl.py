@@ -502,8 +502,6 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        out_json_path = f"{output_prefix}/test-1/run_output.json"
-
         self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         # test temporary tag is there for intermediate file
@@ -517,7 +515,7 @@ class TestSFNWDL(unittest.TestCase):
 
         # test temporary tag got removed for output file
         output_tagset = self.s3_client.get_object_tagging(
-          Bucket="swipe-test", 
+          Bucket="swipe-test",
           Key=f"{output_prefix}/test-temp-1/out_world.txt"
         ).get("TagSet", [])
         self.assertEqual(len(output_tagset), 0)
