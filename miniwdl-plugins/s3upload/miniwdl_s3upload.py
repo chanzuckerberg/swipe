@@ -27,6 +27,7 @@ import threading
 import json
 import logging
 import time
+import random
 from pathlib import Path
 from urllib.parse import urlparse
 from typing import Dict, Optional, Tuple, Union
@@ -111,8 +112,9 @@ def remove_temporary_flag(s3uri, retry=0):
         if retry > 3:
             raise e
         print(f"Error deleting tags for object {key} in bucket {bucket}: {e}")
-        print("Retrying in 20 seconds...")
-        time.sleep(20)
+        delay = 20 + random.randint(0, 10)
+        print(f"Retrying in {delay} seconds...")
+        time.sleep(delay)
         remove_temporary_flag(s3uri, retry+1)
 
 
