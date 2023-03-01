@@ -394,14 +394,13 @@ class TestSFNWDL(unittest.TestCase):
             "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
             "Input": {
                 "Run": {
-                    "hello": f"https://raw.githubusercontent.com/chanzuckerberg/czid-workflows/main/README.md",
+                    "hello": "https://raw.githubusercontent.com/chanzuckerberg/czid-workflows/main/README.md",
                     "docker_image_id": "ubuntu",
                 }
             },
         }
 
         self._wait_sfn(sfn_input, self.single_sfn_arn)
-
 
     def test_failing_wdl_workflow(self):
         output_prefix = "out-fail-1"

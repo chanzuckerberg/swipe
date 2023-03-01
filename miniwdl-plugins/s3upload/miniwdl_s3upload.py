@@ -22,6 +22,7 @@ Limitations:
 """
 
 import os
+import re
 import subprocess
 import threading
 import json
@@ -119,7 +120,7 @@ def remove_temporary_flag(s3uri, retry=0):
 
 
 def inode(link: str):
-    if link.startswith("s3://"):
+    if re.match('^[a-z]+://', link):
         return link
     st = os.stat(os.path.realpath(link))
     return (st.st_dev, st.st_ino)
