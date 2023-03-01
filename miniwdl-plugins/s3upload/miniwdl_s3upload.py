@@ -24,6 +24,7 @@ Limitations:
 import os
 import re
 import subprocess
+import sys
 import threading
 import json
 import logging
@@ -120,6 +121,7 @@ def remove_temporary_flag(s3uri, retry=0):
 
 
 def inode(link: str):
+    print("AAAAAAAAAAAAAAAAAAA", link, file=sys.stderr)
     if re.match('^[a-z]+://', link):
         return link
     st = os.stat(os.path.realpath(link))
