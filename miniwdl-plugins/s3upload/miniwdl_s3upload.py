@@ -121,7 +121,7 @@ def remove_temporary_flag(s3uri, retry=0):
 
 
 def inode(link: str):
-    print("AAAAAAAAAAAAAAAAAAA", link, file=sys.stderr)
+    print("AAAAAAAAAAAAAAAAAAA", link, bool(re.match('^[a-z]+://', link)), file=sys.stderr)
     if re.match('^[a-z]+://', link):
         return link
     st = os.stat(os.path.realpath(link))
