@@ -104,6 +104,49 @@ task add_farewell {
 }
 """
 
+test_wdl_temp = """
+version 1.0
+workflow swipe_test {
+  input {
+    File hello
+    String docker_image_id
+  }
+
+  call add_world_temp {
+    input:
+      input_file = hello,
+      docker_image_id = docker_image_id
+  }
+
+  output {
+    File out_world = add_world_temp.out_world
+  }
+}
+
+task add_world_temp {
+  input {
+    File input_file
+    String docker_image_id
+  }
+
+  command <<<
+    cat ~{input_file} > out_world.txt
+    echo world >> out_world.txt
+    echo "temporary file" > temporary.txt
+  >>>
+
+  output {
+    File out_world = "out_world.txt"
+    File temporary = "temporary.txt"
+  }
+
+  runtime {
+      docker: docker_image_id
+  }
+}
+
+"""
+
 test_fail_wdl = """
 version 1.0
 workflow swipe_test {
@@ -214,6 +257,8 @@ class TestSFNWDL(unittest.TestCase):
         self.wdl_fail_obj.put(Body=test_fail_wdl.encode())
         self.wdl_two_obj = self.test_bucket.Object("test-two-v1.0.0.wdl")
         self.wdl_two_obj.put(Body=test_two_wdl.encode())
+        self.wdl_obj_temp = self.test_bucket.Object("test-temp-v1.0.0.wdl")
+        self.wdl_obj_temp.put(Body=test_wdl_temp.replace("swipe_test", "temp_test").encode())
 
         with NamedTemporaryFile(suffix=".wdl.zip") as f:
             Zip.build(load(join(dirname(realpath(__file__)), 'multi_wdl/run.wdl')), f.name, self.logger)
@@ -359,6 +404,37 @@ class TestSFNWDL(unittest.TestCase):
         errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
                      [-1]["executionFailedEventDetails"]["error"])
         self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
+
+    def test_temp_tag(self):
+        output_prefix = "out-temp-tag"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_obj_temp.bucket_name}/{self.wdl_obj_temp.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": f"s3://{self.input_obj.bucket_name}/{self.input_obj.key}",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
+
+        self._wait_sfn(sfn_input, self.single_sfn_arn)
+
+        # test temporary tag is there for intermediate file
+        temporary_tagset = self.s3_client.get_object_tagging(
+          Bucket="swipe-test",
+          Key=f"{output_prefix}/test-temp-1/temporary.txt"
+        ).get("TagSet", [])
+        self.assertEqual(len(temporary_tagset), 1)
+        self.assertEqual(temporary_tagset[0].get("Key"), "swipe_temporary")
+        self.assertEqual(temporary_tagset[0].get("Value"), "true")
+
+        # test temporary tag got removed for output file
+        output_tagset = self.s3_client.get_object_tagging(
+          Bucket="swipe-test",
+          Key=f"{output_prefix}/test-temp-1/out_world.txt"
+        ).get("TagSet", [])
+        self.assertEqual(len(output_tagset), 0)
 
     def test_staged_sfn_wdl_workflow(self):
         output_prefix = "out-2"
