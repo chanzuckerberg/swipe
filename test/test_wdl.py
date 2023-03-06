@@ -387,6 +387,21 @@ class TestSFNWDL(unittest.TestCase):
             json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
         )
 
+    def test_https_inputs(self):
+        output_prefix = "out-https-1"
+        sfn_input: Dict[str, Any] = {
+            "RUN_WDL_URI": f"s3://{self.wdl_obj.bucket_name}/{self.wdl_obj.key}",
+            "OutputPrefix": f"s3://{self.input_obj.bucket_name}/{output_prefix}",
+            "Input": {
+                "Run": {
+                    "hello": "https://raw.githubusercontent.com/chanzuckerberg/czid-workflows/main/README.md",
+                    "docker_image_id": "ubuntu",
+                }
+            },
+        }
+
+        self._wait_sfn(sfn_input, self.single_sfn_arn)
+
     def test_failing_wdl_workflow(self):
         output_prefix = "out-fail-1"
         sfn_input: Dict[str, Any] = {
