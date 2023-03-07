@@ -52,6 +52,7 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
           "s3:List*",
           "s3:GetObject*",
           "s3:PutObject*",
+          "s3:DeleteObjectTagging",
           "s3:CreateMultipartUpload"
         ],
         Resource : concat(compact([
