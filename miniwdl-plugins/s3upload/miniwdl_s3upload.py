@@ -75,7 +75,7 @@ def flag_temporary(s3uri):
         Tagging={
             'TagSet': [
                 {
-                    'Key': 'swipe_temporary',
+                    'Key': 'swipe_intermediate',
                     'Value': 'true'
                 },
             ]
@@ -93,7 +93,7 @@ def remove_temporary_flag(s3uri, retry=0):
     )
     remaining_tags = []
     for tag in tags["TagSet"]:
-        if not (tag["Key"] == "swipe_temporary" and tag["Value"] == "true"):
+        if not (tag["Key"] == "swipe_intermediate" and tag["Value"] == "true"):
             remaining_tags.append(tag)
     try:
         if remaining_tags:
@@ -219,7 +219,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     recv = yield recv
 
     def upload_file(abs_fn, s3uri):
-        s3cp(logger, abs_fn, s3uri)
+        s3cp(logger, abs_fn, s3uri, flag_temporary_file=True)
         # record in _uploaded_files (keyed by inode, so that it can be found from any
         # symlink or hardlink)
         with _uploaded_files_lock:
@@ -339,13 +339,13 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
         elif output_file and output_file.startswith("s3://"):
             remove_temporary_flag(output_file)
 
-    s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")))
+    s3cp(logger, fn, os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")), flag_temporary_file=False)
 
 
 _s3parcp_lock = threading.Lock()
 
 
-def s3cp(logger, fn, s3uri):
+def s3cp(logger, fn, s3uri, flag_temporary_file=False):
     with _s3parcp_lock:
         # when uploading many small outputs from the same pipeline you end up with a
         #   quick intense burst of load that can bump into the S3 rate limit
@@ -363,4 +363,5 @@ def s3cp(logger, fn, s3uri):
                 )
             )
             raise WDL.Error.RuntimeError("failed: " + " ".join(cmd))
-        flag_temporary(s3uri)
+        if flag_temporary_file:
+            flag_temporary(s3uri)
