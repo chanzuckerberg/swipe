@@ -340,9 +340,9 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
             remove_temporary_flag(output_file)
 
     s3cp(
-        logger, 
-        fn, 
-        os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")), 
+        logger,
+        fn,
+        os.environ.get("WDL_OUTPUT_URI", os.path.join(s3prefix, "outputs.s3.json")),
         flag_temporary_file=False
     )
 
