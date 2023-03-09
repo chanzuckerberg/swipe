@@ -75,7 +75,7 @@ def flag_temporary(s3uri):
         Tagging={
             'TagSet': [
                 {
-                    'Key': 'swipe_intermediate',
+                    'Key': 'intermediate_output',
                     'Value': 'true'
                 },
             ]
@@ -93,7 +93,7 @@ def remove_temporary_flag(s3uri, retry=0):
     )
     remaining_tags = []
     for tag in tags["TagSet"]:
-        if not (tag["Key"] == "swipe_intermediate" and tag["Value"] == "true"):
+        if not (tag["Key"] == "intermediate_output" and tag["Value"] == "true"):
             remaining_tags.append(tag)
     try:
         if remaining_tags:
