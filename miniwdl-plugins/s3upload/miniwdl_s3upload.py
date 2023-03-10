@@ -69,18 +69,24 @@ def get_s3_get_prefix(cfg: config.Loader) -> str:
 def flag_temporary(s3uri):
     uri = urlparse(s3uri)
     bucket, key = uri.hostname, uri.path[1:]
-    s3_client.put_object_tagging(
-        Bucket=bucket,
-        Key=key,
-        Tagging={
-            'TagSet': [
-                {
-                    'Key': 'intermediate_output',
-                    'Value': 'true'
-                },
-            ]
-        },
-    )
+    try: 
+        s3_client.put_object_tagging(
+            Bucket=bucket,
+            Key=key,
+            Tagging={
+                'TagSet': [
+                    {
+                        'Key': 'intermediate_output',
+                        'Value': 'true'
+                    },
+                ]
+            },
+        )
+    except botocore.exceptions.ClientError as e:
+        # If we get throttled better not to tag the file at all 
+        pass 
+
+    
 
 
 def remove_temporary_flag(s3uri, retry=0):
@@ -104,7 +110,7 @@ def remove_temporary_flag(s3uri, retry=0):
                     'TagSet': remaining_tags
                 },
             )
-        else:
+        elif len(tags["TagSet"]) > 0: # Delete tags if they exist
             s3_client.delete_object_tagging(
                 Bucket=bucket,
                 Key=key,
@@ -218,8 +224,8 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     # ignore command/runtime/container
     recv = yield recv
 
-    def upload_file(abs_fn, s3uri):
-        s3cp(logger, abs_fn, s3uri, flag_temporary_file=True)
+    def upload_file(abs_fn, s3uri, flag_temporary_file=False):
+        s3cp(logger, abs_fn, s3uri, flag_temporary_file=flag_temporary_file)
         # record in _uploaded_files (keyed by inode, so that it can be found from any
         # symlink or hardlink)
         with _uploaded_files_lock:
@@ -259,13 +265,13 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                 for fn in files:
                     abs_fn = os.path.join(dn, fn)
                     s3uri = os.path.join(s3prefix, os.path.relpath(abs_fn, abs_output))
-                    upload_file(abs_fn, s3uri)
+                    upload_file(abs_fn, s3uri, flag_temporary_file=False)
         elif len(output_contents) == 1 and os.path.isfile(output_contents[0]):
             # file output
             basename = os.path.basename(output_contents[0])
             abs_fn = os.path.join(abs_output, basename)
             s3uri = os.path.join(s3prefix, basename)
-            upload_file(abs_fn, s3uri)
+            upload_file(abs_fn, s3uri, flag_temporary_file=True)
         else:
             # file array output
             assert all(os.path.basename(abs_fn).isdigit() for abs_fn in output_contents), output_contents
@@ -274,7 +280,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                 assert len(fns) == 1
                 abs_fn = os.path.join(index_dir, fns[0])
                 s3uri = os.path.join(s3prefix, fns[0])
-                upload_file(abs_fn, s3uri)
+                upload_file(abs_fn, s3uri, flag_temporary_file=False)
     yield recv
 
 
