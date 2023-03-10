@@ -69,7 +69,7 @@ def get_s3_get_prefix(cfg: config.Loader) -> str:
 def flag_temporary(s3uri):
     uri = urlparse(s3uri)
     bucket, key = uri.hostname, uri.path[1:]
-    try: 
+    try:
         s3_client.put_object_tagging(
             Bucket=bucket,
             Key=key,
@@ -82,11 +82,9 @@ def flag_temporary(s3uri):
                 ]
             },
         )
-    except botocore.exceptions.ClientError as e:
-        # If we get throttled better not to tag the file at all 
-        pass 
-
-    
+    except botocore.exceptions.ClientError:
+        # If we get throttled better not to tag the file at all
+        pass
 
 
 def remove_temporary_flag(s3uri, retry=0):
@@ -110,7 +108,7 @@ def remove_temporary_flag(s3uri, retry=0):
                     'TagSet': remaining_tags
                 },
             )
-        elif len(tags["TagSet"]) > 0: # Delete tags if they exist
+        elif len(tags["TagSet"]) > 0:  # Delete tags if they exist
             s3_client.delete_object_tagging(
                 Bucket=bucket,
                 Key=key,
