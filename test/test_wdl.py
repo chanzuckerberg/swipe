@@ -441,7 +441,7 @@ class TestSFNWDL(unittest.TestCase):
           Key=f"{output_prefix}/test-temp-1/temporary.txt"
         ).get("TagSet", [])
         self.assertEqual(len(temporary_tagset), 1)
-        self.assertEqual(temporary_tagset[0].get("Key"), "swipe_temporary")
+        self.assertEqual(temporary_tagset[0].get("Key"), "intermediate_output")
         self.assertEqual(temporary_tagset[0].get("Value"), "true")
 
         # test temporary tag got removed for output file
