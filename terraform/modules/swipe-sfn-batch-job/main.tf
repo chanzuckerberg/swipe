@@ -116,11 +116,18 @@ resource "aws_batch_job_definition" "swipe_main" {
   name = "${var.app_name}-main"
   type = "container"
   tags = var.tags
+
   retry_strategy {
     attempts = var.batch_job_retry_attempts
   }
+
   timeout {
     attempt_duration_seconds = var.batch_job_timeout_seconds
   }
+
   container_properties = jsonencode(local.final_container_config)
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
