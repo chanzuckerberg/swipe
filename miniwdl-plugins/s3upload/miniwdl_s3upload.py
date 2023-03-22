@@ -340,7 +340,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
         if isinstance(output_file, list):
             for filename in output_file:
                 remove_temporary_flag(filename)
-        elif output_file and output_file.startswith("s3://"):
+        elif isinstance(output_file, str) and output_file.startswith("s3://"):
             remove_temporary_flag(output_file)
 
     s3cp(
