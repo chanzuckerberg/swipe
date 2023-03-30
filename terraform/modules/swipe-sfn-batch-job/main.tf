@@ -61,7 +61,7 @@ data "aws_iam_policy_document" "swipe_batch_main_job" {
     effect = "Allow"
     resources = [
       # TODO: constrain
-      "arn:aws:batch:${local.region}:${local.account_id}:job-definition/*",
+      "arn:aws:batch:${local.region}:${local.account_id}:job*",
     ]
     condition {
       test     = "ForAllValues:StringEquals"
