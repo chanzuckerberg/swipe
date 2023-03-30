@@ -408,7 +408,7 @@ def cloudwatch_logs(log_group_name, log_stream_name):
         page = cloudwatch_logs_client.get_log_events(**get_args)
         for event in page["events"]:
             if "timestamp" in event and "message" in event:
-                yield event
+                yield event['message']
         get_args["nextToken"] = page[next_page_key]
         if len(page["events"]) == 0:
             break
