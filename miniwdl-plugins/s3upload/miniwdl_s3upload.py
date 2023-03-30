@@ -442,6 +442,10 @@ class HybridBatch(SwarmContainer):
 
         s3_object(wdl_input_uri).put(Body=json.dumps(_saved_inputs[self.run_id]).encode())
 
+        # stdout not supported
+        with open("stdout.txt", "w"):
+            pass
+
         environment = {
             "WDL_WORKFLOW_URI": os.getenv("WDL_WORKFLOW_URI"),
             "WDL_INPUT_URI": wdl_input_uri,
@@ -485,8 +489,11 @@ class HybridBatch(SwarmContainer):
                     log_group_name = "/aws/batch/job"
                 if "logStreamName" in job_desc.get("container", {}):
                     log_stream_name = job_desc["container"]["logStreamName"]
-                    for event in cloudwatch_logs(log_group_name, log_stream_name):
-                        self.stderr_callback(event)
+
+                    with open("stdout.txt", "a") as f:
+                        for event in cloudwatch_logs(log_group_name, log_stream_name):
+                            self.stderr_callback(event)
+                            f.write(event + "\n")
             if "statusReason" in job_desc:
                 logger.info("Job %s: %s", job_id, job_desc["statusReason"])
             # When a job is finished, we do one last iteration to read any log lines that were still being delivered.

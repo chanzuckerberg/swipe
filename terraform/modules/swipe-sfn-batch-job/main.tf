@@ -72,6 +72,7 @@ data "aws_iam_policy_document" "swipe_batch_main_job" {
   statement {
     actions = [
       "batch:DescribeJobs",
+      "batch:TerminateJob",
     ]
     effect = "Allow"
     resources = [
