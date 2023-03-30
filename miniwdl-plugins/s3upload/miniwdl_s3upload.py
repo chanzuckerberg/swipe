@@ -22,6 +22,7 @@ Limitations:
 """
 
 import os
+import pathlib
 import re
 import subprocess
 import threading
@@ -433,18 +434,20 @@ class HybridBatch(SwarmContainer):
         if task_name not in self.batch_queues:
             return super()._run(logger, terminating, command)
 
+        for pipe_file in ["stdout.txt", "stderr.txt"]:
+            pathlib.Path(os.path.join(self.host_dir, pipe_file)).touch()
+
+
         memory = self.runtime_values.get("memory", 130816)
         cpu = self.runtime_values.get("cpu", 4)
         max_retries = self.runtime_values.get("maxRetries", 3)
+        # retries are handled by batch
+        self.try_counter = max_retries
 
         wdl_input_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-input.json")
         wdl_output_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-output.json")
 
         s3_object(wdl_input_uri).put(Body=json.dumps(_saved_inputs[self.run_id]).encode())
-
-        # stdout not supported
-        with open(os.path.join(self.host_dir, "stdout.txt"), "w"):
-            pass
 
         environment = {
             "WDL_WORKFLOW_URI": os.getenv("WDL_WORKFLOW_URI"),
@@ -498,7 +501,7 @@ class HybridBatch(SwarmContainer):
                 logger.info("Job %s: %s", job_id, job_desc["statusReason"])
             # When a job is finished, we do one last iteration to read any log lines that were still being delivered.
             if job_done:
-                if job_desc.get("container", {}).get("exitCode"):
+                if job_desc.get("container", {}).get("exitCode") is not None:
                     return job_desc["container"]["exitCode"]
                 elif last_status == "FAILED":
                     return -1
