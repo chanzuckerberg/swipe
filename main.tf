@@ -49,7 +49,7 @@ locals {
 module "sfn" {
   source                        = "./terraform/modules/swipe-sfn"
   app_name                      = var.app_name
-  batch_job_docker_image        = "732052188396.dkr.ecr.us-west-2.amazonaws.com/swipe:bc812aa9fdd4900bbd300ac347406f4b8a500536"
+  batch_job_docker_image        = "732052188396.dkr.ecr.us-west-2.amazonaws.com/swipe:e569fd1ae7c335a6f3142e19c6255c61519002b8"
   batch_spot_job_queue_arn      = module.batch_queue.batch_spot_job_queue_arn
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
   miniwdl_dir                   = var.miniwdl_dir
