@@ -31,20 +31,33 @@ import time
 import random
 from pathlib import Path
 from urllib.parse import urlparse
-from typing import Dict, Optional, Tuple, Union
+from typing import Callable, Dict, Optional, Tuple, Union
+from uuid import uuid4
 
 import WDL
 from WDL import Env, Value, values_to_json
 from WDL import Type
 from WDL.runtime import cache, config
 from WDL._util import StructuredLogMessage as _
+from WDL.runtime.backend.docker_swarm import SwarmContainer
+from WDL.runtime.error import Terminated
 
 import boto3
 import botocore
+from botocore.config import Config
 
 s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 s3_client = boto3.client("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+cloudwatch_client = boto3.client("cloudwatch")
 
+
+config = Config(
+    retries={
+        "max_attempts": 20,
+        "mode": "adaptive",
+    }
+)
+batch_client = boto3.client("batch", config=config)
 
 def s3_object(uri: str):
     assert uri.startswith("s3://")
@@ -134,7 +147,8 @@ _uploaded_files: Dict[Tuple[int, int], str] = {}
 _cached_files: Dict[Tuple[int, int], Tuple[str, Env.Bindings[Value.Base]]] = {}
 _key_inputs: Dict[str, Env.Bindings[Value.Base]] = {}
 _uploaded_files_lock = threading.Lock()
-
+_saved_inputs = {}
+_inputs_lock = threading.Lock()
 
 def cache_put(cfg: config.Loader, logger: logging.Logger, key: str, outputs: Env.Bindings[Value.Base]):
     if not (cfg["call_cache"].get_bool("put") and
@@ -216,7 +230,9 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     to each local file (keyed by inode) in _uploaded_files
     """
     logger = logger.getChild("s3_progressive_upload")
-
+    inputs_json = WDL.values_to_json(recv['inputs'])
+    with _inputs_lock:
+        _saved_inputs[run_id[-1]] = inputs_json
     # ignore inputs
     recv = yield recv
     # ignore command/runtime/container
@@ -374,3 +390,116 @@ def s3cp(logger, fn, s3uri, flag_temporary_file=False):
             raise WDL.Error.RuntimeError("failed: " + " ".join(cmd))
         if flag_temporary_file:
             flag_temporary(s3uri)
+
+
+class CloudwatchLogReader:
+    def __init__(self, log_stream_name, log_group_name="/aws/batch/job", head=None, tail=None):
+        self.log_group_name = log_group_name
+        self.log_stream_name = log_stream_name
+        self.head, self.tail = head, tail
+        self.next_page_key = "nextForwardToken" if self.tail is None else "nextBackwardToken"
+        self.next_page_token = None
+
+    def __iter__(self):
+        page = None
+        get_args = dict(logGroupName=self.log_group_name, logStreamName=self.log_stream_name,
+                        limit=min(self.head or 10000, self.tail or 10000))
+        get_args["startFromHead"] = True if self.tail is None else False
+        if self.next_page_token:
+            get_args["nextToken"] = self.next_page_token
+        while True:
+            page = cloudwatch_client.logs.get_log_events(**get_args)
+            for event in page["events"]:
+                if "timestamp" in event and "message" in event:
+                    yield event
+            get_args["nextToken"] = page[self.next_page_key]
+            if self.head is not None or self.tail is not None or len(page["events"]) == 0:
+                break
+        if page:
+            self.next_page_token = page[self.next_page_key]
+
+
+class HybridBatch(SwarmContainer):
+    @classmethod
+    def global_init(cls, cfg: config.Loader, logger: logging.Logger) -> None:
+        cls.s3_prefix = get_s3_get_prefix(cfg)
+        cls.job_definition = cfg["s3_progressive_upload"]["batch_job_definition"]
+        cls.batch_queues = json.loads(cfg["s3_progressive_upload"]["batch_queues"])
+        return super().global_init(cfg, logger)
+
+    def _run(self, logger: logging.Logger, terminating: Callable[[], bool], command: str) -> int:
+        # example run_id: call-say_hello-1
+        task_name = re.search(r'call-([^-]+)(-\d+)?$', self.run_id).group(1)
+        chunk_number_match = re.search(r'-\d+$', self.run_id)
+        chunk_number = int(chunk_number_match.group()[1:]) if chunk_number_match else None
+
+        if task_name not in self.batch_queues:
+            return super()._run(logger, terminating, command)
+
+        memory = self.runtime_values.get("memory", 130816)
+        cpu = self.runtime_values.get("cpu", 4)
+        max_retries = self.runtime_values.get("maxRetries", 3)
+
+        wdl_input_uri = os.path.join(self.s3_prefix, self.task_name, f"{self.run_id}-input.json")
+        wdl_output_uri = os.path.join(self.s3_prefix, self.task_name, f"{self.run_id}-output.json")
+
+        s3_object(wdl_input_uri).put(Body=json.dumps(_saved_inputs[self.run_id]).encode())
+
+        environment = {
+            "WDL_WORKFLOW_URI": os.getenv("WDL_WORKFLOW_URI"),
+            "WDL_INPUT_URI": wdl_input_uri,
+            "WDL_OUTPUT_URI": wdl_output_uri,
+            "SFN_EXECUTION_ID": os.getenv("SFN_EXECUTION_ID"),
+            "SFN_CURRENT_STATE": os.getenv("SFN_CURRENT_STATE"),
+            "TASK": task_name,
+        }
+
+        response = batch_client.submit_job(
+            jobName=uuid4(),
+            jobQueue=self.batch_queues[task_name],
+            jobDefinition=self.job_definition,
+            containerOverrides={
+                "environment": [{"name": k, "value": v} for k, v in environment.items()],
+                "memory": memory,
+                "vcpus": cpu,
+            },
+            retryStrategy={"attempts": max_retries},
+        )
+        job_id = response["jobId"]
+        last_status, log_reader, job_done = None, None, False
+        while True:
+            if terminating():
+                batch_client.terminate_job(
+                    jobId=job_id,
+                    reason="Job termination requested",
+                )
+                raise Terminated(quiet=False)
+            job_desc = batch_client.describe_jobs(jobs=[job_id])["jobs"][0]
+            if job_desc["status"] != last_status:
+                logger.info("Job %s %s", job_id, job_desc["status"])
+                last_status = job_desc["status"]
+                if job_desc["status"] in {"RUNNING", "SUCCEEDED", "FAILED"}:
+                    logger.info("Job %s log stream: %s", job_id, job_desc.get("container", {}).get("logStreamName"))
+            container_desc = job_desc.get("container", {})
+            if job_desc["status"] in {"RUNNING", "SUCCEEDED", "FAILED"}:
+                try:
+                    log_group_name = container_desc["logConfiguration"]["options"]["awslogs-group"]
+                except KeyError:
+                    log_group_name = "/aws/batch/job"
+                if "logStreamName" in job_desc.get("container", {}):
+                    log_stream_name = job_desc["container"]["logStreamName"]
+                    log_reader = CloudwatchLogReader(log_group_name=log_group_name, log_stream_name=log_stream_name)
+                    for event in log_reader:
+                        self.stderr_callback(event)
+            if "statusReason" in job_desc:
+                logger.info("Job %s: %s", job_id, job_desc["statusReason"])
+            # When a job is finished, we do one last iteration to read any log lines that were still being delivered.
+            if job_done:
+                if job_desc.get("container", {}).get("exitCode"):
+                    return job_desc["container"]["exitCode"]
+                elif last_status == "FAILED":
+                    return -1
+                return 1
+            if last_status in {"SUCCEEDED", "FAILED"}:
+                job_done = True
+            time.sleep(random.uniform(1.0, 2.0))

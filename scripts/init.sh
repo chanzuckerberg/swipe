@@ -98,5 +98,6 @@ handle_error() {
 }
 
 trap handle_error EXIT
-miniwdl run $PASSTHRU_ARGS --dir $MINIWDL_DIR $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json
+TASK_ARG=""; if [ -n "$TASK" ]; then TASK_ARG="--task $TASK"; unset MINIWDL__SCHEDULER__CONTAINER_BACKEND; fi
+miniwdl run $PASSTHRU_ARGS --dir $MINIWDL_DIR $(basename "$WDL_WORKFLOW_URI") --input wdl_input.json --verbose --error-json -o wdl_output.json $TASK_ARG
 clean_wd

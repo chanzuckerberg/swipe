@@ -3,6 +3,7 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
+  job_definition_name = "${var.app_name}-main"
   ecr_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     miniwdl_dir        = var.miniwdl_dir,
@@ -15,6 +16,14 @@ locals {
     "MINIWDL__CALL_CACHE__GET" : "true",
     "MINIWDL__CALL_CACHE__BACKEND" : "s3_progressive_upload_call_cache_backend",
   } : {}
+  smart_batch_env_vars = {
+    "MINIWDL__SCHEDULER__CONTAINER_BACKEND" : "batch_hybrid",
+    "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_JOB_DEFINITION" : local.job_definition_name,
+    "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_JOB_DEFINITION" : jsonencode({
+      # TODO: parameterize
+      "say_hello": "${var.app_name}-main-spot",
+    }),
+  }
   batch_env_vars = merge(local.cache_env_vars, var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
     "WDL_WORKFLOW_URI"                          = "Set this variable to the S3 URI of the WDL workflow",
