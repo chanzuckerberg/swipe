@@ -19,7 +19,7 @@ locals {
   smart_batch_env_vars = {
     "MINIWDL__SCHEDULER__CONTAINER_BACKEND" : "hybrid_batch",
     "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_JOB_DEFINITION" : local.job_definition_name,
-    "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_JOB_DEFINITION" : jsonencode({
+    "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_QUEUES" : jsonencode({
       # TODO: parameterize
       "say_hello": "${var.app_name}-main-spot",
     }),
