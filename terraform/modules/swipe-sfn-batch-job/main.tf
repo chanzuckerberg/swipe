@@ -46,7 +46,7 @@ locals {
     "OUTPUT_STATUS_JSON_FILES"                  = tostring(var.output_status_json_files)
   })
   container_env_vars     = { "environment" : [for k in sort(keys(local.batch_env_vars)) : { "name" : k, "value" : local.batch_env_vars[k] }] }
-  final_container_config = merge(local.container_config, local.container_env_vars)
+  final_container_config = merge(local.container_config, local.container_env_vars, local.smart_batch_env_vars)
 }
 
 resource "aws_iam_policy" "swipe_batch_main_job" {
