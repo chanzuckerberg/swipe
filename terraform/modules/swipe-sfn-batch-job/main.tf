@@ -24,7 +24,7 @@ locals {
       "say_hello": "${var.app_name}-main-spot",
     }),
   }
-  batch_env_vars = merge(local.cache_env_vars, var.extra_env_vars, {
+  batch_env_vars = merge(local.cache_env_vars, local.smart_batch_env_vars, var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
     "WDL_WORKFLOW_URI"                          = "Set this variable to the S3 URI of the WDL workflow",
     "WDL_OUTPUT_URI"                            = "Set this variable to the S3 URI where the WDL output JSON will be written",
@@ -46,7 +46,7 @@ locals {
     "OUTPUT_STATUS_JSON_FILES"                  = tostring(var.output_status_json_files)
   })
   container_env_vars     = { "environment" : [for k in sort(keys(local.batch_env_vars)) : { "name" : k, "value" : local.batch_env_vars[k] }] }
-  final_container_config = merge(local.container_config, local.container_env_vars, local.smart_batch_env_vars)
+  final_container_config = merge(local.container_config, local.container_env_vars)
 }
 
 resource "aws_iam_policy" "swipe_batch_main_job" {
