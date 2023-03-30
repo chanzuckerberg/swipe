@@ -443,7 +443,7 @@ class HybridBatch(SwarmContainer):
         s3_object(wdl_input_uri).put(Body=json.dumps(_saved_inputs[self.run_id]).encode())
 
         # stdout not supported
-        with open("stdout.txt", "w"):
+        with open(os.path.join(self.host_dir, "stdout.txt"), "w"):
             pass
 
         environment = {
@@ -490,7 +490,7 @@ class HybridBatch(SwarmContainer):
                 if "logStreamName" in job_desc.get("container", {}):
                     log_stream_name = job_desc["container"]["logStreamName"]
 
-                    with open("stdout.txt", "a") as f:
+                    with open(os.path.join(self.host_dir, "stdout.txt"), "a") as f:
                         for event in cloudwatch_logs(log_group_name, log_stream_name):
                             self.stderr_callback(event)
                             f.write(event + "\n")
