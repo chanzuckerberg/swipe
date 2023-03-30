@@ -3,8 +3,14 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
+  region              = data.aws_region.current.name
+  account_id          = data.aws_caller_identity.current.account_id
   job_definition_name = "${var.app_name}-main"
-  ecr_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com"
+  ecr_url             = "${local.account_id}.dkr.ecr.${local.region}.amazonaws.com"
+  hybrid_batch_queues = {
+    # TODO: parameterize
+    say_hello = "arn:aws:batch:${local.region}:${local.account_id}:job-queue/${var.app_name}-main-spot",
+  }
   container_config = yamldecode(templatefile("${path.module}/batch_job_container_properties.yml", {
     miniwdl_dir        = var.miniwdl_dir,
     app_name           = var.app_name,
@@ -19,10 +25,7 @@ locals {
   smart_batch_env_vars = {
     "MINIWDL__SCHEDULER__CONTAINER_BACKEND" : "hybrid_batch",
     "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_JOB_DEFINITION" : local.job_definition_name,
-    "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_QUEUES" : jsonencode({
-      # TODO: parameterize
-      "say_hello": "${var.app_name}-main-spot",
-    }),
+    "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_QUEUES" : jsonencode(local.hybrid_batch_queues),
   }
   batch_env_vars = merge(local.cache_env_vars, local.smart_batch_env_vars, var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
@@ -31,7 +34,7 @@ locals {
     "SFN_EXECUTION_ID"                          = "Set this variable to the current step function execution ARN",
     "SFN_CURRENT_STATE"                         = "Set this variable to the current step function state name, like HostFilterEC2 or HostFilterSPOT",
     "APP_NAME"                                  = var.app_name
-    "AWS_DEFAULT_REGION"                        = data.aws_region.current.name,
+    "AWS_DEFAULT_REGION"                        = local.region,
     "MINIWDL_DIR"                               = var.miniwdl_dir
     "MINIWDL__TASK_RUNTIME__DEFAULTS"           = length(var.docker_network) > 0 ? jsonencode({ "docker_network" = var.docker_network }) : "{}"
     "MINIWDL__S3PARCP__DOCKER_IMAGE"            = var.batch_job_docker_image,
@@ -49,52 +52,81 @@ locals {
   final_container_config = merge(local.container_config, local.container_env_vars)
 }
 
-resource "aws_iam_policy" "swipe_batch_main_job" {
-  name = "${var.app_name}-batch-job"
-
-  policy = jsonencode({
-    Version : "2012-10-17",
-    Statement : [
-      {
-        Effect : "Allow",
-        Action : [
-          "s3:List*",
-          "s3:GetObject*",
-          "s3:PutObject*",
-          "s3:DeleteObjectTagging",
-          "s3:CreateMultipartUpload"
-        ],
-        Resource : concat(compact([
-          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
-          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}/*",
-          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
-          var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
-          ]),
-          [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}"],
-          [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}/*"],
-        )
-      },
-      {
-        Effect : "Allow",
-        Action : [
-          "s3:ListBucket",
-        ],
-        Resource : concat(compact([
-          "arn:aws:s3:::aegea-batch-jobs-${data.aws_caller_identity.current.account_id}",
-          var.wdl_workflow_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.wdl_workflow_s3_prefix)[0]) : "",
-          ]),
-          [for workspace_s3_prefix in var.workspace_s3_prefixes : format("arn:aws:s3:::%s", split("/", workspace_s3_prefix)[0])],
-        )
-      },
-      {
-        Effect : "Allow",
-        Action : [
-          "cloudwatch:PutMetricData"
-        ],
-        Resource : "*"
-      }
+data "aws_iam_policy_document" "swipe_batch_main_job" {
+  statement {
+    actions = [
+      "batch:SubmitJob",
     ]
-  })
+    effect = "Allow"
+    resources = [
+      "arn:aws:batch:${local.region}:${local.account_id}:job-definition:${job_definition_name}:*",
+    ]
+    condition {
+      test     = "ForAllValues:StringEquals"
+      variable = "aws:RequestTag/queue"
+      values   = tolist(toset(values(local.hybrid_batch_queues)))
+    }
+  }
+
+  statement {
+    actions = [
+      "logs:FilterLogEvents",
+      "logs:GetLogEvents",
+    ]
+    effect = "Allow"
+    resources = [
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/batch/job:log-stream:${job_definition_name}/*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:List*",
+      "s3:GetObject*",
+      "s3:PutObject*",
+      "s3:DeleteObjectTagging",
+      "s3:CreateMultipartUpload"
+    ]
+    effect = "Allow"
+    resources = concat(
+      compact([
+        "arn:aws:s3:::aegea-batch-jobs-${local.account_id}",
+        "arn:aws:s3:::aegea-batch-jobs-${local.account_id}/*",
+        var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}" : "",
+        var.wdl_workflow_s3_prefix != "" ? "arn:aws:s3:::${var.wdl_workflow_s3_prefix}/*" : "",
+      ]),
+      [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}"],
+      [for workspace_s3_prefix in var.workspace_s3_prefixes : "arn:aws:s3:::${workspace_s3_prefix}/*"],
+    )
+  }
+
+  statement {
+    actions = [
+      "s3:ListBucket",
+    ]
+    effect = "Allow"
+    resources = concat(
+      compact([
+        "arn:aws:s3:::aegea-batch-jobs-${local.account_id}",
+        var.wdl_workflow_s3_prefix != "" ? format("arn:aws:s3:::%s", split("/", var.wdl_workflow_s3_prefix)[0]) : "",
+      ]),
+      [for workspace_s3_prefix in var.workspace_s3_prefixes : format("arn:aws:s3:::%s", split("/", workspace_s3_prefix)[0])],
+    )
+  }
+
+  statement {
+    actions = [
+      "cloudwatch:PutMetricData"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+}
+
+resource "aws_iam_policy" "swipe_batch_main_job" {
+  name   = "${var.app_name}-batch-job"
+  policy = data.aws_iam_policy_document.swipe_batch_main_job.json
 }
 
 resource "aws_iam_role" "swipe_batch_main_job" {
