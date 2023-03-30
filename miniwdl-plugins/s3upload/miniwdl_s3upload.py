@@ -440,8 +440,8 @@ class HybridBatch(SwarmContainer):
         cpu = self.runtime_values.get("cpu", 4)
         max_retries = self.runtime_values.get("maxRetries", 3)
 
-        wdl_input_uri = os.path.join(self.s3_prefix, self.task_name, f"{self.run_id}-input.json")
-        wdl_output_uri = os.path.join(self.s3_prefix, self.task_name, f"{self.run_id}-output.json")
+        wdl_input_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-input.json")
+        wdl_output_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-output.json")
 
         s3_object(wdl_input_uri).put(Body=json.dumps(_saved_inputs[self.run_id]).encode())
 
