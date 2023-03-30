@@ -51,13 +51,13 @@ s3_client = boto3.client("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 cloudwatch_client = boto3.client("cloudwatch")
 
 
-config = Config(
+batch_config = Config(
     retries={
         "max_attempts": 20,
         "mode": "adaptive",
     }
 )
-batch_client = boto3.client("batch", config=config)
+batch_client = boto3.client("batch", config=batch_config)
 
 def s3_object(uri: str):
     assert uri.startswith("s3://")
