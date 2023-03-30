@@ -56,7 +56,6 @@ data "aws_iam_policy_document" "swipe_batch_main_job" {
   statement {
     actions = [
       "batch:SubmitJob",
-      "batch:DescribeJobs",
     ]
     effect = "Allow"
     resources = [
@@ -68,6 +67,16 @@ data "aws_iam_policy_document" "swipe_batch_main_job" {
       variable = "aws:RequestTag/queue"
       values   = tolist(toset(values(local.hybrid_batch_queues)))
     }
+  }
+
+  statement {
+    actions = [
+      "batch:DescribeJobs",
+    ]
+    effect = "Allow"
+    resources = [
+      "*",
+    ]
   }
 
   statement {
