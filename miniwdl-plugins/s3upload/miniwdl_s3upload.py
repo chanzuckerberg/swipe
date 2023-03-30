@@ -455,7 +455,7 @@ class HybridBatch(SwarmContainer):
         }
 
         response = batch_client.submit_job(
-            jobName=uuid4(),
+            jobName=str(uuid4()),
             jobQueue=self.batch_queues[task_name],
             jobDefinition=self.job_definition,
             containerOverrides={
