@@ -48,7 +48,7 @@ from botocore.config import Config
 
 s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 s3_client = boto3.client("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
-cloudwatch_client = boto3.client("cloudwatch")
+cloudwatch_logs_client = boto3.client("logs")
 
 
 batch_config = Config(
@@ -392,31 +392,28 @@ def s3cp(logger, fn, s3uri, flag_temporary_file=False):
             flag_temporary(s3uri)
 
 
-class CloudwatchLogReader:
-    def __init__(self, log_stream_name, log_group_name="/aws/batch/job", head=None, tail=None):
-        self.log_group_name = log_group_name
-        self.log_stream_name = log_stream_name
-        self.head, self.tail = head, tail
-        self.next_page_key = "nextForwardToken" if self.tail is None else "nextBackwardToken"
-        self.next_page_token = None
-
-    def __iter__(self):
-        page = None
-        get_args = dict(logGroupName=self.log_group_name, logStreamName=self.log_stream_name,
-                        limit=min(self.head or 10000, self.tail or 10000))
-        get_args["startFromHead"] = True if self.tail is None else False
-        if self.next_page_token:
-            get_args["nextToken"] = self.next_page_token
-        while True:
-            page = cloudwatch_client.logs.get_log_events(**get_args)
-            for event in page["events"]:
-                if "timestamp" in event and "message" in event:
-                    yield event
-            get_args["nextToken"] = page[self.next_page_key]
-            if self.head is not None or self.tail is not None or len(page["events"]) == 0:
-                break
-        if page:
-            self.next_page_token = page[self.next_page_key]
+def cloudwatch_logs(log_group_name, log_stream_name):
+    next_page_key = "nextForwardToken"
+    next_page_token = None
+    page = None
+    get_args = dict(
+        logGroupName=log_group_name,
+        logStreamName=log_stream_name,
+        limit=10000,
+        startFromHead=True,
+    )
+    if next_page_token:
+        get_args["nextToken"] = next_page_token
+    while True:
+        page = cloudwatch_logs_client.get_log_events(**get_args)
+        for event in page["events"]:
+            if "timestamp" in event and "message" in event:
+                yield event
+        get_args["nextToken"] = page[next_page_key]
+        if len(page["events"]) == 0:
+            break
+    if page:
+        next_page_token = page[next_page_key]
 
 
 class HybridBatch(SwarmContainer):
@@ -466,7 +463,7 @@ class HybridBatch(SwarmContainer):
             retryStrategy={"attempts": max_retries},
         )
         job_id = response["jobId"]
-        last_status, log_reader, job_done = None, None, False
+        last_status, job_done = None, False
         while True:
             if terminating():
                 batch_client.terminate_job(
@@ -488,8 +485,7 @@ class HybridBatch(SwarmContainer):
                     log_group_name = "/aws/batch/job"
                 if "logStreamName" in job_desc.get("container", {}):
                     log_stream_name = job_desc["container"]["logStreamName"]
-                    log_reader = CloudwatchLogReader(log_group_name=log_group_name, log_stream_name=log_stream_name)
-                    for event in log_reader:
+                    for event in cloudwatch_logs(log_group_name, log_stream_name):
                         self.stderr_callback(event)
             if "statusReason" in job_desc:
                 logger.info("Job %s: %s", job_id, job_desc["statusReason"])
