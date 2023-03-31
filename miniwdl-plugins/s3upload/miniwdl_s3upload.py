@@ -30,6 +30,7 @@ import json
 import logging
 import time
 import random
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
 from typing import Callable, Dict, Optional, Tuple, Union
@@ -531,5 +532,5 @@ class HybridBatch(SwarmContainer):
 
     def host_path(self, container_path: str, inputs_only: bool = False) -> Optional[str]:
         res = super().host_path(container_path, inputs_only)
-        logging.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', container_path, inputs_only, res)
+        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', container_path, inputs_only, res, file=sys.stderr)
         return res
