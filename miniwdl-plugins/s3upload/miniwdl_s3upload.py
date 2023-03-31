@@ -522,7 +522,7 @@ class HybridBatch(SwarmContainer):
                 job_done = True
             time.sleep(random.uniform(1.0, 2.0))
         
-        output_json = json.loads(s3_object(wdl_output_uri).get().get()["Body"])
+        output_json = json.loads(s3_object(wdl_output_uri).get()["Body"].read().decode())
         for output in output_json.values():
             if output.starts_with("s3://"):
                 s3cp(logger, output, os.path.join(self.host_dir, os.path.basename(output)))
