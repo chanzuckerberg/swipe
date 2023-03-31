@@ -303,7 +303,7 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
             recv["outputs"],
             run_dir,
             os.path.join(get_s3_put_prefix(cfg), *run_id[1:]),
-            workflow.name,
+            None,
         )
 
     yield recv
