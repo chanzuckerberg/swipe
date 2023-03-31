@@ -527,6 +527,6 @@ class HybridBatch(SwarmContainer):
             if output.startswith("s3://"):
                 s3cp(logger, output, os.path.join(self.container_dir, os.path.basename(output)))
         
-        logger.info(", ".join(os.listdir(self.container_dir)))
+        logger.info("AAAAAAA LIST" + ", ".join(os.listdir(self.container_dir)))
 
         return return_code
