@@ -480,7 +480,7 @@ class HybridBatch(SwarmContainer):
             retryStrategy={"attempts": max_retries},
         )
         job_id = response["jobId"]
-        last_status, return_code, job_done = None, False
+        last_status, return_code, job_done = None, None, False
         while True:
             if terminating():
                 batch_client.terminate_job(
