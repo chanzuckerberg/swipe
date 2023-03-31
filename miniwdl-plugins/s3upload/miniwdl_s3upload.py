@@ -480,7 +480,7 @@ class HybridBatch(SwarmContainer):
             retryStrategy={"attempts": max_retries},
         )
         job_id = response["jobId"]
-        last_status, job_done = None, False
+        last_status, return_code, job_done = None, False
         while True:
             if terminating():
                 batch_client.terminate_job(
@@ -512,10 +512,19 @@ class HybridBatch(SwarmContainer):
             # When a job is finished, we do one last iteration to read any log lines that were still being delivered.
             if job_done:
                 if job_desc.get("container", {}).get("exitCode") is not None:
-                    return job_desc["container"]["exitCode"]
+                    return_code = job_desc["container"]["exitCode"]
                 elif last_status == "FAILED":
-                    return -1
-                return 1
+                    return_code = -1
+                else:
+                    return_code = 1
+                break
             if last_status in {"SUCCEEDED", "FAILED"}:
                 job_done = True
             time.sleep(random.uniform(1.0, 2.0))
+        
+        output_json = json.loads(s3_object(wdl_output_uri).get().get()["Body"])
+        for output in output_json.values():
+            if output.starts_with("s3://"):
+                s3cp(logger, output, os.path.join(self.host_dir, os.path.basename(output)))
+
+        return return_code
