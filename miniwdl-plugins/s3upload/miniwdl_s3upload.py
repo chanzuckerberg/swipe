@@ -296,6 +296,16 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                 abs_fn = os.path.join(index_dir, fns[0])
                 s3uri = os.path.join(s3prefix, fns[0])
                 upload_file(abs_fn, s3uri, flag_temporary_file=False)
+    if cfg.has_option("s3_progressive_upload", "uri_prefix") and 'TASK' in os.environ:
+        # write outputs.s3.json using _uploaded_files
+        write_outputs_s3_json(
+            logger,
+            recv["outputs"],
+            run_dir,
+            os.path.join(get_s3_put_prefix(cfg), *run_id[1:]),
+            workflow.name,
+        )
+
     yield recv
 
 
