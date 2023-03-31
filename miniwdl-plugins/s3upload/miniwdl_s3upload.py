@@ -387,7 +387,7 @@ def s3cp(logger, fn, s3uri, flag_temporary_file=False):
         #   quick intense burst of load that can bump into the S3 rate limit
         #   allowing more retries should overcome this
         cmd = ["s3parcp", "--checksum", "--max-retries", "10", fn, s3uri]
-        logger.debug(" ".join(cmd))
+        logger.info(" ".join(cmd))
         rslt = subprocess.run(cmd, stderr=subprocess.PIPE)
         if rslt.returncode != 0:
             logger.error(
@@ -526,5 +526,7 @@ class HybridBatch(SwarmContainer):
         for output in output_json.values():
             if output.startswith("s3://"):
                 s3cp(logger, output, os.path.join(self.container_dir, os.path.basename(output)))
+        
+        logger.info(", ".join(os.listdir(self.container_dir)))
 
         return return_code
