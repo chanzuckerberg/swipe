@@ -530,6 +530,6 @@ class HybridBatch(SwarmContainer):
         return return_code
 
     def host_path(self, container_path: str, inputs_only: bool = False) -> Optional[str]:
-        res = super().host(container_path, inputs_only)
+        res = super().host_path(container_path, inputs_only)
         logging.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', container_path, inputs_only, res)
         return res
