@@ -367,6 +367,7 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     for output_file in outputs_s3_json.values():
         if isinstance(output_file, list):
             for filename in output_file:
+                logger.info(f'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB {filename}')
                 remove_temporary_flag(filename)
         elif output_file and output_file.startswith("s3://"):
             remove_temporary_flag(output_file)
@@ -452,8 +453,6 @@ class HybridBatch(SwarmContainer):
         memory = self.runtime_values.get("memory", 130816)
         cpu = self.runtime_values.get("cpu", 4)
         max_retries = self.runtime_values.get("maxRetries", 3)
-        # retries are handled by batch
-        self.try_counter = max_retries
 
         wdl_input_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-input.json")
         wdl_output_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-output.json")
@@ -523,10 +522,18 @@ class HybridBatch(SwarmContainer):
                 job_done = True
             time.sleep(random.uniform(1.0, 2.0))
         
+        if return_code != 0:
+            # retries are handled by batch
+            self.try_counter = max_retries
+            return return_code
+        
         output_json = json.loads(s3_object(wdl_output_uri).get()["Body"].read().decode())
         for output in output_json.values():
             if output.startswith("s3://"):
-                s3cp(logger, output, os.path.join(self.host_work_dir(), os.path.basename(output)))
+                abs_fn = os.path.join(self.host_work_dir(), os.path.basename(output))
+                s3cp(logger, output, abs_fn)
+                with _uploaded_files_lock:
+                    _uploaded_files[inode(abs_fn)] = output
         
         return return_code
 
