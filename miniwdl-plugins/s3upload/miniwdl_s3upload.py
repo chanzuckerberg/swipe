@@ -48,6 +48,10 @@ import boto3
 import botocore
 from botocore.config import Config
 
+
+from smart_download import smart_download
+
+
 s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 s3_client = boto3.client("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 cloudwatch_logs_client = boto3.client("logs")
@@ -291,6 +295,8 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     each task).
     """
     logger = logger.getChild("s3_progressive_upload")
+
+    smart_download(recv['inputs'], workflow)
 
     # ignore inputs
     recv = yield recv

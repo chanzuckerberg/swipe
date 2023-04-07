@@ -19,7 +19,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Mike Lin, Andrey Kislyuk",
-    py_modules=["miniwdl_s3upload"],
+    py_modules=["miniwdl_s3upload", "smart_download"],
     python_requires=">=3.6",
     setup_requires=["reentry"],
     install_requires=["boto3"],
