@@ -296,7 +296,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     """
     logger = logger.getChild("s3_progressive_upload")
 
-    smart_download(recv['inputs'], workflow)
+    smart_download(cfg, recv['inputs'], workflow)
 
     # ignore inputs
     recv = yield recv
