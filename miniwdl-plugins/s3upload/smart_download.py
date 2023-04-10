@@ -14,7 +14,12 @@ def _build_download_task(cfg: config.Loader, directory: bool):
     uri_input = Tree.Decl(_null_source_pos, Type.String(), 'uri')
     placeholder = Expr.Placeholder(_null_source_pos, {}, Expr.Ident(_null_source_pos, 'uri'))
     flags = '--recursive' if directory else ''
-    command = Expr.String(_null_source_pos, [f' set -euxo; mkdir __out/; cd __out/; export AWS_REGION=us-west-2; s3parcp {flags} ', placeholder, ' .  '], True)
+    command = Expr.String(
+        _null_source_pos,
+        [f' set -euxo; mkdir __out/; cd __out/; export AWS_REGION=us-west-2; s3parcp {flags} ', placeholder, ' .  '],
+        True,
+    )
+
     if directory:
         output = Tree.Decl(_null_source_pos, Type.Directory(), 'out', Expr.String(_null_source_pos, ' __out/ '))
     else:
@@ -25,7 +30,10 @@ def _build_download_task(cfg: config.Loader, directory: bool):
             Expr.Apply(
                 _null_source_pos,
                 '_at',
-                [Expr.Apply(_null_source_pos, 'glob', [Expr.String(_null_source_pos, ' __out/* ')]), Expr.Int(_null_source_pos, 0)],
+                [
+                    Expr.Apply(_null_source_pos, 'glob', [Expr.String(_null_source_pos, ' __out/* ')]),
+                    Expr.Int(_null_source_pos, 0),
+                ],
             ),
         )
 
