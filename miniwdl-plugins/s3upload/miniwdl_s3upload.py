@@ -25,7 +25,6 @@ import os
 import pathlib
 import re
 import subprocess
-import tempfile
 import threading
 import json
 import logging
@@ -65,6 +64,7 @@ batch_config = Config(
     }
 )
 batch_client = boto3.client("batch", config=batch_config)
+
 
 def s3_object(uri: str):
     assert uri.startswith("s3://")
@@ -421,15 +421,14 @@ class HybridBatch(SwarmContainer):
     def _run(self, logger: logging.Logger, terminating: Callable[[], bool], command: str) -> int:
         # example run_id: call-say_hello-1
         task_name = re.search(r'call-([^-]+)(-\d+)?$', self.run_id).group(1)
-        chunk_number_match = re.search(r'-\d+$', self.run_id)
-        chunk_number = int(chunk_number_match.group()[1:]) if chunk_number_match else None
+        # chunk_number_match = re.search(r'-\d+$', self.run_id)
+        # chunk_number = int(chunk_number_match.group()[1:]) if chunk_number_match else None
 
         if task_name not in self.batch_queues:
             return super()._run(logger, terminating, command)
 
         for pipe_file in ["stdout.txt", "stderr.txt"]:
             pathlib.Path(os.path.join(self.host_dir, pipe_file)).touch()
-
 
         memory = self.runtime_values.get("memory", 130816)
         cpu = self.runtime_values.get("cpu", 4)
@@ -502,12 +501,12 @@ class HybridBatch(SwarmContainer):
             if last_status in {"SUCCEEDED", "FAILED"}:
                 job_done = True
             time.sleep(random.uniform(1.0, 2.0))
-        
+
         if return_code != 0:
             # retries are handled by batch
             self.try_counter = max_retries
             return return_code
-        
+
         output_json = json.loads(s3_object(wdl_output_uri).get()["Body"].read().decode())
         for output in output_json.values():
             if output.startswith("s3://"):
@@ -515,10 +514,9 @@ class HybridBatch(SwarmContainer):
                 s3cp(logger, output, abs_fn)
                 with _uploaded_files_lock:
                     _uploaded_files[inode(abs_fn)] = output
-        
+
         return return_code
 
     def host_path(self, container_path: str, inputs_only: bool = False) -> Optional[str]:
         res = super().host_path(container_path, inputs_only)
-        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', container_path, inputs_only, os.path.isabs(container_path), os.path.join(self.host_work_dir(), container_path), res, file=sys.stderr)
         return res

@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Optional
+from typing import Dict
 from uuid import uuid4
 
 
@@ -57,9 +57,9 @@ def _build_download_task(cfg: config.Loader, directory: bool):
         outputs=[output],
         parameter_meta={},
         runtime={
-            'docker':Expr.String(_null_source_pos, [f' {cfg["s3parcp"]["docker_image"] } ']),
+            'docker': Expr.String(_null_source_pos, [f' {cfg["s3parcp"]["docker_image"] } ']),
         },
-        meta={} 
+        meta={},
     )
     task.parent = Tree.Document("", _null_source_pos, [], {}, [task], None, [], '')
     return task
@@ -101,14 +101,14 @@ def _inputs_to_remap(inputs: Env.Bindings, workflow: Tree.Workflow):
 
             if provided_input:
                 filepath = provided_input.value.value
-                provided_input._value = Value.String(provided_input.value.value)
             elif isinstance(_input.expr, Expr.String):
                 assert len(_input.expr.parts) == 1
                 assert isinstance(_input.expr.parts[0], str)
                 filepath = _input.expr.parts[0]
             # TODO: generalize
             if filepath.startswith('s3://'):
-                _input.type = Type.String(_input.type.optional)
+                if provided_input:
+                    provided_input._value = Value.String(provided_input.value.value)
                 yield _input
 
 
@@ -124,6 +124,7 @@ def smart_download(cfg: config.Loader, inputs: Env.Bindings, workflow: Tree.Work
 
     for _input in _inputs_to_remap(inputs, workflow):
         download_task = _build_download_task(cfg, isinstance(_input.type, Type.Directory))
+        _input.type = Type.String(_input.type.optional)
         download_call = _build_download_call(download_task, _input)
         workflow.body.append(download_call)
         for node in nodes_by_id.values():
