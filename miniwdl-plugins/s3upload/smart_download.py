@@ -1,22 +1,33 @@
-from typing import Dict
+import logging
+from typing import Dict, Optional
 from uuid import uuid4
 
 
 from WDL.runtime import config
 from WDL import Env, Error, Expr, Tree, Type, Value
 
+import boto3
+
 
 _download_output_name = 'out'
 _null_source_pos = Error.SourcePosition("", "", 0, 0, 0, 0)
+_task_name = f'{uuid4()}_s3parcp'
 
 
 def _build_download_task(cfg: config.Loader, directory: bool):
+    global _task_name
+
     uri_input = Tree.Decl(_null_source_pos, Type.String(), 'uri')
-    placeholder = Expr.Placeholder(_null_source_pos, {}, Expr.Ident(_null_source_pos, 'uri'))
+
+    uri_placeholder = Expr.Placeholder(_null_source_pos, {}, Expr.Ident(_null_source_pos, 'uri'))
     flags = '--recursive' if directory else ''
     command = Expr.String(
         _null_source_pos,
-        [f' set -euxo; mkdir __out/; cd __out/; export AWS_REGION=us-west-2; s3parcp {flags} ', placeholder, ' .  '],
+        [
+            f' set -euxo; mkdir __out/; cd __out/ ; s3parcp {flags} ',
+            uri_placeholder,
+            ' .  ',
+        ],
         True,
     )
 
@@ -39,7 +50,7 @@ def _build_download_task(cfg: config.Loader, directory: bool):
 
     task = Tree.Task(
         pos=_null_source_pos,
-        name=f'{uuid4()}_s3parcp',
+        name=_task_name,
         inputs=[uri_input],
         postinputs=[],
         command=command,
@@ -122,3 +133,35 @@ def smart_download(cfg: config.Loader, inputs: Env.Bindings, workflow: Tree.Work
                 for child in node.children:
                     if isinstance(child, Expr.Base):
                         _remap_expr(child, download_call, _input.name)
+
+
+def task_plugin(cfg: config.Loader, logger: logging.Logger, run_id: str, run_dir: str, task: Tree.Task, **recv):
+    """
+    Adds credentials to downloader tasks
+    """
+    recv = yield recv
+    if task.name == _task_name:
+        # get AWS credentials from boto3
+        b3 = boto3.session.Session()
+        b3creds = b3.get_credentials()
+        aws_credentials: Dict[str, str] = {
+            "AWS_ACCESS_KEY_ID": b3creds.access_key,
+            "AWS_SECRET_ACCESS_KEY": b3creds.secret_key,
+        }
+        if b3creds.token:
+            aws_credentials["AWS_SESSION_TOKEN"] = b3creds.token
+
+        # s3parcp (or perhaps underlying golang AWS lib) seems to require region set to match the
+        # bucket's; in contrast to awscli which can conveniently 'figure it out'
+        aws_credentials["AWS_REGION"] = b3.region_name if b3.region_name else "us-west-2"
+
+        recv['container'].runtime_values.setdefault('env', {})
+        for k, v in aws_credentials.items():
+            recv['container'].runtime_values['env'][k] = v
+
+        # ignore command/runtime/container
+        recv = yield recv
+    else:
+        # ignore command/runtime/container
+        recv = yield recv
+    yield recv

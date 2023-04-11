@@ -25,7 +25,10 @@ setup(
     install_requires=["boto3"],
     reentry_register=True,
     entry_points={
-        'miniwdl.plugin.task': ['s3_progressive_upload_task = miniwdl_s3upload:task'],
+        'miniwdl.plugin.task': [
+            's3_progressive_upload_task = miniwdl_s3upload:task',
+            'smart_download_task = smart_download:task_plugin',
+        ],
         'miniwdl.plugin.workflow': ['s3_progressive_upload_workflow = miniwdl_s3upload:workflow'],
         'miniwdl.plugin.cache_backend': ['s3_progressive_upload_call_cache_backend = miniwdl_s3upload:CallCache'],
         "miniwdl.plugin.container_backend": ["hybrid_batch = miniwdl_s3upload:HybridBatch"],

@@ -25,6 +25,7 @@ import os
 import pathlib
 import re
 import subprocess
+import tempfile
 import threading
 import json
 import logging
