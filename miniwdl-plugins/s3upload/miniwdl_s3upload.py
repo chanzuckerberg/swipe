@@ -220,7 +220,8 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     recv = yield recv
 
     def upload_file(abs_fn, s3uri):
-        s3cp(logger, abs_fn, s3uri)
+        if inode(abs_fn) not in _uploaded_files:
+            s3cp(logger, abs_fn, s3uri)
         # record in _uploaded_files (keyed by inode, so that it can be found from any
         # symlink or hardlink)
         with _uploaded_files_lock:
@@ -349,7 +350,6 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
     for output_file in outputs_s3_json.values():
         if isinstance(output_file, list):
             for filename in output_file:
-                logger.info(f'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB {filename}')
                 output_set.add(filename)
         elif isinstance(output_file, str) and output_file.startswith("s3://"):
             output_set.add(output_file)
@@ -366,12 +366,12 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
 _s3parcp_lock = threading.Lock()
 
 
-def s3cp(logger, fn, s3uri):
+def s3cp(logger, src, dst):
     with _s3parcp_lock:
         # when uploading many small outputs from the same pipeline you end up with a
         #   quick intense burst of load that can bump into the S3 rate limit
         #   allowing more retries should overcome this
-        cmd = ["s3parcp", "--checksum", "--max-retries", "10", fn, s3uri]
+        cmd = ["s3parcp", "--checksum", "--max-retries", "10", src, dst]
         logger.info(" ".join(cmd))
         rslt = subprocess.run(cmd, stderr=subprocess.PIPE)
         if rslt.returncode != 0:

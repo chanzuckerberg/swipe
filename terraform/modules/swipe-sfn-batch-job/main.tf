@@ -26,6 +26,7 @@ locals {
     "MINIWDL__SCHEDULER__CONTAINER_BACKEND" : "hybrid_batch",
     "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_JOB_DEFINITION" : local.job_definition_name,
     "MINIWDL__S3_PROGRESSIVE_UPLOAD__BATCH_QUEUES" : jsonencode(local.hybrid_batch_queues),
+    "MINIWDL__S3_PROGRESSIVE_UPLOAD__REMOTE_INPUTS" : join(",", ["salutations"]),
   }
   batch_env_vars = merge(local.cache_env_vars, local.smart_batch_env_vars, var.extra_env_vars, {
     "WDL_INPUT_URI"                             = "Set this variable to the S3 URI of the WDL input JSON",
