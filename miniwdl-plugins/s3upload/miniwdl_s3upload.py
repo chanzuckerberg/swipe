@@ -49,7 +49,7 @@ import botocore
 from botocore.config import Config
 
 
-from smart_download import smart_download
+from smart_download import hybrid_batch, smart_download
 
 
 s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
@@ -298,6 +298,7 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     """
     logger = logger.getChild("s3_progressive_upload")
 
+    hybrid_batch(cfg, recv['inputs'], workflow)
     smart_download(cfg, recv['inputs'], workflow)
 
     # ignore inputs

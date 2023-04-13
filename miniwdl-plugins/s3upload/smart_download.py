@@ -65,8 +65,7 @@ def _build_s3_download_task(cfg: config.Loader, directory: bool):
     return task
 
 _mock_download_script = """
-# Hardcode LOCAL_DIRECTORY_PATH to "_out"
-LOCAL_DIRECTORY_PATH="_out"
+LOCAL_DIRECTORY_PATH="__out"
 
 # Extract bucket and object path from the S3 URI
 BUCKET_NAME="${S3_URI#s3://}"
@@ -180,11 +179,16 @@ def _s3_inputs(inputs: Env.Bindings, workflow: Tree.Workflow):
                 yield _input, provided_input
 
 
-def _remote_inputs(cfg: config.Loader, workflow: Tree.Workflow):
+def _remote_inputs(cfg: config.Loader, inputs: Env.Bindings, workflow: Tree.Workflow):
     remote_inputs = set(cfg["s3_progressive_upload"]["remote_inputs"].split(','))
     for _input in workflow.inputs:
         if _input.name in remote_inputs:
-            yield _input, None
+            try:
+                provided_input = inputs.resolve_binding(_input.name)
+            except KeyError:
+                provided_input = None
+
+            yield _input, provided_input
 
 
 def _remap_inputs(
@@ -223,7 +227,7 @@ def smart_download(cfg: config.Loader, inputs: Env.Bindings, workflow: Tree.Work
 
 
 def hybrid_batch(cfg: config.Loader, inputs: Env.Bindings, workflow: Tree.Workflow):
-    _remap_inputs(workflow, _remote_inputs(cfg, workflow), _build_mock_download_task)
+    _remap_inputs(cfg, workflow, _remote_inputs(cfg, inputs, workflow), _build_mock_download_task)
 
 
 def task_plugin(cfg: config.Loader, logger: logging.Logger, run_id: str, run_dir: str, task: Tree.Task, **recv):
