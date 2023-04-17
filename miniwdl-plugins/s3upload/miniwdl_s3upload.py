@@ -426,7 +426,7 @@ class HybridBatch(SwarmContainer):
         # chunk_number_match = re.search(r'-\d+$', self.run_id)
         # chunk_number = int(chunk_number_match.group()[1:]) if chunk_number_match else None
 
-        if task_name and task_name not in self.batch_queues:
+        if not (task_name and task_name in self.batch_queues):
             return super()._run(logger, terminating, command)
 
         for pipe_file in ["stdout.txt", "stderr.txt"]:
