@@ -421,11 +421,12 @@ class HybridBatch(SwarmContainer):
 
     def _run(self, logger: logging.Logger, terminating: Callable[[], bool], command: str) -> int:
         # example run_id: call-say_hello-1
-        task_name = re.search(r'call-([^-]+)(-\d+)?$', self.run_id).group(1)
+        task_name_match = re.search(r'call-([^-]+)(-\d+)?$', self.run_id)
+        task_name = task_name_match and task_name_match.group(1)
         # chunk_number_match = re.search(r'-\d+$', self.run_id)
         # chunk_number = int(chunk_number_match.group()[1:]) if chunk_number_match else None
 
-        if task_name not in self.batch_queues:
+        if task_name and task_name not in self.batch_queues:
             return super()._run(logger, terminating, command)
 
         for pipe_file in ["stdout.txt", "stderr.txt"]:
