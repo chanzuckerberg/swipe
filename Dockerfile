@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 # currently, there is an issue in v1.5.3 so we can't upgrade until it is resolved https://github.com/chanzuckerberg/miniwdl/issues/607
 ARG MINIWDL_VERSION=1.5.2
