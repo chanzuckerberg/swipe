@@ -22,27 +22,48 @@ Limitations:
 """
 
 import os
+import pathlib
 import re
 import subprocess
 import threading
 import json
 import logging
+import time
+import random
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
-from typing import Dict, Optional, Tuple, Union, Set
-import sys
+from typing import Callable, Dict, Optional, Tuple, Union, Set
+from uuid import uuid4
 
 import WDL
 from WDL import Env, Value, values_to_json
 from WDL import Type
 from WDL.runtime import cache, config
 from WDL._util import StructuredLogMessage as _
+from WDL.runtime.backend.docker_swarm import SwarmContainer
+from WDL.runtime.error import Terminated
 
 import boto3
 import botocore
+from botocore.config import Config
+
+
+from smart_download import hybrid_batch, smart_download
+
 
 s3 = boto3.resource("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
 s3_client = boto3.client("s3", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
+cloudwatch_logs_client = boto3.client("logs")
+
+
+batch_config = Config(
+    retries={
+        "max_attempts": 20,
+        "mode": "adaptive",
+    }
+)
+batch_client = boto3.client("batch", config=batch_config)
 
 
 def s3_object(uri: str):
@@ -105,6 +126,8 @@ _uploaded_files: Dict[Tuple[int, int], str] = {}
 _cached_files: Dict[Tuple[int, int], Tuple[str, Env.Bindings[Value.Base]]] = {}
 _key_inputs: Dict[str, Env.Bindings[Value.Base]] = {}
 _uploaded_files_lock = threading.Lock()
+_saved_inputs = {}
+_inputs_lock = threading.Lock()
 _processed_files: Set = set()
 
 
@@ -188,14 +211,17 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
     to each local file (keyed by inode) in _uploaded_files
     """
     logger = logger.getChild("s3_progressive_upload")
-
+    inputs_json = WDL.values_to_json(recv['inputs'])
+    with _inputs_lock:
+        _saved_inputs[run_id[-1]] = inputs_json
     # ignore inputs
     recv = yield recv
     # ignore command/runtime/container
     recv = yield recv
 
     def upload_file(abs_fn, s3uri):
-        s3cp(logger, abs_fn, s3uri)
+        if inode(abs_fn) not in _uploaded_files:
+            s3cp(logger, abs_fn, s3uri)
         # record in _uploaded_files (keyed by inode, so that it can be found from any
         # symlink or hardlink)
         with _uploaded_files_lock:
@@ -251,6 +277,16 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
                 abs_fn = os.path.join(index_dir, fns[0])
                 s3uri = os.path.join(s3prefix, fns[0])
                 upload_file(abs_fn, s3uri)
+    if cfg.has_option("s3_progressive_upload", "uri_prefix") and 'TASK' in os.environ:
+        # write outputs.s3.json using _uploaded_files
+        write_outputs_s3_json(
+            logger,
+            recv["outputs"],
+            run_dir,
+            os.path.join(get_s3_put_prefix(cfg), *run_id[1:]),
+            "",
+        )
+
     yield recv
 
 
@@ -261,6 +297,9 @@ def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
     each task).
     """
     logger = logger.getChild("s3_progressive_upload")
+
+    hybrid_batch(cfg, recv['inputs'], workflow)
+    smart_download(cfg, recv['inputs'], workflow)
 
     # ignore inputs
     recv = yield recv
@@ -328,13 +367,13 @@ def write_outputs_s3_json(logger, outputs, run_dir, s3prefix, namespace):
 _s3parcp_lock = threading.Lock()
 
 
-def s3cp(logger, fn, s3uri):
+def s3cp(logger, src, dst):
     with _s3parcp_lock:
         # when uploading many small outputs from the same pipeline you end up with a
         #   quick intense burst of load that can bump into the S3 rate limit
         #   allowing more retries should overcome this
-        cmd = ["s3parcp", "--checksum", "--max-retries", "10", fn, s3uri]
-        logger.debug(" ".join(cmd))
+        cmd = ["s3parcp", "--checksum", "--max-retries", "10", src, dst]
+        logger.info(" ".join(cmd))
         rslt = subprocess.run(cmd, stderr=subprocess.PIPE)
         if rslt.returncode != 0:
             logger.error(
@@ -346,3 +385,140 @@ def s3cp(logger, fn, s3uri):
                 )
             )
             raise WDL.Error.RuntimeError("failed: " + " ".join(cmd))
+
+
+def cloudwatch_logs(log_group_name, log_stream_name):
+    next_page_key = "nextForwardToken"
+    next_page_token = None
+    page = None
+    get_args = dict(
+        logGroupName=log_group_name,
+        logStreamName=log_stream_name,
+        limit=10000,
+        startFromHead=True,
+    )
+    if next_page_token:
+        get_args["nextToken"] = next_page_token
+    while True:
+        page = cloudwatch_logs_client.get_log_events(**get_args)
+        for event in page["events"]:
+            if "timestamp" in event and "message" in event:
+                yield event['message']
+        get_args["nextToken"] = page[next_page_key]
+        if len(page["events"]) == 0:
+            break
+    if page:
+        next_page_token = page[next_page_key]
+
+
+class HybridBatch(SwarmContainer):
+    @classmethod
+    def global_init(cls, cfg: config.Loader, logger: logging.Logger) -> None:
+        cls.s3_prefix = get_s3_get_prefix(cfg)
+        cls.job_definition = cfg["s3_progressive_upload"]["batch_job_definition"]
+        cls.batch_queues = json.loads(cfg["s3_progressive_upload"]["batch_queues"])
+        return super().global_init(cfg, logger)
+
+    def _run(self, logger: logging.Logger, terminating: Callable[[], bool], command: str) -> int:
+        # example run_id: call-say_hello-1
+        task_name_match = re.search(r'call-([^-]+)(-\d+)?$', self.run_id)
+        task_name = task_name_match and task_name_match.group(1)
+        # chunk_number_match = re.search(r'-\d+$', self.run_id)
+        # chunk_number = int(chunk_number_match.group()[1:]) if chunk_number_match else None
+
+        if not (task_name and task_name in self.batch_queues):
+            return super()._run(logger, terminating, command)
+
+        for pipe_file in ["stdout.txt", "stderr.txt"]:
+            pathlib.Path(os.path.join(self.host_dir, pipe_file)).touch()
+
+        memory = self.runtime_values.get("memory", 130816)
+        cpu = self.runtime_values.get("cpu", 4)
+        max_retries = self.runtime_values.get("maxRetries", 3)
+
+        wdl_input_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-input.json")
+        wdl_output_uri = os.path.join(self.s3_prefix, task_name, f"{self.run_id}-output.json")
+
+        s3_object(wdl_input_uri).put(Body=json.dumps(_saved_inputs[self.run_id]).encode())
+
+        environment = {
+            "WDL_WORKFLOW_URI": os.getenv("WDL_WORKFLOW_URI"),
+            "WDL_INPUT_URI": wdl_input_uri,
+            "WDL_OUTPUT_URI": wdl_output_uri,
+            "SFN_EXECUTION_ID": os.getenv("SFN_EXECUTION_ID"),
+            "SFN_CURRENT_STATE": os.getenv("SFN_CURRENT_STATE"),
+            "TASK": task_name,
+        }
+
+        response = batch_client.submit_job(
+            jobName=str(uuid4()),
+            jobQueue=self.batch_queues[task_name],
+            jobDefinition=self.job_definition,
+            containerOverrides={
+                "environment": [{"name": k, "value": v} for k, v in environment.items()],
+                "memory": memory,
+                "vcpus": cpu,
+            },
+            retryStrategy={"attempts": max_retries},
+        )
+        job_id = response["jobId"]
+        last_status, return_code, job_done = None, None, False
+        while True:
+            if terminating():
+                batch_client.terminate_job(
+                    jobId=job_id,
+                    reason="Job termination requested",
+                )
+                raise Terminated(quiet=False)
+            job_desc = batch_client.describe_jobs(jobs=[job_id])["jobs"][0]
+            if job_desc["status"] != last_status:
+                logger.info("Job %s %s", job_id, job_desc["status"])
+                last_status = job_desc["status"]
+                if job_desc["status"] in {"RUNNING", "SUCCEEDED", "FAILED"}:
+                    logger.info("Job %s log stream: %s", job_id, job_desc.get("container", {}).get("logStreamName"))
+            container_desc = job_desc.get("container", {})
+            if job_desc["status"] in {"RUNNING", "SUCCEEDED", "FAILED"}:
+                try:
+                    log_group_name = container_desc["logConfiguration"]["options"]["awslogs-group"]
+                except KeyError:
+                    log_group_name = "/aws/batch/job"
+                if "logStreamName" in job_desc.get("container", {}):
+                    log_stream_name = job_desc["container"]["logStreamName"]
+
+                    with open(os.path.join(self.host_dir, "stdout.txt"), "a") as f:
+                        for event in cloudwatch_logs(log_group_name, log_stream_name):
+                            self.stderr_callback(event)
+                            f.write(event + "\n")
+            if "statusReason" in job_desc:
+                logger.info("Job %s: %s", job_id, job_desc["statusReason"])
+            # When a job is finished, we do one last iteration to read any log lines that were still being delivered.
+            if job_done:
+                if job_desc.get("container", {}).get("exitCode") is not None:
+                    return_code = job_desc["container"]["exitCode"]
+                elif last_status == "FAILED":
+                    return_code = -1
+                else:
+                    return_code = 1
+                break
+            if last_status in {"SUCCEEDED", "FAILED"}:
+                job_done = True
+            time.sleep(random.uniform(1.0, 2.0))
+
+        if return_code != 0:
+            # retries are handled by batch
+            self.try_counter = max_retries
+            return return_code
+
+        output_json = json.loads(s3_object(wdl_output_uri).get()["Body"].read().decode())
+        for output in output_json.values():
+            if output.startswith("s3://"):
+                abs_fn = os.path.join(self.host_work_dir(), os.path.basename(output))
+                s3cp(logger, output, abs_fn)
+                with _uploaded_files_lock:
+                    _uploaded_files[inode(abs_fn)] = output
+
+        return return_code
+
+    def host_path(self, container_path: str, inputs_only: bool = False) -> Optional[str]:
+        res = super().host_path(container_path, inputs_only)
+        return res

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 # currently, there is an issue in v1.5.3 so we can't upgrade until it is resolved https://github.com/chanzuckerberg/miniwdl/issues/607
 ARG MINIWDL_VERSION=1.5.2
@@ -61,7 +61,6 @@ ADD miniwdl-plugins miniwdl-plugins
 
 RUN pip install miniwdl-plugins/s3upload
 RUN pip install miniwdl-plugins/sfn_wdl
-RUN pip install miniwdl-plugins/s3parcp_download
 
 RUN cd /usr/bin; curl -O https://amazon-ecr-credential-helper-releases.s3.amazonaws.com/0.4.0/linux-amd64/docker-credential-ecr-login
 RUN chmod +x /usr/bin/docker-credential-ecr-login

@@ -19,14 +19,18 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Mike Lin, Andrey Kislyuk",
-    py_modules=["miniwdl_s3upload"],
+    py_modules=["miniwdl_s3upload", "smart_download"],
     python_requires=">=3.6",
     setup_requires=["reentry"],
     install_requires=["boto3"],
     reentry_register=True,
     entry_points={
-        'miniwdl.plugin.task': ['s3_progressive_upload_task = miniwdl_s3upload:task'],
+        'miniwdl.plugin.task': [
+            's3_progressive_upload_task = miniwdl_s3upload:task',
+            'smart_download_task = smart_download:task_plugin',
+        ],
         'miniwdl.plugin.workflow': ['s3_progressive_upload_workflow = miniwdl_s3upload:workflow'],
         'miniwdl.plugin.cache_backend': ['s3_progressive_upload_call_cache_backend = miniwdl_s3upload:CallCache'],
+        "miniwdl.plugin.container_backend": ["hybrid_batch = miniwdl_s3upload:HybridBatch"],
     }
 )
