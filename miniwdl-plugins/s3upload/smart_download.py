@@ -169,13 +169,16 @@ def _s3_inputs(inputs: Env.Bindings, workflow: Tree.Workflow):
             except KeyError:
                 provided_input = None
 
+            filepath = None
             if provided_input:
                 filepath = provided_input.value.value
             elif isinstance(_input.expr, Expr.String):
                 assert len(_input.expr.parts) == 1
                 assert isinstance(_input.expr.parts[0], str)
                 filepath = _input.expr.parts[0]
-            if filepath.startswith('s3://'):
+
+            logging.info(f"smart download {_input.name}, filepath: '{filepath}'")
+            if filepath and filepath.startswith('s3://'):
                 yield _input, provided_input
 
 
