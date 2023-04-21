@@ -113,9 +113,10 @@ def preprocess_sfn_input(sfn_state, aws_region, aws_account_id, state_machine_na
     # TODO: add input validation assertions here (use JSON schema?)
     assert sfn_state["OutputPrefix"].startswith("s3://")
     output_prefix = sfn_state["OutputPrefix"]
-    output_path = os.path.join(output_prefix, re.sub(r"v(\d+)\..+", r"\1", get_workflow_name(sfn_state)))
+    workflow_output_path = os.path.join(output_prefix, re.sub(r"v(\d+)\..+", r"\1", get_workflow_name(sfn_state)))
 
     for stage in sfn_state["Input"].keys():
+        output_path = sfn_state["Input"][stage].get("s3_wd_uri", workflow_output_path)
         sfn_state[get_input_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_input.json")
         sfn_state[get_output_uri_key(stage)] = os.path.join(output_path, f"{xform_name(stage)}_output.json")
         for compute_env in "SPOT", "EC2":
