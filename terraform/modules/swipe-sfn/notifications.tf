@@ -80,7 +80,7 @@ resource "aws_sqs_queue" "sfn_notifications_queue" {
   // Sent to dead-letter queue after maxReceiveCount tries
   redrive_policy = lookup(each.value, "dead_letter", "true") == "true" ? jsonencode({
     deadLetterTargetArn = aws_sqs_queue.sfn_notifications_queue_dead_letter[each.key].arn
-    maxReceiveCount     = 3
+    maxReceiveCount     = 30
   }) : null
 
   tags = var.tags
