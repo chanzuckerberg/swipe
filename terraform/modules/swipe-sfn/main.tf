@@ -44,6 +44,15 @@ module "batch_job" {
   docker_network            = var.docker_network
   call_cache                = var.call_cache
   output_status_json_files  = var.output_status_json_files
+  sqs_queues                = {
+                                "step" : {
+                                  dead_letter : "false",
+                                  // We have different settings for dev below b/c multiple dev machines may view
+                                  // and ignore the messages, which drives up the receiveCount. Timeout is lower
+                                  // so that the intended machine may see it faster:
+                                  visibility_timeout_seconds : "10",
+                                },
+                              }
   tags                      = var.tags
 }
 
