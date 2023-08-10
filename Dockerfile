@@ -46,6 +46,7 @@ RUN apt-get -q update && apt-get -q install -y \
 #   upgrade because of this issue https://github.com/chanzuckerberg/miniwdl/issues/607 in miniwdl
 RUN pip3 install importlib-metadata==4.13.0
 RUN pip3 install miniwdl==${MINIWDL_VERSION}
+RUN pip3 install urllib3==1.26.16
 
 RUN curl -Ls https://github.com/chanzuckerberg/s3parcp/releases/download/v1.0.1/s3parcp_1.0.1_linux_amd64.tar.gz | tar -C /usr/bin -xz s3parcp
 
