@@ -278,7 +278,7 @@ class TestSFNWDL(unittest.TestCase):
             for sfn in state_machines
             if "stage-test" in sfn["name"]
         ][0]
-        self.state_change_queue_url = self.sqs.list_queues()["QueueUrls"][0]
+        self.state_change_queue_url = [url for url in self.sqs.list_queues()["QueueUrls"] if "swipe-test-notifications" in url][0]
 
         # Empty the SQS queue before running tests.
         _ = self.sqs.purge_queue(QueueUrl=self.state_change_queue_url)
