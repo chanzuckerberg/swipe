@@ -15,6 +15,8 @@ module "swipetest" {
     "AWS_ENDPOINT_URL" : "http://awsnet:5000",
     "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI" : "container-credentials-relative-uri",
     "S3PARCP_S3_URL" : "http://awsnet:5000",
+    "AWS_STEP_NOTIFICATION_PLUGIN": "http://localhost:9000/123456789012/swipe-test-step-sfn-notifications-queue"
+
   }
 
   sqs_queues = {

@@ -283,9 +283,16 @@ class TestSFNWDL(unittest.TestCase):
             for url in self.sqs.list_queues()["QueueUrls"]
             if "swipe-test-notifications" in url
         ][0]
+        self.step_change_queue_url = [
+            url
+            for url in self.sqs.list_queues()["QueueUrls"]
+            if "swipe-test-step" in url
+        ][0]
 
         # Empty the SQS queue before running tests.
         _ = self.sqs.purge_queue(QueueUrl=self.state_change_queue_url)
+        _ = self.sqs.purge_queue(QueueUrl=self.step_change_queue_url)
+
 
     def tearDown(self) -> None:
         self.test_bucket.delete_objects(
@@ -294,6 +301,24 @@ class TestSFNWDL(unittest.TestCase):
             }
         )
         self.test_bucket.delete()
+
+    def retrieve_message(self, url) -> str:
+      """ Retrieve a single SQS message and delete it from queue"""
+      resp = self.sqs.receive_message(
+          QueueUrl=url,
+          MaxNumberOfMessages=1,
+      )
+      # If no messages, just return
+      if not resp.get("Messages", None):
+          return ""
+      
+      message = resp["Messages"][0]
+      receipt_handle = message["ReceiptHandle"]
+      self.sqs.delete_message(
+          QueueUrl=url,
+          ReceiptHandle=receipt_handle,
+      )
+      return message["Body"]
 
     def _wait_sfn(
         self,
@@ -309,9 +334,16 @@ class TestSFNWDL(unittest.TestCase):
         arn = res["executionArn"]
         start = time.time()
         description = self.sfn.describe_execution(executionArn=arn)
+        step_notifications = []
         while description["status"] == "RUNNING" and time.time() < start + 2 * 60:
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
+        
+        while messages := self.retrieve_message(self.step_change_queue_url): 
+            step_notifications.append(
+                messages
+            )
+
         print("printing execution history", file=sys.stderr)
 
         seen_events = set()
@@ -358,7 +390,7 @@ class TestSFNWDL(unittest.TestCase):
             self.assertEqual(description["status"], "SUCCEEDED", description)
         else:
             self.assertEqual(description["status"], "FAILED", description)
-        return arn, description, messages
+        return arn, description, messages, step_notifications
 
     def test_simple_sfn_wdl_workflow(self):
         output_prefix = "out-1"
@@ -373,7 +405,7 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
+        arn, description, messages, step_notifications = self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         output = json.loads(description["output"])
         self.assertEqual(output["Result"], {
@@ -389,6 +421,9 @@ class TestSFNWDL(unittest.TestCase):
         self.assertEqual(json.loads(messages[0]["Body"])["detail"]["executionArn"], arn)
         self.assertEqual(
             json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
+        )
+        self.assertEqual(
+            len(step_notifications), 8
         )
 
     def test_https_inputs(self):
@@ -419,7 +454,7 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
+        arn, description, messages, _ = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
         errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
                      [-1]["executionFailedEventDetails"]["error"])
         self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
@@ -473,7 +508,7 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        _, _, messages = self._wait_sfn(sfn_input, self.stage_sfn_arn, 2)
+        _, _, messages, _ = self._wait_sfn(sfn_input, self.stage_sfn_arn, 2)
 
         outputs_obj = self.test_bucket.Object(
             f"{output_prefix}/test-1/happy_message.txt"

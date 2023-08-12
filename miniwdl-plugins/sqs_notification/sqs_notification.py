@@ -7,13 +7,12 @@ import json
 from typing import Dict
 
 from WDL import values_to_json
+from WDL._util import StructuredLogMessage as _
 
 import boto3
 
 sqs_client = boto3.client("sqs", endpoint_url=os.getenv("AWS_ENDPOINT_URL"))
-queue_url = (
-    "https://sqs.us-west-2.amazonaws.com/732052188396/RyansTestQueueDelete"  # TODO
-)
+queue_url = os.getenv("AWS_STEP_NOTIFICATION_PLUGIN")
 
 
 def process_outputs(outputs: Dict):
