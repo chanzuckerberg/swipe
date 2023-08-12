@@ -43,7 +43,7 @@ module "batch_queue" {
 }
 
 locals {
-  version = file("${path.module}/version")
+  version           = file("${path.module}/version")
   docker_image_path = var.app_name == "swipe-test" ? "swipe" : "ghcr.io/chanzuckerberg/swipe"
 }
 
