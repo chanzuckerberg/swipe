@@ -3,5 +3,3 @@ flake8
 mypy
 yq
 miniwdl
-urllib3<2
-requests==2.29.0
