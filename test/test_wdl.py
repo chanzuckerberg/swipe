@@ -325,7 +325,7 @@ class TestSFNWDL(unittest.TestCase):
         sfn_arn: str,
         n_stages: int = 1,
         expect_success: bool = True
-    ) -> Tuple[str, Dict, List[Dict]]:
+    ) -> Tuple[str, Dict, List[Dict], List[str]]:
         execution_name = "swipe-test-{}".format(int(time.time()))
         res = self.sfn.start_execution(
             stateMachineArn=sfn_arn, name=execution_name, input=json.dumps(sfn_input)
@@ -338,9 +338,9 @@ class TestSFNWDL(unittest.TestCase):
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
 
-        while messages := self.retrieve_message(self.step_change_queue_url):
+        while step_messages := self.retrieve_message(self.step_change_queue_url):
             step_notifications.append(
-                messages
+                step_messages
             )
 
         print("printing execution history", file=sys.stderr)
