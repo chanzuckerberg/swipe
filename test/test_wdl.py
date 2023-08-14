@@ -293,7 +293,6 @@ class TestSFNWDL(unittest.TestCase):
         _ = self.sqs.purge_queue(QueueUrl=self.state_change_queue_url)
         _ = self.sqs.purge_queue(QueueUrl=self.step_change_queue_url)
 
-
     def tearDown(self) -> None:
         self.test_bucket.delete_objects(
             Delete={
@@ -303,22 +302,22 @@ class TestSFNWDL(unittest.TestCase):
         self.test_bucket.delete()
 
     def retrieve_message(self, url) -> str:
-      """ Retrieve a single SQS message and delete it from queue"""
-      resp = self.sqs.receive_message(
-          QueueUrl=url,
-          MaxNumberOfMessages=1,
-      )
-      # If no messages, just return
-      if not resp.get("Messages", None):
-          return ""
-      
-      message = resp["Messages"][0]
-      receipt_handle = message["ReceiptHandle"]
-      self.sqs.delete_message(
-          QueueUrl=url,
-          ReceiptHandle=receipt_handle,
-      )
-      return message["Body"]
+        """ Retrieve a single SQS message and delete it from queue"""
+        resp = self.sqs.receive_message(
+            QueueUrl=url,
+            MaxNumberOfMessages=1,
+        )
+        # If no messages, just return
+        if not resp.get("Messages", None):
+            return ""
+
+        message = resp["Messages"][0]
+        receipt_handle = message["ReceiptHandle"]
+        self.sqs.delete_message(
+            QueueUrl=url,
+            ReceiptHandle=receipt_handle,
+        )
+        return message["Body"]
 
     def _wait_sfn(
         self,
@@ -338,8 +337,8 @@ class TestSFNWDL(unittest.TestCase):
         while description["status"] == "RUNNING" and time.time() < start + 2 * 60:
             time.sleep(10)
             description = self.sfn.describe_execution(executionArn=arn)
-        
-        while messages := self.retrieve_message(self.step_change_queue_url): 
+
+        while messages := self.retrieve_message(self.step_change_queue_url):
             step_notifications.append(
                 messages
             )

@@ -7,7 +7,6 @@ import json
 from typing import Dict
 
 from WDL import values_to_json
-from WDL._util import StructuredLogMessage as _
 
 import boto3
 
