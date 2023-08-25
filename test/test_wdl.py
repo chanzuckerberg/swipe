@@ -297,7 +297,7 @@ class TestSFNWDL(unittest.TestCase):
         )
         self.test_bucket.delete()
 
-    def retrieve_message(self, url) -> str:
+    def retrieve_message(self, url: str) -> Dict:
         """Retrieve a single SQS message and delete it from queue"""
         resp = self.sqs.receive_message(
             QueueUrl=url,
@@ -305,7 +305,7 @@ class TestSFNWDL(unittest.TestCase):
         )
         # If no messages, just return
         if not resp.get("Messages", None):
-            return ""
+            return {}
 
         message = resp["Messages"][0]
         receipt_handle = message["ReceiptHandle"]
@@ -321,7 +321,7 @@ class TestSFNWDL(unittest.TestCase):
         sfn_arn: str,
         n_stages: int = 1,
         expect_success: bool = True,
-    ) -> Tuple[str, Dict, List[Dict]]:
+    ) -> Tuple[str, Dict, List[Dict], List[Dict]]:
         execution_name = "swipe-test-{}".format(int(time.time()))
         res = self.sfn.start_execution(
             stateMachineArn=sfn_arn, name=execution_name, input=json.dumps(sfn_input)
