@@ -241,7 +241,7 @@ test_input = """hello
 
 class TestSFNWDL(unittest.TestCase):
     def setUp(self) -> None:
-        self.logger = logging.getLogger('test-wdl')
+        self.logger = logging.getLogger("test-wdl")
 
         self.s3 = boto3.resource("s3", endpoint_url="http://localhost:9000")
         self.s3_client = boto3.client("s3", endpoint_url="http://localhost:9000")
@@ -258,10 +258,16 @@ class TestSFNWDL(unittest.TestCase):
         self.wdl_two_obj = self.test_bucket.Object("test-two-v1.0.0.wdl")
         self.wdl_two_obj.put(Body=test_two_wdl.encode())
         self.wdl_obj_temp = self.test_bucket.Object("test-temp-v1.0.0.wdl")
-        self.wdl_obj_temp.put(Body=test_wdl_temp.replace("swipe_test", "temp_test").encode())
+        self.wdl_obj_temp.put(
+            Body=test_wdl_temp.replace("swipe_test", "temp_test").encode()
+        )
 
         with NamedTemporaryFile(suffix=".wdl.zip") as f:
-            Zip.build(load(join(dirname(realpath(__file__)), 'multi_wdl/run.wdl')), f.name, self.logger)
+            Zip.build(
+                load(join(dirname(realpath(__file__)), "multi_wdl/run.wdl")),
+                f.name,
+                self.logger,
+            )
             self.wdl_zip_object = self.test_bucket.Object("test-v1.0.0.wdl.zip")
             self.wdl_zip_object.upload_file(f.name)
 
@@ -290,31 +296,31 @@ class TestSFNWDL(unittest.TestCase):
             }
         )
         self.test_bucket.delete()
-    
-    def retrieve_message(self, url) -> str:
-          """ Retrieve a single SQS message and delete it from queue"""
-          resp = self.sqs.receive_message(
-              QueueUrl=url,
-              MaxNumberOfMessages=1,
-          )
-          # If no messages, just return
-          if not resp.get("Messages", None):
-              return ""
 
-          message = resp["Messages"][0]
-          receipt_handle = message["ReceiptHandle"]
-          self.sqs.delete_message(
-              QueueUrl=url,
-              ReceiptHandle=receipt_handle,
-          )
-          return json.loads(message["Body"])
+    def retrieve_message(self, url) -> str:
+        """Retrieve a single SQS message and delete it from queue"""
+        resp = self.sqs.receive_message(
+            QueueUrl=url,
+            MaxNumberOfMessages=1,
+        )
+        # If no messages, just return
+        if not resp.get("Messages", None):
+            return ""
+
+        message = resp["Messages"][0]
+        receipt_handle = message["ReceiptHandle"]
+        self.sqs.delete_message(
+            QueueUrl=url,
+            ReceiptHandle=receipt_handle,
+        )
+        return json.loads(message["Body"])
 
     def _wait_sfn(
         self,
         sfn_input: Dict,
         sfn_arn: str,
         n_stages: int = 1,
-        expect_success: bool = True
+        expect_success: bool = True,
     ) -> Tuple[str, Dict, List[Dict]]:
         execution_name = "swipe-test-{}".format(int(time.time()))
         res = self.sfn.start_execution(
@@ -329,7 +335,10 @@ class TestSFNWDL(unittest.TestCase):
         print("printing execution history", file=sys.stderr)
 
         seen_events = set()
-        for event in sorted(self.sfn.get_execution_history(executionArn=arn)["events"], key=lambda x: x["id"]):
+        for event in sorted(
+            self.sfn.get_execution_history(executionArn=arn)["events"],
+            key=lambda x: x["id"],
+        ):
             if event["id"] not in seen_events:
                 details = {}
                 for key in event.keys():
@@ -343,35 +352,38 @@ class TestSFNWDL(unittest.TestCase):
                     details.get("name", ""),
                     json.loads(details.get("parameters", "{}")).get("FunctionName", ""),
                     file=sys.stderr,
-                  )
+                )
                 if "taskSubmittedEventDetails" in event:
-                    if event.get("taskSubmittedEventDetails", {}).get("resourceType") == "batch":
-                        job_id = json.loads(event["taskSubmittedEventDetails"]["output"])["JobId"]
+                    if (
+                        event.get("taskSubmittedEventDetails", {}).get("resourceType")
+                        == "batch"
+                    ):
+                        job_id = json.loads(
+                            event["taskSubmittedEventDetails"]["output"]
+                        )["JobId"]
                         print(f"Batch job ID {job_id}", file=sys.stderr)
                         job_desc = self.batch.describe_jobs(jobs=[job_id])["jobs"][0]
                         try:
-                            log_group_name = job_desc["container"]["logConfiguration"]["options"]["awslogs-group"]
+                            log_group_name = job_desc["container"]["logConfiguration"][
+                                "options"
+                            ]["awslogs-group"]
                         except KeyError:
                             log_group_name = "/aws/batch/job"
                         response = self.logs.get_log_events(
                             logGroupName=log_group_name,
-                            logStreamName=job_desc["container"]["logStreamName"]
+                            logStreamName=job_desc["container"]["logStreamName"],
                         )
                         for log_event in response["events"]:
                             print(log_event["message"], file=sys.stderr)
                 seen_events.add(event["id"])
-        
+
         status_notification = []
-        step_notification = [] 
+        step_notification = []
         while message := self.retrieve_message(self.state_change_queue_url):
             if message["source"] == "aws.batch":
-              step_notification.append(
-                  message
-              )
+                step_notification.append(message)
             elif message["source"] == "aws.states":
-              status_notification.append(
-                  message
-              )
+                status_notification.append(message)
 
         if expect_success:
             self.assertEqual(description["status"], "SUCCEEDED", description)
@@ -394,26 +406,27 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        arn, description, messages, step_messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
+        arn, description, messages, step_messages = self._wait_sfn(
+            sfn_input, self.single_sfn_arn
+        )
 
         output = json.loads(description["output"])
-        self.assertEqual(output["Result"], {
-          "swipe_test.out_world": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_world.txt",
-          "swipe_test.out_goodbye": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_goodbye.txt",
-          "swipe_test.out_farewell": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_farewell.txt",
-        })
+        self.assertEqual(
+            output["Result"],
+            {
+                "swipe_test.out_world": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_world.txt",
+                "swipe_test.out_goodbye": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_goodbye.txt",
+                "swipe_test.out_farewell": f"s3://{self.input_obj.bucket_name}/{output_prefix}/test-1/out_farewell.txt",
+            },
+        )
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_world.txt")
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
         self.assertEqual(messages[0]["detail"]["executionArn"], arn)
-        self.assertEqual(
-            messages[0]["detail"]["lastCompletedStage"], "run"
-        )
-        self.assertEqual(
-          len(step_messages), 3 # 3 steps to the inputs
-        )
+        self.assertEqual(messages[0]["detail"]["lastCompletedStage"], "run")
+        self.assertEqual(len(step_messages), 3)  # 3 steps to the inputs
 
     def test_https_inputs(self):
         output_prefix = "out-https-1"
@@ -443,9 +456,12 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        arn, description, messages, _ = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
-        errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
-                     [-1]["executionFailedEventDetails"]["error"])
+        arn, description, messages, _ = self._wait_sfn(
+            sfn_input, self.single_sfn_arn, expect_success=False
+        )
+        errorType = self.sfn.get_execution_history(executionArn=arn)["events"][-1][
+            "executionFailedEventDetails"
+        ]["error"]
         self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
 
     def test_temp_tag(self):
@@ -465,8 +481,7 @@ class TestSFNWDL(unittest.TestCase):
 
         # test temporary tag is there for intermediate file
         temporary_tagset = self.s3_client.get_object_tagging(
-          Bucket="swipe-test",
-          Key=f"{output_prefix}/test-temp-1/temporary.txt"
+            Bucket="swipe-test", Key=f"{output_prefix}/test-temp-1/temporary.txt"
         ).get("TagSet", [])
         self.assertEqual(len(temporary_tagset), 1)
         self.assertEqual(temporary_tagset[0].get("Key"), "intermediate_output")
@@ -474,8 +489,7 @@ class TestSFNWDL(unittest.TestCase):
 
         # test temporary tag got removed for output file
         output_tagset = self.s3_client.get_object_tagging(
-          Bucket="swipe-test",
-          Key=f"{output_prefix}/test-temp-1/out_world.txt"
+            Bucket="swipe-test", Key=f"{output_prefix}/test-temp-1/out_world.txt"
         ).get("TagSet", [])
         self.assertEqual(len(output_tagset), 0)
 
@@ -505,12 +519,8 @@ class TestSFNWDL(unittest.TestCase):
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n:)\n")
 
-        self.assertEqual(
-            messages[0]["detail"]["lastCompletedStage"], "one"
-        )
-        self.assertEqual(
-            messages[1]["detail"]["lastCompletedStage"], "two"
-        )
+        self.assertEqual(messages[0]["detail"]["lastCompletedStage"], "one")
+        self.assertEqual(messages[1]["detail"]["lastCompletedStage"], "two")
 
     def test_call_cache(self):
         output_prefix = "out-3"
@@ -542,24 +552,28 @@ class TestSFNWDL(unittest.TestCase):
 
         # clear cache to simulate getting cut off the step before this one
         objects = self.s3_client.list_objects_v2(
-          Bucket=self.test_bucket.name,
-          Prefix=f"{output_prefix}/test-1/cache/add_farewell/",
+            Bucket=self.test_bucket.name,
+            Prefix=f"{output_prefix}/test-1/cache/add_farewell/",
         )["Contents"]
         self.test_bucket.Object(objects[0]["Key"]).delete()
         objects = self.s3_client.list_objects_v2(
-          Bucket=self.test_bucket.name,
-          Prefix=f"{output_prefix}/test-1/cache/swipe_test/",
+            Bucket=self.test_bucket.name,
+            Prefix=f"{output_prefix}/test-1/cache/swipe_test/",
         )["Contents"]
         self.test_bucket.Object(objects[0]["Key"]).delete()
         self.test_bucket.Object(out_json_path).delete()
 
         self._wait_sfn(sfn_input, self.single_sfn_arn)
 
-        outputs = json.loads(self.test_bucket.Object(out_json_path).get()["Body"].read().decode())
+        outputs = json.loads(
+            self.test_bucket.Object(out_json_path).get()["Body"].read().decode()
+        )
         for v in outputs.values():
             self.assert_(v.startswith("s3://"), f"{v} does not start with 's3://'")
 
-        outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_farewell.txt")
+        outputs_obj = self.test_bucket.Object(
+            f"{output_prefix}/test-1/out_farewell.txt"
+        )
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "cache_break\nfarewell\n")
 
@@ -578,7 +592,7 @@ class TestSFNWDL(unittest.TestCase):
 
         self._wait_sfn(sfn_input, self.single_sfn_arn)
         self.sqs.receive_message(
-          QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
+            QueueUrl=self.state_change_queue_url, MaxNumberOfMessages=1
         )
 
         outputs_obj = self.test_bucket.Object(f"{output_prefix}/test-1/out_bar.txt")
@@ -603,7 +617,10 @@ class TestSFNWDL(unittest.TestCase):
         status_json = json.loads(
             self.test_bucket.Object(
                 f"{output_prefix}/test-1/test_status2.json",
-            ).get()["Body"].read().decode(),
+            )
+            .get()["Body"]
+            .read()
+            .decode(),
         )
         self.assertEqual(status_json["add_world"]["status"], "uploaded")
         self.assertEqual(status_json["add_goodbye"]["status"], "uploaded")

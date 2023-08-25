@@ -60,9 +60,9 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
         "detail-type": "Step Functions Execution Step Notification",
         "source": "aws.batch",
         "account": "",
-        "time": datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ'),
+        "time": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "resources": [],
-        "detail": outputs
+        "detail": outputs,
     }
     send_message(message_attributes, json.dumps(message_body))
 
