@@ -70,3 +70,13 @@ variable "docker_network" {
   type        = string
   default     = ""
 }
+
+variable "sfn_notification_queue_arns" {
+  description = "ARNs of notification SQS queues"
+  type        = list(string)
+}
+
+variable "sfn_notification_queue_urls" {
+  description = "URLs of notification SQS queues"
+  type        = list(string)
+}

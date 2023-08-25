@@ -290,6 +290,24 @@ class TestSFNWDL(unittest.TestCase):
             }
         )
         self.test_bucket.delete()
+    
+    def retrieve_message(self, url) -> str:
+          """ Retrieve a single SQS message and delete it from queue"""
+          resp = self.sqs.receive_message(
+              QueueUrl=url,
+              MaxNumberOfMessages=1,
+          )
+          # If no messages, just return
+          if not resp.get("Messages", None):
+              return ""
+
+          message = resp["Messages"][0]
+          receipt_handle = message["ReceiptHandle"]
+          self.sqs.delete_message(
+              QueueUrl=url,
+              ReceiptHandle=receipt_handle,
+          )
+          return json.loads(message["Body"])
 
     def _wait_sfn(
         self,
@@ -342,19 +360,26 @@ class TestSFNWDL(unittest.TestCase):
                         for log_event in response["events"]:
                             print(log_event["message"], file=sys.stderr)
                 seen_events.add(event["id"])
-
-        resp = self.sqs.receive_message(
-            QueueUrl=self.state_change_queue_url,
-            MaxNumberOfMessages=n_stages,
-        )
-        print(resp)
-        messages = resp["Messages"]
+        
+        status_notification = []
+        step_notification = [] 
+        while message := self.retrieve_message(self.state_change_queue_url):
+            if message["source"] == "aws.batch":
+              step_notification.append(
+                  message
+              )
+            elif message["source"] == "aws.states":
+              status_notification.append(
+                  message
+              )
 
         if expect_success:
             self.assertEqual(description["status"], "SUCCEEDED", description)
         else:
             self.assertEqual(description["status"], "FAILED", description)
-        return arn, description, messages
+
+        self.assertEqual(len(status_notification), n_stages)
+        return arn, description, status_notification, step_notification
 
     def test_simple_sfn_wdl_workflow(self):
         output_prefix = "out-1"
@@ -369,7 +394,7 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
+        arn, description, messages, step_messages = self._wait_sfn(sfn_input, self.single_sfn_arn)
 
         output = json.loads(description["output"])
         self.assertEqual(output["Result"], {
@@ -382,9 +407,12 @@ class TestSFNWDL(unittest.TestCase):
         output_text = outputs_obj.get()["Body"].read().decode()
         self.assertEqual(output_text, "hello\nworld\n")
 
-        self.assertEqual(json.loads(messages[0]["Body"])["detail"]["executionArn"], arn)
+        self.assertEqual(messages[0]["detail"]["executionArn"], arn)
         self.assertEqual(
-            json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "run"
+            messages[0]["detail"]["lastCompletedStage"], "run"
+        )
+        self.assertEqual(
+          len(step_messages), 3 # 3 steps to the inputs
         )
 
     def test_https_inputs(self):
@@ -415,7 +443,7 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        arn, description, messages = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
+        arn, description, messages, _ = self._wait_sfn(sfn_input, self.single_sfn_arn, expect_success=False)
         errorType = (self.sfn.get_execution_history(executionArn=arn)["events"]
                      [-1]["executionFailedEventDetails"]["error"])
         self.assertTrue(errorType in ["UncaughtError", "RunFailed"])
@@ -469,7 +497,7 @@ class TestSFNWDL(unittest.TestCase):
             },
         }
 
-        _, _, messages = self._wait_sfn(sfn_input, self.stage_sfn_arn, 2)
+        _, _, messages, _ = self._wait_sfn(sfn_input, self.stage_sfn_arn, 2)
 
         outputs_obj = self.test_bucket.Object(
             f"{output_prefix}/test-1/happy_message.txt"
@@ -478,10 +506,10 @@ class TestSFNWDL(unittest.TestCase):
         self.assertEqual(output_text, "hello\nworld\n:)\n")
 
         self.assertEqual(
-            json.loads(messages[0]["Body"])["detail"]["lastCompletedStage"], "one"
+            messages[0]["detail"]["lastCompletedStage"], "one"
         )
         self.assertEqual(
-            json.loads(messages[1]["Body"])["detail"]["lastCompletedStage"], "two"
+            messages[1]["detail"]["lastCompletedStage"], "two"
         )
 
     def test_call_cache(self):
