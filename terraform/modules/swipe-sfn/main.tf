@@ -32,20 +32,20 @@ resource "aws_iam_role_policy_attachment" "swipe_sfn_service" {
 }
 
 module "batch_job" {
-  source                      = "../swipe-sfn-batch-job"
-  app_name                    = var.app_name
-  batch_job_docker_image      = var.batch_job_docker_image
-  batch_job_timeout_seconds   = var.batch_job_timeout_seconds
-  miniwdl_dir                 = var.miniwdl_dir
-  workspace_s3_prefixes       = var.workspace_s3_prefixes
-  wdl_workflow_s3_prefix      = var.wdl_workflow_s3_prefix
-  job_policy_arns             = var.job_policy_arns
-  extra_env_vars              = var.extra_env_vars
-  docker_network              = var.docker_network
-  call_cache                  = var.call_cache
-  output_status_json_files    = var.output_status_json_files
-  sfn_notification_topic_arn  = aws_sns_topic.sfn_notifications_topic[0].arn
-  tags                        = var.tags
+  source                     = "../swipe-sfn-batch-job"
+  app_name                   = var.app_name
+  batch_job_docker_image     = var.batch_job_docker_image
+  batch_job_timeout_seconds  = var.batch_job_timeout_seconds
+  miniwdl_dir                = var.miniwdl_dir
+  workspace_s3_prefixes      = var.workspace_s3_prefixes
+  wdl_workflow_s3_prefix     = var.wdl_workflow_s3_prefix
+  job_policy_arns            = var.job_policy_arns
+  extra_env_vars             = var.extra_env_vars
+  docker_network             = var.docker_network
+  call_cache                 = var.call_cache
+  output_status_json_files   = var.output_status_json_files
+  sfn_notification_topic_arn = aws_sns_topic.sfn_notifications_topic[0].arn
+  tags                       = var.tags
 }
 
 module "sfn_io_helper" {

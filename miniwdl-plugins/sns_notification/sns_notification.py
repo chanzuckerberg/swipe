@@ -7,6 +7,7 @@ import json
 from typing import Dict
 from datetime import datetime
 from WDL import values_to_json
+from WDL._util import StructuredLogMessage as _
 
 import boto3
 
@@ -24,7 +25,7 @@ def send_message(attr, body):
     """send message to SNS"""
     sns_resp = sns_client.publish(
         TopicArn=topic_arn,
-        Message=body, 
+        Message=body,
         MessageAttributes=attr,
     )
     return sns_resp
@@ -32,16 +33,16 @@ def send_message(attr, body):
 
 def task(cfg, logger, run_id, run_dir, task, **recv):
     """
-    on completion of any task, upload its output files to S3, and record the S3 URI corresponding
-    to each local file (keyed by inode) in _uploaded_files
+    on completion of any task sends a message to sns with the output files
     """
-    logger = logger.getChild("sns_step_notification")
+    log = logger.getChild("sns_step_notification")
 
     # ignore inputs
     recv = yield recv
-
     # ignore command/runtime/container
     recv = yield recv
+
+    log.info(_("sending message to sns"))
 
     message_attributes = {
         "WorkflowName": {"DataType": "String", "StringValue": run_id[0]},
@@ -69,14 +70,10 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
 
 
 def workflow(cfg, logger, run_id, run_dir, workflow, **recv):
-    """
-    on workflow completion, add a file outputs.s3.json to the run directory, which is outputs.json
-    with local filenames rewritten to the uploaded S3 URIs (as previously recorded on completion of
-    each task).
-    """
-    logger = logger.getChild("sns_step_notification")
+    log = logger.getChild("sns_step_notification")
 
     # ignore inputs
     recv = yield recv
 
+    log.info(_("ignores workflow calls"))
     yield recv
