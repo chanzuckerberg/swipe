@@ -44,8 +44,7 @@ module "batch_job" {
   docker_network              = var.docker_network
   call_cache                  = var.call_cache
   output_status_json_files    = var.output_status_json_files
-  sfn_notification_queue_arns = [for name, queue in aws_sqs_queue.sfn_notifications_queue : queue.arn]
-  sfn_notification_queue_urls = [for name, queue in aws_sqs_queue.sfn_notifications_queue : queue.url]
+  sfn_notification_topic_arn  = aws_sns_topic.sfn_notifications_topic[0].arn
   tags                        = var.tags
 }
 

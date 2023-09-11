@@ -71,12 +71,8 @@ variable "docker_network" {
   default     = ""
 }
 
-variable "sfn_notification_queue_arns" {
-  description = "ARNs of notification SQS queues"
-  type        = list(string)
+variable "sfn_notification_topic_arn" {
+  description = "ARN of notification sns topic"
+  type        = string
 }
 
-variable "sfn_notification_queue_urls" {
-  description = "URLs of notification SQS queues"
-  type        = list(string)
-}

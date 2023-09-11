@@ -7,23 +7,23 @@ with open(path.join(path.dirname(__file__), "README.md")) as f:
     long_description = f.read()
 
 setup(
-    name="sqs_notification",
+    name="sns_notification",
     version="0.0.1",
     description="miniwdl plugin for notification of task completion to Amazon SQS",
-    url="https://github.com/chanzuckerberg/miniwdl-s3upload",
+    url="https://github.com/chanzuckerberg/swipe",
     project_urls={},
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="",
-    py_modules=["sqs_notification"],
+    py_modules=["sns_notification"],
     python_requires=">=3.6",
     setup_requires=["reentry"],
     install_requires=["boto3"],
     reentry_register=True,
     entry_points={
-        "miniwdl.plugin.task": ["sqs_notification_task = sqs_notification:task"],
+        "miniwdl.plugin.task": ["sns_notification_task = sns_notification:task"],
         "miniwdl.plugin.workflow": [
-            "sqs_notification_workflow = sqs_notification:workflow"
+            "sns_notification_workflow = sns_notification:workflow"
         ],
     },
 )

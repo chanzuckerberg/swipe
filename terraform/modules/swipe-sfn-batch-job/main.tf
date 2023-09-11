@@ -34,7 +34,7 @@ locals {
     "MINIWDL__DOWNLOAD_CACHE__DISABLE_PATTERNS" = "[\"s3://swipe-samples-*/*\"]",
     "DOWNLOAD_CACHE_MAX_GB"                     = "500",
     "WDL_PASSTHRU_ENVVARS"                      = join(" ", [for k, v in var.extra_env_vars : k]),
-    "AWS_STEP_NOTIFICATION_PLUGIN"              = var.sfn_notification_queue_urls[0],
+    "STEP_NOTIFICATION_TOPIC_ARN"               = var.sfn_notification_topic_arn,
     "OUTPUT_STATUS_JSON_FILES"                  = tostring(var.output_status_json_files)
   })
   container_env_vars     = { "environment" : [for k in sort(keys(local.batch_env_vars)) : { "name" : k, "value" : local.batch_env_vars[k] }] }

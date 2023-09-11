@@ -64,9 +64,10 @@ data "aws_iam_policy_document" "sfn_notifications_topic_policy_document" {
 resource "aws_sns_topic_subscription" "sfn_notifications_sqs_target" {
   for_each = var.sqs_queues
 
-  topic_arn = aws_sns_topic.sfn_notifications_topic[0].arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.sfn_notifications_queue[each.key].arn
+  topic_arn            = aws_sns_topic.sfn_notifications_topic[0].arn
+  protocol             = "sqs"
+  endpoint             = aws_sqs_queue.sfn_notifications_queue[each.key].arn
+  raw_message_delivery = true
 }
 
 resource "aws_sqs_queue" "sfn_notifications_queue" {

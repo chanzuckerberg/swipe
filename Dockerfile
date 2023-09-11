@@ -63,7 +63,7 @@ ADD miniwdl-plugins miniwdl-plugins
 RUN pip install miniwdl-plugins/s3upload
 RUN pip install miniwdl-plugins/sfn_wdl
 RUN pip install miniwdl-plugins/s3parcp_download
-RUN pip install miniwdl-plugins/sqs_notification
+RUN pip install miniwdl-plugins/sns_notification
 
 RUN cd /usr/bin; curl -O https://amazon-ecr-credential-helper-releases.s3.amazonaws.com/0.4.0/linux-amd64/docker-credential-ecr-login
 RUN chmod +x /usr/bin/docker-credential-ecr-login
