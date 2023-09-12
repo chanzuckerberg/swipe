@@ -92,7 +92,7 @@ variable "batch_job_docker_image" {
 variable "batch_job_timeout_seconds" {
   description = "Timeout after which Batch will terminate jobs (Step Functions has a separate timeout for the SFN execution)"
   type        = number
-  default     = 86400
+  default     = 604800  # 7 days
 }
 
 variable "batch_spot_job_queue_arn" {
