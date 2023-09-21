@@ -44,27 +44,28 @@ def task(cfg, logger, run_id, run_dir, task, **recv):
 
     log.info(_("sending message to sns"))
 
-    message_attributes = {
-        "WorkflowName": {"DataType": "String", "StringValue": run_id[0]},
-        "TaskName": {"DataType": "String", "StringValue": run_id[-1]},
-        "ExecutionId": {
-            "DataType": "String",
-            "StringValue": "execution_id_to_be_passed_in",
-        },
-    }
+    if topic_arn:
+        message_attributes = {
+            "WorkflowName": {"DataType": "String", "StringValue": run_id[0]},
+            "TaskName": {"DataType": "String", "StringValue": run_id[-1]},
+            "ExecutionId": {
+                "DataType": "String",
+                "StringValue": "execution_id_to_be_passed_in",
+            },
+        }
 
-    outputs = process_outputs(values_to_json(recv["outputs"]))
-    message_body = {
-        "version": "0",
-        "id": "0",
-        "detail-type": "Step Functions Execution Step Notification",
-        "source": "aws.batch",
-        "account": "",
-        "time": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "resources": [],
-        "detail": outputs,
-    }
-    send_message(message_attributes, json.dumps(message_body))
+        outputs = process_outputs(values_to_json(recv["outputs"]))
+        message_body = {
+            "version": "0",
+            "id": "0",
+            "detail-type": "Step Functions Execution Step Notification",
+            "source": "aws.batch",
+            "account": "",
+            "time": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "resources": [],
+            "detail": outputs,
+        }
+        send_message(message_attributes, json.dumps(message_body))
 
     yield recv
 

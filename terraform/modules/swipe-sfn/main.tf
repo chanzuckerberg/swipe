@@ -44,7 +44,7 @@ module "batch_job" {
   docker_network             = var.docker_network
   call_cache                 = var.call_cache
   output_status_json_files   = var.output_status_json_files
-  sfn_notification_topic_arn = aws_sns_topic.sfn_notifications_topic[0].arn
+  sfn_notification_topic_arn = length(var.sqs_queues) > 0 && var.step_notifications ? aws_sns_topic.sfn_notifications_topic[0].arn : ""
   tags                       = var.tags
 }
 

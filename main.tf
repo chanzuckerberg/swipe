@@ -64,6 +64,7 @@ module "sfn" {
   stage_vcpu_defaults           = var.stage_vcpu_defaults
   extra_env_vars                = var.extra_env_vars
   sqs_queues                    = var.sqs_queues
+  step_notifications            = var.step_notifications
   call_cache                    = var.call_cache
   output_status_json_files      = var.output_status_json_files
   tags                          = var.tags
