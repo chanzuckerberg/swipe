@@ -70,3 +70,9 @@ variable "docker_network" {
   type        = string
   default     = ""
 }
+
+variable "sfn_notification_topic_arn" {
+  description = "ARN of notification sns topic"
+  type        = string
+}
+
