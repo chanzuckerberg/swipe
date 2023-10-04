@@ -116,3 +116,10 @@ variable "metrics_schedule" {
   type        = string
   default     = "rate(1 minute)"
 }
+
+variable "step_notifications" {
+  description = "Boolean to determine whether or not to use send step notifications with SNS"
+  type        = bool
+  default     = false
+}
+

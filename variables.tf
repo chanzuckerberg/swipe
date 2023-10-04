@@ -194,3 +194,9 @@ variable "output_status_json_files" {
   type        = bool
   default     = false
 }
+
+variable "step_notifications" {
+  description = "Boolean to determine whether or not to use send step notifications with SNS"
+  type        = bool
+  default     = false
+}

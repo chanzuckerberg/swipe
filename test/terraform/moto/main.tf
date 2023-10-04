@@ -32,7 +32,7 @@ module "swipetest" {
     "Two" : { "spot" : 12800, "on_demand" : 256000 },
   }
 
-  workspace_s3_prefixes = ["swipe-test"]
-
+  workspace_s3_prefixes    = ["swipe-test"]
   output_status_json_files = true
+  step_notifications       = true
 }
