@@ -85,11 +85,11 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
         Resource : "*"
       },
       {
-            "Action": [
-                "SNS:Publish"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
+        "Action" : [
+          "SNS:Publish"
+        ],
+        "Effect" : "Allow",
+        "Resource" : "*"
       }
     ]
   })
