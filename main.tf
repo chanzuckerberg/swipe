@@ -43,13 +43,14 @@ module "batch_queue" {
 }
 
 locals {
-  version = file("${path.module}/version")
+  version           = file("${path.module}/version")
+  docker_image_path = var.app_name == "swipe-test" ? "swipe" : "ghcr.io/chanzuckerberg/swipe"
 }
 
 module "sfn" {
   source                        = "./terraform/modules/swipe-sfn"
   app_name                      = var.app_name
-  batch_job_docker_image        = "ghcr.io/chanzuckerberg/swipe:${chomp(local.version)}"
+  batch_job_docker_image        = "${local.docker_image_path}:${chomp(local.version)}"
   batch_spot_job_queue_arn      = module.batch_queue.batch_spot_job_queue_arn
   batch_on_demand_job_queue_arn = module.batch_queue.batch_on_demand_job_queue_arn
   miniwdl_dir                   = var.miniwdl_dir
