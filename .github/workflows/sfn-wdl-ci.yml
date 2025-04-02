@@ -39,7 +39,8 @@ jobs:
           source scripts/init_ci_runner.sh
           docker pull ghcr.io/chanzuckerberg/swipe:latest
           make up
-          sleep 1
+          make wait-for-healthy
+          sleep 3
           make test
 
   # TODO: re-enable once we fix the notifications bug https://github.com/chanzuckerberg/swipe/issues/92
