@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         with:
           path: ~/.cache
           key: ${{runner.os}}-cache
@@ -30,7 +30,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         with:
           path: ~/.cache
           key: ${{runner.os}}-cache
@@ -48,7 +48,7 @@ jobs:
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
-  #     - uses: actions/cache@v1
+  #     - uses: actions/cache@v4
   #       with:
   #         path: ~/.cache
   #         key: ${{runner.os}}-cache
@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: actions/cache@v1
+      - uses: actions/cache@v4
         with:
           path: ~/.cache
           key: ${{runner.os}}-cache

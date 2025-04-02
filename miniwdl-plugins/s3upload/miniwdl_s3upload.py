@@ -169,7 +169,7 @@ class CallCache(cache.CallCache):
 
         return super().get(key, inputs, output_types)
 
-    def put(self, key: str, outputs: Env.Bindings[Value.Base]) -> None:
+    def put(self, key: str, outputs: Env.Bindings[Value.Base]) -> None:  # type: ignore[override]
         if not self._cfg["call_cache"].get_bool("put"):
             return
 
