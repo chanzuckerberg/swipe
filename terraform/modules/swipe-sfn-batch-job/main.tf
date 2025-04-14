@@ -84,6 +84,13 @@ resource "aws_iam_policy" "swipe_batch_main_job" {
           "cloudwatch:PutMetricData"
         ],
         Resource : "*"
+      },
+      {
+        "Action" : [
+          "SNS:Publish"
+        ],
+        "Effect" : "Allow",
+        "Resource" : "*"
       }
     ]
   })
