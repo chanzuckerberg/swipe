@@ -284,7 +284,9 @@ class TestSFNWDL(unittest.TestCase):
             for sfn in state_machines
             if "stage-test" in sfn["name"]
         ][0]
-        self.state_change_queue_url = self.sqs.list_queues()["QueueUrls"][0]
+        list_queues_resp = self.sqs.list_queues()
+        print(f"list_queues() response: {json.dumps(list_queues_resp, default=str)}")
+        self.state_change_queue_url = list_queues_resp["QueueUrls"][0]
 
         # Empty the SQS queue before running tests.
         _ = self.sqs.purge_queue(QueueUrl=self.state_change_queue_url)
