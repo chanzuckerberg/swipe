@@ -1,4 +1,4 @@
-boto3
+boto3<1.28  # moto 3.0.4 only speaks the SQS query protocol; botocore >=1.31 switched SQS to JSON
 flake8
 mypy
 yq
