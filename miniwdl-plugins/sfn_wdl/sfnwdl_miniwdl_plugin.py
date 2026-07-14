@@ -165,7 +165,7 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
                 if not _status_json:
                     try:
                         # Populate _status_json with the existing status_json
-                        _status_json = json.loads(s3_object(status_uri).get().get()["Body"])
+                        _status_json = json.loads(s3_object(status_uri).get()["Body"].read().decode().strip() or '{}')
                     except botocore.exceptions.ClientError as e:
                         # If the error is not 404 it was something other than the object
                         #   not existing, so we want to raise it.

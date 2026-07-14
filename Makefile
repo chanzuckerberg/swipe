@@ -22,10 +22,10 @@ up: image start deploy-mock
 
 localstack-test: image start-localstack wait-for-healthy deploy-localstack test
 
-image:
-	source environment.test; \
-	docker buildx build --platform linux/amd64 --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
-	docker tag ghcr.io/chanzuckerberg/swipe:$$(cat version) swipe:$$(cat version)
+#image:
+#	source environment.test; \
+#	docker buildx build --platform linux/amd64 --cache-from ghcr.io/chanzuckerberg/swipe:latest -t ghcr.io/chanzuckerberg/swipe:$$(cat version) .
+#	docker tag ghcr.io/chanzuckerberg/swipe:$$(cat version) swipe:$$(cat version)
 
 wait-for-healthy:
 	while true; do \
