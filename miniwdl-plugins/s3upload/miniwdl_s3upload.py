@@ -150,7 +150,6 @@ class CallCache(cache.CallCache):
         #   we need `put` to use a key based on S3 paths instead but put doesn't have access to step
         #   inputs. 'put' should always be run after a `get` is called so here we are storing the
         #   inputs based on the cache key so `put` can get the inputs.
-        global _key_inputs
         _key_inputs[key] = inputs
 
         if not self._cfg.has_option("s3_progressive_upload", "uri_prefix"):
