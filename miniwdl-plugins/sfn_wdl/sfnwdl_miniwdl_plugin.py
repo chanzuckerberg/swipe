@@ -131,7 +131,7 @@ def update_status_json(logger, task, run_ids, s3_wd_uri, entries):
     We update it at the beginning and end of each task (carefully, because some tasks run
     concurrently).
     """
-    global _status_json, _status_json_lock
+    global _status_json
 
     if not s3_wd_uri:
         return

@@ -14,7 +14,7 @@ env:
 
 jobs:
   linters:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,7 +26,7 @@ jobs:
         run: source scripts/init_ci_runner.sh && make lint
 
   unit_tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
 
   # TODO: re-enable once we fix the notifications bug https://github.com/chanzuckerberg/swipe/issues/92
   # localstack_tests:
-  #   runs-on: ubuntu-20.04
+  #   runs-on: ubuntu-22.04
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v2
@@ -59,7 +59,7 @@ jobs:
   #         make localstack-test
 
   terraform_format:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2

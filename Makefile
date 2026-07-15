@@ -18,7 +18,7 @@ deploy-localstack:
 	terraform init && \
 	terraform apply --auto-approve
 
-up: image start deploy-mock
+up: image start wait-for-healthy deploy-mock
 
 localstack-test: image start-localstack wait-for-healthy deploy-localstack test
 
