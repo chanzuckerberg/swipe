@@ -10,7 +10,7 @@ setup(
     name="sns_notification",
     version="0.0.1",
     description="miniwdl plugin for notification of task completion to Amazon SQS",
-    url="https://github.com/chanzuckerberg/swipe",
+    url="https://github.com/IT-Academic-Research-Services/swipe",
     project_urls={},
     long_description=long_description,
     long_description_content_type="text/markdown",

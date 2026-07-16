@@ -42,9 +42,56 @@ module "batch_queue" {
   user_data_parts          = var.user_data_parts
 }
 
+data "aws_caller_identity" "current" {}
+
 locals {
   version           = file("${path.module}/version")
-  docker_image_path = var.app_name == "swipe-test" ? "swipe" : "ghcr.io/chanzuckerberg/swipe"
+  docker_image_path = var.app_name == "swipe-test" ? "swipe" : "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/swipe"
+}
+
+resource "aws_ecr_repository" "swipe" {
+  name                 = "swipe"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
+resource "aws_ecr_lifecycle_policy" "idseq-web" {
+  repository = aws_ecr_repository.swipe.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        action = {
+          type = "expire"
+        },
+        selection : {
+          countType     = "imageCountMoreThan",
+          countNumber   = 1,
+          tagStatus     = "tagged",
+          tagPrefixList = ["latest"],
+        },
+        description    = "Always keep the one image tagged as latest (there should only be one). \"An image that matches the tagging requirements of a rule cannot be expired by a rule with a lower priority.\"",
+        "rulePriority" = 1
+      },
+      {
+        rulePriority = 2,
+        description  = "Remove all images after 365 days (except for the image tagged \"latest\")",
+        selection = {
+          tagStatus   = "any",
+          countType   = "sinceImagePushed",
+          countUnit   = "days",
+          countNumber = 365
+        },
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
 }
 
 module "sfn" {

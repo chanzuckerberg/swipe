@@ -200,7 +200,7 @@ resource "aws_cloudwatch_event_target" "process_batch_event" {
 
 resource "aws_cloudwatch_event_target" "process_sfn_event" {
   rule      = aws_cloudwatch_event_rule.process_sfn_event.name
-  target_id = "${var.app_name}-process_batch_event"
+  target_id = "${var.app_name}-process_sfn_event"
   arn       = aws_lambda_function.lambda["process_sfn_event"].arn
 }
 
